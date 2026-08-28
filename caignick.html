@@ -417,7 +417,7 @@
   .read-vid-canvas{bottom:0;transform:translateX(-50%);z-index:2;}
   .read-vid-canvas2{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     width:100%;aspect-ratio:9/16;z-index:4;pointer-events:none;}
-  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
+  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
   /* 混音/阅读模式：隐藏星光、状态栏文字颜色适配背景 */
   #phone.read-mode #starfield{display:none;}
   #phone.read-mode .statusbar{display:none;}
@@ -719,9 +719,9 @@
     <section class="screen" id="scr-read">
       <!-- 三段背景：图15 顶 / 图16 中(z-top) / 图17 底；等比 9:16，原比例不裁不拉 -->
       <div class="read-bg-top"></div>
-      <video id="readVid" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas" class="read-vid-canvas"></canvas>
-      <video id="readVid2" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid2" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas2" class="read-vid-canvas2"></canvas>
       <div class="read-bg-mid"></div>
 
