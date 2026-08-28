@@ -882,7 +882,7 @@
       PROXY.url、项目 anon key 填进 PROXY.anonKey，并删除 DEEPSEEK_KEY 一行。
       key 只存服务端 secret（supabase secrets set DEEPSEEK_API_KEY=...），
       泄漏可随时轮换，客户端无感。 */
-var PROXY = { url: 'http://127.0.0.1:8418/chat/completions', anonKey: 'local' };
+var PROXY = { url: '', anonKey: '' };
 var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 /* 自然语音（中继 /tts，微软 Edge 神经网络音色）；仅本地中继模式可用，
@@ -1366,7 +1366,7 @@ function pickVoice(){
   return zh[0];
 }
 
-/* ================= Edge 神经网络语音（经本地中继，更自然） ================= */
+/* ================= Edge 神经网络语音（前端直连，自然音色） ================= */
 var EDGE_VOICES = [
   { id: 'zh-CN-XiaoxiaoNeural', label: '晓晓', desc: '温柔女声' },
   { id: 'zh-CN-YunxiNeural',    label: '云希', desc: '沉静男声' },
@@ -1374,8 +1374,80 @@ var EDGE_VOICES = [
   { id: 'zh-CN-YunyangNeural',  label: '云扬', desc: '清晰男声' },
   { id: 'zh-CN-XiaoyiNeural',   label: '晓伊', desc: '轻柔女声' }
 ];
+/* 前端直连微软 Edge 神经网络语音（无需本地中继） */
+var EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+var EDGE_VER = '1-143.0.3650.75';
+var WIN_EPOCH = 11644473600;
+function edgeHexId(){
+  var a = new Uint8Array(16); crypto.getRandomValues(a);
+  return Array.prototype.map.call(a, function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+}
+function edgeJsDate(){
+  var D = new Date();
+  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var p2 = function(n){ return String(n).padStart(2,'0'); };
+  return days[D.getUTCDay()] + ' ' + months[D.getUTCMonth()] + ' ' + p2(D.getUTCDate()) + ' ' +
+    D.getUTCFullYear() + ' ' + p2(D.getUTCHours()) + ':' + p2(D.getUTCMinutes()) + ':' + p2(D.getUTCSeconds()) +
+    ' GMT+0000 (Coordinated Universal Time)';
+}
+function edgeSecMsGec(){
+  var t = Math.floor(Date.now() / 1000);
+  t += WIN_EPOCH;
+  t -= t % 300;
+  t *= 10000000;
+  var data = new TextEncoder().encode(String(t) + EDGE_TOKEN);
+  return crypto.subtle.digest('SHA-256', data).then(function(hash){
+    return Array.prototype.map.call(new Uint8Array(hash), function(b){ return b.toString(16).padStart(2,'0'); }).join('').toUpperCase();
+  });
+}
+function edgeTTS(text, voice, ratePct){
+  return edgeSecMsGec().then(function(gec){
+    return new Promise(function(resolve, reject){
+      var connId = edgeHexId();
+      var qs = '/consumer/speech/synthesize/readaloud/edge/v1' +
+        '?TrustedClientToken=' + EDGE_TOKEN +
+        '&ConnectionId=' + connId +
+        '&Sec-MS-GEC=' + gec +
+        '&Sec-MS-GEC-Version=' + EDGE_VER;
+      var ws = new WebSocket('wss://speech.platform.bing.com' + qs);
+      var chunks = [];
+      ws.binaryType = 'arraybuffer';
+      var timer = setTimeout(function(){ try{ ws.close(); }catch(e){} reject(new Error('Edge TTS 超时')); }, 30000);
+      ws.onopen = function(){
+        var ts = edgeJsDate();
+        var cfg = 'X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
+          JSON.stringify({ context:{ synthesis:{ audio:{ metadataoptions:{ sentenceBoundaryEnabled:'false', wordBoundaryEnabled:'false' }, outputFormat:'audio-24khz-48kbitrate-mono-mp3' } } } });
+        ws.send(cfg);
+        var rate = (ratePct > 0 ? '+' : '') + ratePct + '%';
+        var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>" +
+          "<voice name='" + voice + "'><prosody pitch='+0Hz' rate='" + rate + "' volume='+0%'>" + text + '</prosody></voice></speak>';
+        var msg = 'X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
+        ws.send(msg);
+      };
+      ws.onmessage = function(ev){
+        if(typeof ev.data === 'string'){
+          if(ev.data.indexOf('Path:turn.end') >= 0){
+            clearTimeout(timer);
+            try{ ws.close(); }catch(e){}
+            resolve(new Blob(chunks, { type: 'audio/mpeg' }));
+          }
+        } else {
+          var buf = new Uint8Array(ev.data);
+          if(buf.length > 2){
+            var hlen = (buf[0] << 8) | buf[1];
+            if(buf.length > 2 + hlen) chunks.push(buf.slice(2 + hlen));
+          }
+        }
+      };
+      ws.onerror = function(){ clearTimeout(timer); reject(new Error('Edge TTS 连接失败')); };
+      ws.onclose = function(){ clearTimeout(timer); reject(new Error('Edge TTS 连接关闭')); };
+    });
+  });
+}
+
 var EDGE = {
-  ok: !!TTS_URL,        /* 中继 /tts 可用性；连续失败才降级系统语音 */
+  ok: true,             /* 前端直连 Edge，始终可用；连续失败才降级系统语音 */
   warned: false,
   fails: 0,             /* 连续失败计数（成功即清零） */
   voice: EDGE_VOICES[0].id,
@@ -1403,14 +1475,8 @@ function voiceLabel(){
 function edgeAudio(text){
   var key = EDGE.voice + '|' + player.rate + '|' + text;
   if(EDGE.cache.has(key)) return EDGE.cache.get(key);
-  var p = fetch(TTS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: text, voice: EDGE.voice, rate: Math.round((player.rate - 1) * 100) })
-  }).then(function(r){
-    if(!r.ok) throw new Error('tts ' + r.status);
-    return r.blob();
-  });
+  /* 前端直连微软 Edge 神经网络语音，无需本地中继 */
+  var p = edgeTTS(text, EDGE.voice, Math.round((player.rate - 1) * 100));
   p.catch(function(){ EDGE.cache.delete(key); });
   if(EDGE.cache.size > 160) EDGE.cache.delete(EDGE.cache.keys().next().value);
   EDGE.cache.set(key, p);

@@ -1174,7 +1174,7 @@ var TRACKING_ID = 'e3b7568d-299a-4b40-baab-7321b38abd46';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 /* 自然语音（微软 Edge 神经网络音色）固定走本地中继 /tts；
    API 仍走直连，仅语音合成依赖本地中继（node luoding-proxy copy.js） */
-var TTS_URL = 'http://127.0.0.1:8418/tts';
+var TTS_URL = '';
 
 var SYSTEM_PROMPT = [
 '你是一个经验丰富的AI心理咨询助手，擅长分析用户无法睡眠的原因。请根据用户输入的睡前担忧，针对这位失眠用户，生成一段完整、自然、口语化的分析与引导。',
@@ -3550,7 +3550,7 @@ init();
       PROXY.url、项目 anon key 填进 PROXY.anonKey，并删除 DEEPSEEK_KEY 一行。
       key 只存服务端 secret（supabase secrets set DEEPSEEK_API_KEY=...），
       泄漏可随时轮换，客户端无感。 */
-var PROXY = { url: 'http://127.0.0.1:8418/chat/completions', anonKey: 'local' };
+var PROXY = { url: '', anonKey: '' };
 var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 /* 自然语音（中继 /tts，微软 Edge 神经网络音色）；仅本地中继模式可用，

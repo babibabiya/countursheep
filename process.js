@@ -29,46 +29,99 @@
     try { localStorage.removeItem('sleep_process'); } catch (e) {}
   }
 
-  function speakWeb(after) {
-    var finished = false;
-    function finish() { if (!finished) { finished = true; after(); } }
-    try {
-      if ('speechSynthesis' in window) {
-        var u = new SpeechSynthesisUtterance(REMINDER_TEXT);
-        u.lang = 'zh-CN';
-        u.onend = finish;
-        u.onerror = finish;
-        speechSynthesis.speak(u);
-        // 兜底：最多 12 秒后强制结束
-        setTimeout(function() {
-          if (!finished) { try { speechSynthesis.cancel(); } catch (e) {} finish(); }
-        }, 12000);
-        return;
-      }
-    } catch (e) {}
-    finish();
+  /* ===== 微软 Edge 神经网络语音（前端直连，无需本地中继） ===== */
+  var EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+  var EDGE_VER = '1-143.0.3650.75';
+  var WIN_EPOCH = 11644473600;
+  function edgeHexId() {
+    var a = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
+    else for (var i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
+    return Array.prototype.map.call(a, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  function edgeJsDate() {
+    var D = new Date();
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var p2 = function (n) { return String(n).padStart(2, '0'); };
+    return days[D.getUTCDay()] + ' ' + months[D.getUTCMonth()] + ' ' + p2(D.getUTCDate()) + ' ' +
+      D.getUTCFullYear() + ' ' + p2(D.getUTCHours()) + ':' + p2(D.getUTCMinutes()) + ':' + p2(D.getUTCSeconds()) +
+      ' GMT+0000 (Coordinated Universal Time)';
+  }
+  function edgeSecMsGec() {
+    var t = Math.floor(Date.now() / 1000);
+    t += WIN_EPOCH;
+    t -= t % 300;
+    t *= 10000000;
+    var data = new TextEncoder().encode(String(t) + EDGE_TOKEN);
+    return crypto.subtle.digest('SHA-256', data).then(function (hash) {
+      return Array.prototype.map.call(new Uint8Array(hash), function (b) { return b.toString(16).padStart(2, '0'); }).join('').toUpperCase();
+    });
+  }
+  function edgeTTS(text, voice, ratePct) {
+    return edgeSecMsGec().then(function (gec) {
+      return new Promise(function (resolve, reject) {
+        var connId = edgeHexId();
+        var qs = '/consumer/speech/synthesize/readaloud/edge/v1' +
+          '?TrustedClientToken=' + EDGE_TOKEN +
+          '&ConnectionId=' + connId +
+          '&Sec-MS-GEC=' + gec +
+          '&Sec-MS-GEC-Version=' + EDGE_VER;
+        var ws = new WebSocket('wss://speech.platform.bing.com' + qs);
+        var chunks = [];
+        ws.binaryType = 'arraybuffer';
+        var timer = setTimeout(function () { try { ws.close(); } catch (e) {} reject(new Error('Edge TTS 超时')); }, 30000);
+        ws.onopen = function () {
+          var ts = edgeJsDate();
+          var cfg = 'X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
+            JSON.stringify({ context: { synthesis: { audio: { metadataoptions: { sentenceBoundaryEnabled: 'false', wordBoundaryEnabled: 'false' }, outputFormat: 'audio-24khz-48kbitrate-mono-mp3' } } } });
+          ws.send(cfg);
+          var rate = (ratePct > 0 ? '+' : '') + ratePct + '%';
+          var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>" +
+            "<voice name='" + voice + "'><prosody pitch='+0Hz' rate='" + rate + "' volume='+0%'>" + text + '</prosody></voice></speak>';
+          var msg = 'X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
+          ws.send(msg);
+        };
+        ws.onmessage = function (ev) {
+          if (typeof ev.data === 'string') {
+            if (ev.data.indexOf('Path:turn.end') >= 0) {
+              clearTimeout(timer);
+              try { ws.close(); } catch (e) {}
+              resolve(new Blob(chunks, { type: 'audio/mpeg' }));
+            }
+          } else {
+            var buf = new Uint8Array(ev.data);
+            if (buf.length > 2) {
+              var hlen = (buf[0] << 8) | buf[1];
+              if (buf.length > 2 + hlen) chunks.push(buf.slice(2 + hlen));
+            }
+          }
+        };
+        ws.onerror = function () { clearTimeout(timer); reject(new Error('Edge TTS 连接失败')); };
+        ws.onclose = function () { clearTimeout(timer); reject(new Error('Edge TTS 连接关闭')); };
+      });
+    });
   }
 
+  /* 播放提醒语音：Edge 直连失败则静默（不降级机械音），始终调用 after */
   function playReminder(after) {
+    var done = false;
+    function finish() { if (!done) { done = true; after(); } }
     try {
-      fetch('http://127.0.0.1:8418/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: REMINDER_TEXT, voice: 'zh-CN-XiaoxiaoNeural', rate: -5 })
-      }).then(function (r) {
-        if (!r.ok) throw new Error('tts ' + r.status);
-        return r.blob();
-      }).then(function (blob) {
+      edgeTTS(REMINDER_TEXT, 'zh-CN-XiaoxiaoNeural', -5).then(function (blob) {
+        if (done) return;
         var url = URL.createObjectURL(blob);
         var a = new Audio(url);
-        a.onended = function () { try { URL.revokeObjectURL(url); } catch (e) {} after(); };
-        a.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} speakWeb(after); };
-        a.play().catch(function () { speakWeb(after); });
+        a.onended = function () { try { URL.revokeObjectURL(url); } catch (e) {} finish(); };
+        a.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} finish(); };
+        a.play().catch(function () { finish(); });
+        // 兜底：最多 20 秒后强制结束
+        setTimeout(function () { if (!done) { finish(); } }, 20000);
       }).catch(function () {
-        speakWeb(after);
+        finish();
       });
     } catch (e) {
-      speakWeb(after);
+      finish();
     }
   }
 
