@@ -1378,7 +1378,7 @@ function edgeTTS(text, voice, ratePct){
   });
 }
 var EDGE = {
-  ok: !!TTS_URL,        /* 中继 /tts 可用性；连续失败才降级 */
+  ok: true,             /* 前端直连 Edge；连续失败才降级系统语音 */
 
   warned: false,
   fails: 0,             /* 连续失败计数（成功即清零） */
@@ -1408,17 +1408,8 @@ function edgeAudio(text){
   var key = EDGE.voice + '|' + player.rate + '|' + text;
   if(EDGE.cache.has(key)) return EDGE.cache.get(key);
   var ratePct = Math.round((player.rate - 1) * 100);
-  /* 优先 WebSocket 直连微软 Edge（无需中继，最稳定）；失败再降级本地中继 */
-  var p = edgeTTS(text, EDGE.voice, ratePct).catch(function(){
-    return fetch(TTS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text, voice: EDGE.voice, rate: ratePct })
-    }).then(function(r){
-      if(!r.ok) throw new Error('tts ' + r.status);
-      return r.blob();
-    });
-  });
+  /* 前端直连微软 Edge 神经网络语音（自然音色），无需本地中继 */
+  var p = edgeTTS(text, EDGE.voice, ratePct);
   p.catch(function(){ EDGE.cache.delete(key); });
   if(EDGE.cache.size > 160) EDGE.cache.delete(EDGE.cache.keys().next().value);
   EDGE.cache.set(key, p);
@@ -1643,14 +1634,63 @@ function speakCurrent(){
 
 function speakWeb(st, token, next){
   var it = player.flat[st.fi];
-  /* 只用自然的中文 AI 朗读（Edge 神经网络），失败则静默推进，不降级机械音 */
+  /* 优先自然的中文 AI 朗读（Edge 神经网络）；失败降级系统语音，保证离线也能读 */
   edgeAudio(it.text).then(function(blob){
     if(token !== player.token || !player.playing) return;
     playEdgeBlob(blob, st, token, next);
   }).catch(function(){
     if(token !== player.token || !player.playing) return;
-    next(Math.max(800, estMs(it.text)));
+    speakSystem(st, token, next);
   });
+}
+
+/* 选择系统里最自然的中文音色 */
+function pickZhVoice(){
+  try {
+    if(!('speechSynthesis' in window)) return null;
+    var voices = speechSynthesis.getVoices() || [];
+    if(!voices.length) return null;
+    var zh = voices.filter(function(v){ return /^zh|^cmn|chinese/i.test(v.lang || ''); });
+    if(!zh.length) return null;
+    // 优先已知的自然音色（macOS Ting-Ting、Windows Huihui、Edge Xiaoxiao 等）
+    var preferred = ['ting-ting','tingting','huihui','xiaoxiao','xiaoyi','yunxi','yunjian','yunjie','meijia','sinji'];
+    for(var i=0;i<preferred.length;i++){
+      for(var j=0;j<zh.length;j++){
+        if((zh[j].name||'').toLowerCase().indexOf(preferred[i]) >= 0) return zh[j];
+      }
+    }
+    // 其次本地服务音色
+    var local = zh.filter(function(v){ return v.localService; });
+    if(local.length) return local[0];
+    return zh[0];
+  } catch(e){ return null; }
+}
+
+/* 系统语音兜底：Edge 全部失败/离线时，用 speechSynthesis 保证出声 */
+function speakSystem(st, token, next){
+  var it = player.flat[st.fi];
+  var estimated = Math.max(800, estMs(it.text));
+  function done(){ if(token === player.token && player.playing) next(300); }
+  try {
+    if('speechSynthesis' in window){
+      var u = new SpeechSynthesisUtterance(it.text);
+      var v = pickZhVoice();
+      if(v) u.voice = v;
+      u.lang = 'zh-CN';
+      u.rate = 0.95;
+      u.pitch = 1;
+      var finished = false;
+      function finish(){ if(!finished){ finished = true; done(); } }
+      u.onend = finish;
+      u.onerror = finish;
+      try { speechSynthesis.cancel(); } catch(e) {}
+      speechSynthesis.speak(u);
+      // 兜底：超过估算时长仍未结束则强制推进
+      setTimeout(function(){ if(!finished){ finished = true; try{ speechSynthesis.cancel(); }catch(e){} done(); } }, estimated + 1500);
+      return;
+    }
+  } catch(e) {}
+  done();
 }
 
 function startTick(){
