@@ -371,17 +371,37 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ============ 暂停/开始按钮（标题右下方） ============ */
-.play-pause-btn {
+/* ============ 标题右侧控制（音色 + 暂停/开始） ============ */
+.topbar-controls {
   position: absolute;
   top: 6px; right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+}
+.voice-btn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 248, 230, 0.92);
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a7a98;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(80, 60, 40, 0.18);
+  transition: transform 0.15s ease;
+}
+.voice-btn:active { transform: scale(0.92); }
+.play-pause-btn {
   width: 40px; height: 40px;
   border-radius: 50%;
-  background: rgba(255, 248, 230, 0.9);
+  background: rgba(255, 248, 230, 0.92);
   border: none;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  z-index: 15;
   box-shadow: 0 2px 8px rgba(80, 60, 40, 0.18);
   transition: transform 0.15s ease;
 }
@@ -410,9 +430,12 @@ html, body {
     <!-- 固定标题 -->
     <div class="topbar">
       <img src="assets/relax/title.png" class="title-banner" alt="情绪练习">
-      <button class="play-pause-btn" id="playPauseBtn" hidden aria-label="暂停/开始">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
-      </button>
+      <div class="topbar-controls">
+        <button class="voice-btn" id="voiceBtn" aria-label="切换音色">晓晓</button>
+        <button class="play-pause-btn" id="playPauseBtn" hidden aria-label="暂停/开始">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- 左右滑动的两页 -->
@@ -562,6 +585,13 @@ html, body {
   };
 
   // ===== 微软 Edge 神经网络语音（前端直连，自然音色） =====
+  const EDGE_VOICES = [
+    { id: 'zh-CN-XiaoxiaoNeural', label: '晓晓', desc: '温柔女声' },
+    { id: 'zh-CN-YunxiNeural',    label: '云希', desc: '沉静男声' },
+    { id: 'zh-CN-YunjianNeural',  label: '云健', desc: '浑厚男声' },
+    { id: 'zh-CN-YunyangNeural',  label: '云扬', desc: '清晰男声' },
+    { id: 'zh-CN-XiaoyiNeural',   label: '晓伊', desc: '轻柔女声' }
+  ];
   const EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
   const EDGE_VER = '1-143.0.3650.75';
   const WIN_EPOCH = 11644473600;
@@ -633,10 +663,24 @@ html, body {
 
   // ===== 播放器 =====
   const playPauseBtn = document.getElementById('playPauseBtn');
+  const voiceBtn = document.getElementById('voiceBtn');
   const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
   const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
 
-  let queue = [], qIdx = 0, isPlaying = false, isPaused = false, curAudio = null;
+  let queue = [], qIdx = 0, isPlaying = false, isPaused = false;
+  let curAudio = null, curSystem = false, genToken = 0;
+
+  // 当前音色（默认晓晓，记住上次选择）
+  let currentVoice = EDGE_VOICES[0].id;
+  try {
+    const saved = localStorage.getItem('relax_voice');
+    if (saved && EDGE_VOICES.some(v => v.id === saved)) currentVoice = saved;
+  } catch(e) {}
+  function voiceLabel() {
+    for (const v of EDGE_VOICES) if (v.id === currentVoice) return v.label;
+    return EDGE_VOICES[0].label;
+  }
+  voiceBtn.textContent = voiceLabel();
 
   function setPlayBtn(state) {
     if (state === null) { playPauseBtn.hidden = true; return; }
@@ -651,72 +695,127 @@ html, body {
     if (!queue.length) return;
     qIdx = 0; isPlaying = true; isPaused = false;
     setPlayBtn(true);
-    speakNext();
+    playSegment(queue[qIdx]);
   }
 
-  function speakNext() {
-    if (!isPlaying || isPaused) return;
-    if (qIdx >= queue.length) { finishSpeak(); return; }
-    const seg = queue[qIdx];
-    edgeTTS(seg, 'zh-CN-XiaoxiaoNeural', -5).then(blob => {
-      if (!isPlaying || isPaused) return;
-      playBlob(blob);
+  // 播放一段：优先 Edge 自然音色，失败降级系统语音
+  function playSegment(seg) {
+    const token = ++genToken;
+    curAudio = null; curSystem = false;
+    edgeTTS(seg, currentVoice, -5).then(blob => {
+      if (token !== genToken || !isPlaying || isPaused) return;
+      playBlob(blob, token);
     }).catch(() => {
-      if (!isPlaying || isPaused) return;
-      speakSystem(seg, () => { qIdx++; speakNext(); });
+      if (token !== genToken || !isPlaying || isPaused) return;
+      playSystem(seg, token);
     });
   }
 
-  function playBlob(blob) {
+  function playBlob(blob, token) {
     const url = URL.createObjectURL(blob);
     const a = new Audio(url);
-    curAudio = a;
-    a.onended = () => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); };
-    a.onerror = () => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); };
-    a.play().catch(() => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); });
+    curAudio = a; curSystem = false;
+    const next = () => {
+      URL.revokeObjectURL(url);
+      if (token !== genToken || !isPlaying || isPaused) return;
+      if (curAudio === a) curAudio = null;
+      advance();
+    };
+    a.onended = next;
+    a.onerror = next;
+    a.play().catch(next);
   }
 
-  function speakSystem(text, done) {
-    let finished = false;
-    const finish = () => { if (!finished) { finished = true; done(); } };
+  function playSystem(seg, token) {
+    curSystem = true;
     try {
       if ('speechSynthesis' in window) {
-        const u = new SpeechSynthesisUtterance(text);
+        const u = new SpeechSynthesisUtterance(seg);
         const v = pickZhVoice(); if (v) u.voice = v;
         u.lang = 'zh-CN'; u.rate = 0.95;
+        let finished = false;
+        const finish = () => {
+          if (finished) return; finished = true;
+          if (token === genToken && isPlaying && !isPaused) advance();
+        };
         u.onend = finish; u.onerror = finish;
         try { speechSynthesis.cancel(); } catch(e) {}
         speechSynthesis.speak(u);
-        setTimeout(() => { if (!finished) { try { speechSynthesis.cancel(); } catch(e){} finish(); } }, 30000);
+        // 超时强制推进（防止部分浏览器不触发 onend）
+        setTimeout(() => {
+          if (!finished) { finished = true; try { speechSynthesis.cancel(); } catch(e){} finish(); }
+        }, 45000);
         return;
       }
     } catch(e) {}
-    finish();
+    // 无系统语音 → 静默推进
+    setTimeout(() => { if (token === genToken && isPlaying && !isPaused) advance(); }, 800);
+  }
+
+  function advance() {
+    qIdx++;
+    if (qIdx >= queue.length) { finishSpeak(); return; }
+    playSegment(queue[qIdx]);
   }
 
   function stopSpeak() {
+    genToken++;
     isPlaying = false; isPaused = false;
     if (curAudio) { try { curAudio.pause(); } catch(e){} curAudio = null; }
+    curSystem = false;
     try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e) {}
   }
 
   function finishSpeak() {
-    isPlaying = false; isPaused = false; curAudio = null;
+    isPlaying = false; isPaused = false;
+    curAudio = null; curSystem = false;
     setPlayBtn(null);
   }
 
   function togglePlay() {
     if (!isPlaying) return;
     if (isPaused) {
+      // 恢复
       isPaused = false; setPlayBtn(true);
-      if (curAudio) { curAudio.play().catch(() => { qIdx++; speakNext(); }); }
-      else speakNext();
+      if (curSystem) {
+        try { speechSynthesis.resume(); } catch(e) {}
+      } else if (curAudio) {
+        curAudio.play().catch(() => { advance(); });
+      } else {
+        playSegment(queue[qIdx]); // 合成中恢复：重播当前段
+      }
     } else {
+      // 暂停
       isPaused = true; setPlayBtn(false);
-      if (curAudio) { try { curAudio.pause(); } catch(e){} }
+      if (curSystem) {
+        try { speechSynthesis.pause(); } catch(e) {}
+      } else if (curAudio) {
+        try { curAudio.pause(); } catch(e) {}
+      } else {
+        genToken++; // 合成中暂停：使 pending 结果失效
+      }
     }
   }
   playPauseBtn.addEventListener('click', togglePlay);
+
+  // 音色切换（5 个 Edge 自然音色循环）
+  function cycleVoice() {
+    const i = EDGE_VOICES.findIndex(v => v.id === currentVoice);
+    currentVoice = EDGE_VOICES[(i + 1) % EDGE_VOICES.length].id;
+    try { localStorage.setItem('relax_voice', currentVoice); } catch(e) {}
+    voiceBtn.textContent = voiceLabel();
+    showToast('音色 · ' + voiceLabel());
+    // 播放中切换：立即用新音色重读当前段
+    if (isPlaying) {
+      genToken++;
+      if (curAudio) { try { curAudio.pause(); } catch(e){} curAudio = null; }
+      curSystem = false;
+      try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e) {}
+      isPaused = false; setPlayBtn(true);
+      playSegment(queue[qIdx]);
+    }
+  }
+  voiceBtn.addEventListener('click', cycleVoice);
 
   // 温度计滑轨
   const ticksEl = document.getElementById('ticks');
