@@ -2,3 +2,7 @@
 .workbuddy/
 __pycache__/
 *.pyc
+
+# 云函数中转代码（含腾讯云密钥，不推送，密钥仅存在云端）
+tts-proxy.js
+cf-worker.js
