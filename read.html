@@ -194,7 +194,7 @@ html, body {
 
     <div class="layer layer-bg">
       <canvas id="cv1"></canvas>
-      <video id="vid1" src="assets/sound/Melatonin.mp4" loop muted playsinline></video>
+      <video id="vid1" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" loop muted playsinline></video>
     </div>
 
     <div class="layer layer-mid">
@@ -389,13 +389,21 @@ html, body {
     }
     loop();
 
+    function ensureVideoPlay(v){
+      function tryPlay(){ if(v.paused && !v.ended){ var p = v.play(); if(p && p.catch) p.catch(function(){}); } }
+      tryPlay();
+      v.addEventListener('canplay', tryPlay);
+      ['pointerdown','touchstart','click'].forEach(function(ev){
+        document.addEventListener(ev, tryPlay, { passive: true });
+      });
+      v.addEventListener('pause', function(){ setTimeout(tryPlay, 250); });
+      document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+    }
+
     if (isVideo) {
       // 绿色滚动的视频（中层 melatonin2）放慢播放
       if (source.id === 'vid2') source.playbackRate = 0.4;
-      source.addEventListener('loadeddata', function() {
-        source.play().catch(function(){});
-      });
-      source.play().catch(function(){});
+      ensureVideoPlay(source);
     }
   }
 

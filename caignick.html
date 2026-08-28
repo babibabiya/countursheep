@@ -2146,6 +2146,19 @@ function quickMixSelect(kind, i){
   renderQuickMix();
 }
 
+/* 视频播放可靠性：自动播放被拒/中途被暂停时自动恢复（muted 循环背景视频，无用户暂停场景） */
+function ensureVideoPlay(v){
+  function tryPlay(){ if(v.paused && !v.ended){ var p = v.play(); if(p && p.catch) p.catch(function(){}); } }
+  tryPlay();
+  v.addEventListener('canplay', tryPlay);
+  v.addEventListener('loadeddata', tryPlay);
+  ['pointerdown','touchstart','click','keydown'].forEach(function(ev){
+    document.addEventListener(ev, tryPlay, { passive: true });
+  });
+  v.addEventListener('pause', function(){ setTimeout(tryPlay, 250); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+}
+
 function initReadVideo(){
   var vid = $('#readVid');
   var canvas = $('#readVidCanvas');
@@ -2162,9 +2175,10 @@ function initReadVideo(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        var minRGB = r < g ? (r < b ? r : b) : (g < b ? g : b);
-        if(minRGB >= 228){ d[i+3] = 0; }                          // 白色/米白 → 透明
-        else if(minRGB >= 200){ d[i+3] = ((228 - minRGB) * 255 / 28) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 色度抠白：白色=高亮且低饱和（不误伤羊的奶白色等浅色主体） */
+        if(mx >= 235 && mx - mn < 22){ d[i+3] = 0; }
+        else if(mn >= 200 && mx - mn < 45){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       /* 擦除底部圆形（音乐按钮）和右侧长条（彩条）：540×960 坐标
          圆形用圆形遮罩、长条用紧贴元素的矩形遮罩，避免矩形外溢显出米色页底 */
@@ -2183,7 +2197,7 @@ function initReadVideo(){
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
@@ -2203,14 +2217,16 @@ function initReadVideo2(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        if(r >= 250 && g >= 250 && b >= 250){ d[i+3] = 0; }          // 纯白 → 透明
-        else if(r >= 240 && g >= 240 && b >= 240){ d[i+3] = ((250 - ((r+g+b)/3|0)) * 255 / 10) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 保守抠白：melatonin2 含羊的奶白色，只抠纯白背景 */
+        if(mx >= 245 && mx - mn < 14){ d[i+3] = 0; }
+        else if(mn >= 228 && mx - mn < 30){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       ctx.putImageData(img, 0, 0);
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
