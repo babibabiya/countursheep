@@ -103,7 +103,50 @@
     });
   }
 
-  /* 播放提醒语音：Edge 直连失败则静默（不降级机械音），始终调用 after */
+  /* 选择系统里最自然的中文音色 */
+  function pickZhVoice() {
+    try {
+      if (!('speechSynthesis' in window)) return null;
+      var voices = speechSynthesis.getVoices() || [];
+      if (!voices.length) return null;
+      var zh = voices.filter(function (v) { return /^zh|^cmn|chinese/i.test(v.lang || ''); });
+      if (!zh.length) return null;
+      var preferred = ['ting-ting', 'tingting', 'huihui', 'xiaoxiao', 'xiaoyi', 'yunxi', 'yunjian', 'meijia', 'sinji'];
+      for (var i = 0; i < preferred.length; i++) {
+        for (var j = 0; j < zh.length; j++) {
+          if ((zh[j].name || '').toLowerCase().indexOf(preferred[i]) >= 0) return zh[j];
+        }
+      }
+      var local = zh.filter(function (v) { return v.localService; });
+      if (local.length) return local[0];
+      return zh[0];
+    } catch (e) { return null; }
+  }
+
+  /* 系统语音兜底：Edge 失败/离线时用 speechSynthesis，保证出声 */
+  function speakSystem(after) {
+    var done = false;
+    function finish() { if (!done) { done = true; after(); } }
+    try {
+      if ('speechSynthesis' in window) {
+        var u = new SpeechSynthesisUtterance(REMINDER_TEXT);
+        var v = pickZhVoice();
+        if (v) u.voice = v;
+        u.lang = 'zh-CN';
+        u.rate = 0.95;
+        u.onend = finish;
+        u.onerror = finish;
+        try { speechSynthesis.cancel(); } catch (e) {}
+        speechSynthesis.speak(u);
+        // 兜底：最多 12 秒后强制结束
+        setTimeout(function () { if (!done) { try { speechSynthesis.cancel(); } catch (e) {} finish(); } }, 12000);
+        return;
+      }
+    } catch (e) {}
+    finish();
+  }
+
+  /* 播放提醒语音：Edge 直连失败则降级系统语音，始终调用 after */
   function playReminder(after) {
     var done = false;
     function finish() { if (!done) { done = true; after(); } }
@@ -113,15 +156,15 @@
         var url = URL.createObjectURL(blob);
         var a = new Audio(url);
         a.onended = function () { try { URL.revokeObjectURL(url); } catch (e) {} finish(); };
-        a.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} finish(); };
-        a.play().catch(function () { finish(); });
+        a.onerror = function () { try { URL.revokeObjectURL(url); } catch (e) {} speakSystem(finish); };
+        a.play().catch(function () { speakSystem(finish); });
         // 兜底：最多 20 秒后强制结束
         setTimeout(function () { if (!done) { finish(); } }, 20000);
       }).catch(function () {
-        finish();
+        speakSystem(finish);
       });
     } catch (e) {
-      finish();
+      speakSystem(finish);
     }
   }
 
