@@ -3,22 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>阅读倒计时 - 好好睡觉</title>
+<title>读书小屋 - 好好睡觉</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   width: 100%; height: 100%;
   font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #4a3a2a;
+  color: #5a4632;
   overflow: hidden;
 }
 
 .stage {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: #f6e8d4;
-  padding: 0;
+  background: #f3e3cc;
 }
 
 .phone {
@@ -27,205 +26,303 @@ html, body {
   position: relative;
   overflow: hidden;
   display: flex; flex-direction: column;
-  background: #f6e8d4;
+  background: linear-gradient(180deg, #fff4e2 0%, #ffe9d8 62%, #ffe3d2 100%);
 }
 
-/* 顶部黄色菜单栏 */
-.menu-bar {
-  position: relative;
-  z-index: 10;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(180deg, #f5d97e 0%, #f3c662 100%);
-  box-shadow: 0 2px 8px rgba(160, 110, 40, 0.15);
+/* ===== 夜空小装饰（克制动画：只动 transform/opacity） ===== */
+.deco { position: absolute; pointer-events: none; z-index: 1; }
+.star { position: absolute; width: 10px; height: 10px; opacity: .8; animation: twinkle 2.6s ease-in-out infinite; }
+.star:nth-child(2) { animation-delay: .7s; }
+.star:nth-child(3) { animation-delay: 1.3s; }
+.star:nth-child(4) { animation-delay: 1.9s; }
+@keyframes twinkle { 0%,100% { opacity: .35; transform: scale(.8); } 50% { opacity: .95; transform: scale(1.1); } }
+
+.cloud { position: absolute; animation: drift 9s ease-in-out infinite alternate; }
+.cloud.c2 { animation-duration: 12s; animation-delay: 1.2s; }
+@keyframes drift { from { transform: translateX(-6px); } to { transform: translateX(8px); } }
+
+/* ===== 顶栏 ===== */
+.topbar {
+  position: relative; z-index: 10;
+  padding: 14px 14px 4px;
+  display: flex; align-items: center; gap: 10px;
 }
-.menu-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  justify-content: center;
-  flex-wrap: nowrap;
-}
-.ctl {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 2px solid #2a3858;
-  background: #fff;
-  cursor: pointer;
+.back-btn {
+  width: 42px; height: 42px; flex-shrink: 0;
+  border: none; border-radius: 16px;
+  background: #fffdf7;
+  box-shadow: 0 3px 0 rgba(214, 170, 130, .45);
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800;
-  font-size: 16px;
-  color: #2a3858;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: transform 0.12s ease;
-  font-family: inherit;
+  cursor: pointer; color: #d4576f;
+  transition: transform .15s ease;
 }
-.ctl:active { transform: scale(0.92); }
-.ctl-plus {
-  background: repeating-linear-gradient(45deg, #4a6fa5 0 3px, #5a8fc5 3px 6px);
-  color: #fff;
+.back-btn:active { transform: scale(.9); }
+.back-btn svg { width: 20px; height: 20px; }
+.back-btn:focus-visible, button:focus-visible {
+  outline: 3px solid #b79ced; outline-offset: 2px;
 }
-.ctl-minus {
-  background: repeating-linear-gradient(135deg, #d96a3a 0 3px, #e88a5a 3px 6px);
-  color: #fff;
+.title-sticker {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #ffd98e;
+  border: 3px solid #fffdf7;
+  border-radius: 999px;
+  padding: 8px 20px;
+  font-size: 17px; font-weight: 900; letter-spacing: 2px;
+  color: #7a5326;
+  box-shadow: 0 3px 0 rgba(214, 170, 130, .45);
+  transform: rotate(-2deg);
 }
-.ctl-clear {
-  background: #c84a3a;
-  color: #fff;
-}
-.ctl-start {
-  background: #2a4a78;
-  color: #fff;
-}
-.ctl-stop {
-  background: #d84a4a;
-  color: #fff;
-}
+.title-sticker svg { width: 20px; height: 20px; }
 
-/* 三层叠加（全部 chroma key 抠白色，原比例 contain） */
-.layer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  overflow: hidden;
+/* ===== 中央计时卡 ===== */
+.timer-zone {
+  position: relative; z-index: 10;
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.timer-card {
+  position: relative;
+  width: min(78%, 300px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 10px 0 rgba(233, 196, 160, .55), 0 18px 34px rgba(180, 130, 90, .18);
+  display: flex; align-items: center; justify-content: center;
+}
+.ring-svg { position: absolute; inset: 6%; width: 88%; height: 88%; }
+.ring-track { stroke: #ffe3ce; }
+.ring-bar {
+  stroke: #ff8fa3;
+  transition: stroke-dashoffset .5s cubic-bezier(.34,1.3,.64,1);
+}
+.ring-bar.running { stroke: #7ed8b4; }
+.time-box {
+  position: relative; z-index: 2;
+  text-align: center;
+  transform: translateY(4px);
+}
+.time {
+  font-size: clamp(44px, 15vw, 66px);
+  font-weight: 900;
+  color: #5a4632;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.time.dim { color: #e8c9ae; }
+.time-label {
+  margin-top: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 3px;
+  color: #c9a986;
+}
+.status-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #e8c9ae; margin-right: 5px; vertical-align: 1px;
+}
+.status-dot.on { background: #7ed8b4; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+
+/* ===== 控制按钮 ===== */
+.controls {
+  position: relative; z-index: 10;
+  display: flex; justify-content: center; gap: 14px;
+  padding: 2px 16px 0;
+}
+.candy {
+  width: 58px; height: 58px;
+  border: none; border-radius: 50%;
+  background: #fffdf7;
+  box-shadow: 0 4px 0 rgba(214, 170, 130, .5);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-family: inherit; font-weight: 900; font-size: 20px;
+  transition: transform .14s cubic-bezier(.34,1.5,.64,1);
+}
+.candy:active { transform: scale(.88) rotate(-4deg); }
+.candy svg { width: 24px; height: 24px; }
+.candy.minus { color: #e8946a; }
+.candy.plus  { color: #5cb894; }
+.candy.clear { color: #d4a05a; }
+.candy.bump { animation: bump .35s ease; }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.18) rotate(6deg); } 100% { transform: scale(1); } }
+
+.big-btn {
+  position: relative; z-index: 10;
+  margin: 14px 28px 10px;
+  border: none; border-radius: 999px;
+  padding: 15px 0;
+  font-family: inherit; font-size: 18px; font-weight: 900; letter-spacing: 4px;
+  color: #fffdf7;
+  background: linear-gradient(180deg, #ff9eaf 0%, #f97f95 100%);
+  box-shadow: 0 6px 0 rgba(214, 118, 138, .55);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.big-btn:active { transform: translateY(3px) scale(.98); box-shadow: 0 3px 0 rgba(214, 118, 138, .55); }
+.big-btn.running { background: linear-gradient(180deg, #8fdcb9 0%, #64c69e 100%); box-shadow: 0 6px 0 rgba(72, 158, 122, .55); }
+.big-btn svg { width: 18px; height: 18px; }
+
+/* ===== 底部小羊读书场景 ===== */
+.scene {
+  position: relative; z-index: 5;
+  height: 17%;
+  flex-shrink: 0;
   pointer-events: none;
 }
-.layer canvas {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  display: block;
-}
-.layer video,
-.layer img {
-  display: none;
-}
-/* 图层层级：melatonin(底) < melatonin2(中) < read-mid(顶) */
-.layer-bg  { z-index: 1; }
-.layer-mid { z-index: 2; }
-.layer-top { z-index: 3; }
+.scene svg { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 118%; }
+.sheep-float { animation: floaty 3.2s ease-in-out infinite; transform-origin: center; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 
-/* 左下角音符按钮 */
-.note-btn {
-  position: absolute;
-  left: 1%;
-  top: 82%;
-  width: 88px;
-  height: 88px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  color: #2a3858;
-  -webkit-tap-highlight-color: transparent;
+/* 庆祝星星 */
+.confetti {
+  position: absolute; left: 50%; top: 42%;
+  width: 14px; height: 14px; z-index: 40;
+  pointer-events: none; opacity: 0;
 }
-.note-btn svg { width: 38px; height: 38px; opacity: 0; }
-
-/* 右下角隐形返回按钮：正方形，边长 = 圆半径长度 */
-.back-invisible {
-  position: absolute;
-  right: 1%;
-  bottom: 4%;
-  width: 24px;
-  height: 56px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  cursor: pointer;
-  z-index: 20;
-  -webkit-tap-highlight-color: transparent;
+.confetti i {
+  position: absolute; left: 0; top: 0;
+  width: 12px; height: 12px; border-radius: 50%;
+}
+.confetti.go i { animation: pop 1s ease-out forwards; }
+.confetti i:nth-child(1) { background: #ffd166; --dx: -70px; --dy: -90px; }
+.confetti i:nth-child(2) { background: #ff8fa3; --dx: 66px; --dy: -84px; }
+.confetti i:nth-child(3) { background: #7ed8b4; --dx: -40px; --dy: -120px; }
+.confetti i:nth-child(4) { background: #b79ced; --dx: 44px; --dy: -118px; }
+.confetti i:nth-child(5) { background: #ffd166; --dx: 0; --dy: -140px; }
+@keyframes pop {
+  0% { opacity: 1; transform: translate(0,0) scale(.5); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.15); }
 }
 
-/* 提示气泡 */
+/* Toast */
 .toast {
   position: absolute;
-  top: 30%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(60, 50, 40, 0.85);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 20px;
-  font-size: 14px;
-  letter-spacing: 1px;
-  z-index: 30;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  top: 18%; left: 50%;
+  transform: translateX(-50%) translateY(-8px);
+  background: rgba(90, 70, 50, .88);
+  color: #fffdf7;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-size: 14px; font-weight: 700; letter-spacing: 1px;
+  z-index: 60;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
 }
-.toast.show {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.05);
-}
-
-/* 数字倒计时 */
-.countdown {
-  position: absolute;
-  top: 33%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 84px;
-  font-weight: 900;
-  color: #4a4a4a;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
-  z-index: 20;
-  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.7);
-  pointer-events: none;
-}
-.countdown #cdM,
-.countdown #cdS {
-  color: #bdbdbd;
-}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="phone" id="phone">
+  <div class="phone">
 
-    <div class="layer layer-bg">
-      <canvas id="cv1"></canvas>
-      <video crossorigin="anonymous" id="vid1" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" loop muted playsinline></video>
+    <!-- 星星与云朵装饰 -->
+    <div class="deco" aria-hidden="true">
+      <svg class="star" style="left:14%;top:9%" viewBox="0 0 20 20"><path d="M10 1l2.4 5.9L19 9l-5.4 2.9L12 19l-4-4.6L2 16l2.5-6L1 4l6.6 1.2z" fill="#ffd166"/></svg>
+      <svg class="star" style="right:12%;top:14%" viewBox="0 0 20 20"><path d="M10 1l2.4 5.9L19 9l-5.4 2.9L12 19l-4-4.6L2 16l2.5-6L1 4l6.6 1.2z" fill="#ffb5c2"/></svg>
+      <svg class="star" style="left:22%;top:34%" viewBox="0 0 20 20"><path d="M10 1l2.4 5.9L19 9l-5.4 2.9L12 19l-4-4.6L2 16l2.5-6L1 4l6.6 1.2z" fill="#b79ced"/></svg>
+      <svg class="cloud" style="left:6%;top:6%" width="64" height="30" viewBox="0 0 64 30"><path d="M12 26a8 8 0 010-16 10 10 0 0119-3 8 8 0 019 14 9 9 0 01-5 5z" fill="#fffdf7" opacity=".9"/></svg>
+      <svg class="cloud c2" style="right:4%;top:40%" width="54" height="26" viewBox="0 0 64 30"><path d="M12 26a8 8 0 010-16 10 10 0 0119-3 8 8 0 019 14 9 9 0 01-5 5z" fill="#fffdf7" opacity=".75"/></svg>
     </div>
 
-    <div class="layer layer-mid">
-      <canvas id="cv2"></canvas>
-      <video crossorigin="anonymous" id="vid2" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin2.mp4" loop muted playsinline></video>
-    </div>
-
-    <div class="layer layer-top">
-      <canvas id="cv3"></canvas>
-      <img crossorigin="anonymous" id="img3" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/read-mid.png" alt="">
-    </div>
-
-    <button class="note-btn" id="noteBtn" aria-label="音符">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
-    <button class="back-invisible" id="backInvisible" aria-label="返回主页"></button>
-
-    <div class="countdown"><span id="cdM">00</span><span>:</span><span id="cdS">00</span></div>
-
-    <div class="menu-bar">
-      <div class="menu-right">
-        <button class="ctl ctl-minus" id="btnMinus" aria-label="减少 1 分钟">−</button>
-        <button class="ctl ctl-plus"  id="btnPlus"  aria-label="增加 1 分钟">+</button>
-        <button class="ctl ctl-clear" id="btnClear" aria-label="清除">×</button>
-        <button class="ctl ctl-start" id="btnStart" aria-label="开始/暂停">▶</button>
-        <button class="ctl ctl-stop"  id="btnStop"  aria-label="停止">■</button>
+    <!-- 顶栏 -->
+    <div class="topbar">
+      <button class="back-btn" id="backBtn" aria-label="返回主页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+      </button>
+      <div class="title-sticker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 012-2h13v14H6a2 2 0 00-2 2zm0 0a2 2 0 002 2h13"/><path d="M9 7h6M9 11h4"/></svg>
+        读书小屋
       </div>
     </div>
+
+    <!-- 中央计时环 -->
+    <div class="timer-zone">
+      <div class="timer-card">
+        <svg class="ring-svg" viewBox="0 0 260 260" aria-hidden="true">
+          <circle class="ring-track" cx="130" cy="130" r="110" fill="none" stroke-width="14"/>
+          <circle class="ring-bar" id="ringBar" cx="130" cy="130" r="110" fill="none" stroke-width="14"
+                  stroke-linecap="round" stroke-dasharray="691.15" stroke-dashoffset="0"
+                  transform="rotate(-90 130 130)"/>
+          <!-- 坐在环上的小羊 -->
+          <g class="sheep-float" aria-hidden="true">
+            <circle cx="130" cy="26" r="13" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+            <circle cx="118" cy="30" r="9" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+            <circle cx="142" cy="30" r="9" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+            <circle cx="130" cy="30" r="10" fill="#6b4f3a"/>
+            <circle cx="130" cy="19" r="9" fill="#6b4f3a"/>
+            <circle cx="126.5" cy="18" r="1.8" fill="#fffdf7"/>
+            <circle cx="133.5" cy="18" r="1.8" fill="#fffdf7"/>
+            <circle cx="123" cy="23" r="2.6" fill="#ffb5c2" opacity=".8"/>
+            <circle cx="137" cy="23" r="2.6" fill="#ffb5c2" opacity=".8"/>
+            <path d="M127 22.5q3 2 6 0" stroke="#fffdf7" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="118" cy="20" rx="3" ry="4" fill="#6b4f3a" transform="rotate(-30 118 20)"/>
+            <ellipse cx="142" cy="20" rx="3" ry="4" fill="#6b4f3a" transform="rotate(30 142 20)"/>
+          </g>
+        </svg>
+        <div class="time-box" role="timer" aria-live="off" aria-label="阅读倒计时">
+          <div class="time" id="timeText"><span id="cdM">00</span>:<span id="cdS">00</span></div>
+          <div class="time-label"><span class="status-dot" id="statusDot"></span>分钟阅读</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 糖果按钮 -->
+    <div class="controls">
+      <button class="candy minus" id="btnMinus" aria-label="减少 1 分钟">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <button class="candy clear" id="btnClear" aria-label="清零">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-9 0l1 13h10l1-13"/></svg>
+      </button>
+      <button class="candy plus" id="btnPlus" aria-label="增加 1 分钟">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+      </button>
+    </div>
+
+    <!-- 大按钮：开始 / 暂停 -->
+    <button class="big-btn" id="btnStart" aria-label="开始阅读">
+      <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+      <span id="btnStartText">开始阅读</span>
+    </button>
+
+    <!-- 底部小羊读书场景 -->
+    <div class="scene" aria-hidden="true">
+      <svg viewBox="0 0 400 120">
+        <path d="M0 78 Q 100 58 200 74 T 400 70 L 400 120 L 0 120 Z" fill="#ffe0c4"/>
+        <path d="M0 92 Q 120 76 220 88 T 400 84 L 400 120 L 0 120 Z" fill="#ffd6b8"/>
+        <!-- 打开的书 -->
+        <g transform="translate(170,66)">
+          <path d="M0 12 Q 15 2 30 8 Q 45 2 60 12 L 60 16 Q 45 8 30 12 Q 15 8 0 16 Z" fill="#b79ced"/>
+          <path d="M0 16 Q 15 8 30 12 Q 45 8 60 16 L 60 20 Q 45 12 30 16 Q 15 12 0 20 Z" fill="#9a7cd8"/>
+        </g>
+        <!-- 读书的云朵羊 -->
+        <g class="sheep-float" transform="translate(120,38)">
+          <circle cx="0" cy="18" r="14" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+          <circle cx="-13" cy="22" r="9" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+          <circle cx="13" cy="22" r="9" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+          <circle cx="-6" cy="10" r="8" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+          <circle cx="6" cy="10" r="8" fill="#fffdf7" stroke="#e8cdb4" stroke-width="2"/>
+          <circle cx="16" cy="4" r="9" fill="#6b4f3a"/>
+          <circle cx="14" cy="1" r="1.6" fill="#fffdf7"/>
+          <circle cx="20" cy="1" r="1.6" fill="#fffdf7"/>
+          <circle cx="11" cy="6" r="2.2" fill="#ffb5c2" opacity=".8"/>
+          <path d="M14 5.5q3 2 5.5 0" stroke="#fffdf7" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+          <ellipse cx="7" cy="3" rx="2.6" ry="3.4" fill="#6b4f3a" transform="rotate(-30 7 3)"/>
+          <rect x="-8" y="30" width="4" height="9" rx="2" fill="#6b4f3a"/>
+          <rect x="6" y="30" width="4" height="9" rx="2" fill="#6b4f3a"/>
+        </g>
+        <!-- 小月牙 -->
+        <path d="M330 44 a14 14 0 1 1 -6 -26 a11 11 0 1 0 6 26z" fill="#ffd166" opacity=".9"/>
+      </svg>
+    </div>
+
+    <!-- 庆祝星星 -->
+    <div class="confetti" id="confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   </div>
 </div>
@@ -234,35 +331,60 @@ html, body {
 (function() {
   'use strict';
 
-  /* ===== 数字倒计时 ===== */
-  var MAX_SEC = 30 * 60;   // 上限 30:00
-  var total = 0;           // 初始 00:00
+  /* ===== 阅读倒计时（0 ~ 30:00） ===== */
+  var MAX_SEC = 30 * 60;
+  var RING_LEN = 691.15;      // 进度环周长（r=110）
+  var total = 0;
   var timer = null;
   var running = false;
 
   var cdM = document.getElementById('cdM');
   var cdS = document.getElementById('cdS');
+  var ringBar = document.getElementById('ringBar');
+  var timeText = document.getElementById('timeText');
+  var statusDot = document.getElementById('statusDot');
   var btnMinus = document.getElementById('btnMinus');
   var btnPlus = document.getElementById('btnPlus');
   var btnClear = document.getElementById('btnClear');
   var btnStart = document.getElementById('btnStart');
-  var btnStop = document.getElementById('btnStop');
+  var btnStartText = document.getElementById('btnStartText');
+  var iconPlay = document.getElementById('iconPlay');
+  var iconPause = document.getElementById('iconPause');
+  var confetti = document.getElementById('confetti');
 
   function render() {
     var m = Math.floor(total / 60);
     var s = total % 60;
     cdM.textContent = String(m).padStart(2, '0');
     cdS.textContent = String(s).padStart(2, '0');
+    /* 未设定时数字变淡，环随剩余时间收拢 */
+    var t1 = cdM, t2 = cdS;
+    if (total <= 0) { t1.classList.add('dim'); t2.classList.add('dim'); timeText.classList.add('dim'); }
+    else { t1.classList.remove('dim'); t2.classList.remove('dim'); timeText.classList.remove('dim'); }
+    var off = RING_LEN * (1 - Math.min(1, total / MAX_SEC));
+    ringBar.style.strokeDashoffset = String(off);
   }
 
-  function updateIcon() {
-    btnStart.textContent = running ? '❚❚' : '▶';
+  function updateUI() {
+    iconPlay.style.display = running ? 'none' : '';
+    iconPause.style.display = running ? '' : 'none';
+    btnStartText.textContent = running ? '暂停一下' : (total > 0 ? '继续阅读' : '开始阅读');
+    btnStart.classList.toggle('running', running);
+    statusDot.classList.toggle('on', running);
+    ringBar.classList.toggle('running', running);
   }
 
   function pause() {
     running = false;
     if (timer) { clearInterval(timer); timer = null; }
-    updateIcon();
+    updateUI();
+  }
+
+  function celebrate() {
+    confetti.classList.remove('go');
+    void confetti.offsetWidth;   /* 重启动画 */
+    confetti.classList.add('go');
+    showToast('读完啦，真棒！休息一下眼睛吧 ⭐');
   }
 
   function start() {
@@ -270,154 +392,52 @@ html, body {
     running = true;
     timer = setInterval(function() {
       if (total > 0) { total--; render(); }
-      if (total <= 0) pause();   // 到 00:00 自动停
+      if (total <= 0) { pause(); celebrate(); }
     }, 1000);
-    updateIcon();
+    updateUI();
   }
 
-  // + 增加 1 分钟（上限 30:00）
+  function bump(btn) {
+    btn.classList.remove('bump');
+    void btn.offsetWidth;
+    btn.classList.add('bump');
+  }
+
   btnPlus.addEventListener('click', function() {
     total = Math.min(MAX_SEC, total + 60);
-    render();
+    render(); bump(btnPlus);
   });
-  // − 减少 1 分钟（下限 00:00；已在 00:00 时无事发生）
   btnMinus.addEventListener('click', function() {
     total = Math.max(0, total - 60);
-    render();
+    render(); bump(btnMinus);
   });
-  // × 清零
   btnClear.addEventListener('click', function() {
-    pause();
-    total = 0;
-    render();
+    pause(); total = 0; render();
+    showToast('已清零，重新来～');
   });
-  // ▶ 开始 / 暂停
   btnStart.addEventListener('click', function() {
-    if (running) pause(); else start();
-  });
-  // ■ 暂停
-  btnStop.addEventListener('click', function() {
-    pause();
+    if (running) { pause(); showToast('歇一会儿，羊羊陪你'); }
+    else if (total <= 0) { showToast('先点「+」加几分钟吧'); }
+    else start();
   });
 
-  // 提示气泡
+  /* Toast */
   var toastEl = document.getElementById('toast');
   var toastTimer = null;
   function showToast(msg) {
     toastEl.textContent = msg;
     toastEl.classList.add('show');
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() {
-      toastEl.classList.remove('show');
-    }, 1600);
+    toastTimer = setTimeout(function() { toastEl.classList.remove('show'); }, 1900);
   }
 
-  // 左下角音符按钮：完全透明，点击区域有效
-  document.getElementById('noteBtn').addEventListener('click', function() {
-    showToast('♪ 音乐');
-  });
-
-  // 右下角隐形返回按钮 → 返回主页 index.html
-  document.getElementById('backInvisible').addEventListener('click', function() {
+  /* 返回主页 */
+  document.getElementById('backBtn').addEventListener('click', function() {
     location.href = 'index.html';
   });
 
   render();
-  updateIcon();
-
-  /* ===== 三层 chroma key ===== */
-  function chroma(ctx, cw, ch, bgTh, bgDiff, edgeTh, edgeDiff) {
-    try {
-      var imgData = ctx.getImageData(0, 0, cw, ch);
-      var d = imgData.data;
-      for (var i = 0; i < d.length; i += 4) {
-        var r = d[i], g = d[i+1], b = d[i+2];
-        var mn = Math.min(r, g, b), mx = Math.max(r, g, b);
-        if (mx > bgTh && mx - mn < bgDiff) {
-          d[i+3] = 0;
-        } else if (mn > edgeTh && mx - mn < edgeDiff) {
-          d[i+3] = Math.min(d[i+3], Math.floor(((255 - mx) / 40) * 255));
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-    } catch(e) {}
-  }
-
-  // 视频帧 contain 居中 + chroma key
-  function drawVideo(vid, ctx, cw, ch, opts) {
-    if (vid.readyState >= 2 && vid.videoWidth) {
-      var vw = vid.videoWidth, vh = vid.videoHeight;
-      var scale = Math.min(cw / vw, ch / vh);
-      var dw = vw * scale, dh = vh * scale;
-      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(vid, dx, dy, dw, dh);
-      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
-    }
-  }
-
-  // 图片帧 contain 居中 + chroma key
-  function drawImg(img, ctx, cw, ch, opts) {
-    if (img.complete && img.naturalWidth) {
-      var iw = img.naturalWidth, ih = img.naturalHeight;
-      var scale = Math.min(cw / iw, ch / ih);
-      var dw = iw * scale, dh = ih * scale;
-      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, dx, dy, dw, dh);
-      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
-    }
-  }
-
-  function setupLayer(canvasId, source, isVideo, layerEl, opts) {
-    var cv = document.getElementById(canvasId);
-    var ctx = cv.getContext('2d');
-
-    function size() {
-      var r = layerEl.getBoundingClientRect();
-      cv.width = Math.max(2, Math.round(r.width));
-      cv.height = Math.max(2, Math.round(r.height));
-    }
-    size();
-    window.addEventListener('resize', size);
-
-    function loop() {
-      var cw = cv.width, ch = cv.height;
-      if (isVideo) drawVideo(source, ctx, cw, ch, opts);
-      else drawImg(source, ctx, cw, ch, opts);
-      requestAnimationFrame(loop);
-    }
-    loop();
-
-    function ensureVideoPlay(v){
-      function tryPlay(){ if(v.paused && !v.ended){ var p = v.play(); if(p && p.catch) p.catch(function(){}); } }
-      tryPlay();
-      v.addEventListener('canplay', tryPlay);
-      ['pointerdown','touchstart','click'].forEach(function(ev){
-        document.addEventListener(ev, tryPlay, { passive: true });
-      });
-      v.addEventListener('pause', function(){ setTimeout(tryPlay, 250); });
-      document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
-    }
-
-    if (isVideo) {
-      // 绿色滚动的视频（中层 melatonin2）放慢播放
-      if (source.id === 'vid2') source.playbackRate = 0.4;
-      ensureVideoPlay(source);
-    }
-  }
-
-  // melatonin（底层）与 read-mid（顶层）：常规抠白
-  var OPT_DEFAULT = { bgTh: 228, bgDiff: 22, edgeTh: 190, edgeDiff: 40 };
-  // melatonin2（中层）：保守抠白，只抠纯白背景，保留羊的奶白色/浅色部分
-  var OPT_CONSERVATIVE = { bgTh: 248, bgDiff: 10, edgeTh: 235, edgeDiff: 22 };
-
-  setupLayer('cv1', document.getElementById('vid1'), true,
-             document.querySelector('.layer-bg'), OPT_DEFAULT);
-  setupLayer('cv2', document.getElementById('vid2'), true,
-             document.querySelector('.layer-mid'), OPT_CONSERVATIVE);
-  setupLayer('cv3', document.getElementById('img3'), false,
-             document.querySelector('.layer-top'), OPT_DEFAULT);
+  updateUI();
 })();
 </script>
 
