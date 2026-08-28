@@ -370,6 +370,26 @@ html, body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ============ 暂停/开始按钮（标题右下方） ============ */
+.play-pause-btn {
+  position: absolute;
+  top: 6px; right: 10px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 248, 230, 0.9);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 15;
+  box-shadow: 0 2px 8px rgba(80, 60, 40, 0.18);
+  transition: transform 0.15s ease;
+}
+.play-pause-btn:active { transform: scale(0.9); }
+.play-pause-btn svg { width: 20px; height: 20px; color: #4a7a98; }
+.play-pause-btn.playing { background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%); }
+.play-pause-btn.playing svg { color: #fff; }
+
 </style>
 </head>
 <body>
@@ -390,6 +410,9 @@ html, body {
     <!-- 固定标题 -->
     <div class="topbar">
       <img src="assets/relax/title.png" class="title-banner" alt="情绪练习">
+      <button class="play-pause-btn" id="playPauseBtn" hidden aria-label="暂停/开始">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+      </button>
     </div>
 
     <!-- 左右滑动的两页 -->
@@ -493,9 +516,207 @@ html, body {
   document.querySelectorAll('.shell').forEach(shell => {
     shell.addEventListener('click', e => {
       e.stopPropagation();
-      showToast('选择了：' + (shell.dataset.name || ''));
+      const name = shell.dataset.name || '';
+      const script = RELAX_SCRIPTS[name];
+      if (script) {
+        startSpeak(script.text);
+      } else {
+        showToast('选择了：' + name);
+      }
     });
   });
+
+  // ===== 三个放松练习语音脚本（不展示文字，只朗读） =====
+  const RELAX_SCRIPTS = {
+    '渐进式肌肉放松': { text: [
+      '用力皱紧你的眉头，把眼睛闭紧，同时咬紧牙关，下巴收紧。保持这个紧张的状态。在心里数 5 秒：1、2、3、4、5。现在，一下子全部松开——眉头舒展，眼睛放松，嘴巴微微张开，下巴自然下垂。停留 3 秒，感受脸上紧绷的线条慢慢化开的感觉。',
+      '用力把双肩向上耸起，尽量去碰你的耳朵，同时把脖子微微缩紧。保持这个状态。数 5 秒：1、2、3、4、5。现在，让双肩瞬间坠落下来，完全放松，脖子也回到自然位置。停留 3 秒，感受肩膀下沉时那种重量和松弛感。',
+      '双手握紧拳头，用力到指节发白，同时绷紧你的前臂和上臂。保持这个状态。数 5 秒：1、2、3、4、5。现在，一下子张开双手，手指完全伸直，手臂彻底泄力，垂放在身体两侧或腿上。停留 3 秒，感受手指尖传来微微的酸胀感。',
+      '深吸一口气，然后屏住，同时把胸部向前挺，后背微微向后弓，让整个上半身的核心都收紧。保持这个状态。数 5 秒：1、2、3、4、5。现在，用力呼出那口气，同时让胸口和后背一下子塌下来，完全松掉。停留 3 秒，感受呼吸变得平缓，胸腔不再发紧。',
+      '用力收紧你的腹部肌肉，把肚脐往脊柱的方向压进去，感觉整个腰腹都变得硬邦邦的。保持这个状态。数 5 秒：1、2、3、4、5。现在，完全松开腹部，让它自然鼓起和回落，不再刻意用力。停留 3 秒，感受小腹区域那种柔软和放松的差异。',
+      '用力收紧臀部肌肉，夹紧，同时把骨盆微微向前顶。保持这个状态。数 5 秒：1、2、3、4、5。现在，全部松开，让臀部和骨盆完全沉向椅子或床面。停留 3 秒，感受身体被下方支撑住的那种踏实感。',
+      '绷紧大腿和小腿的肌肉，脚尖向前绷直。保持这个状态。数 5 秒：1、2、3、4、5。现在，双腿完全放松，脚踝和脚掌也彻底松弛。停留 3 秒，感受腿部的沉重和酸软感慢慢散开。',
+      '用力勾起你的脚尖，脚趾向内蜷曲，同时脚掌收紧，感觉整个足底都绷住。保持这个状态。数 5 秒：1、2、3、4、5。现在，一下子松开，脚趾伸直，脚掌平放或自然垂落。停留 3 秒，感受脚底的温热感和落地感。',
+      '现在，从头到脚都不再用力了。不做任何调整，就保持这样，用几秒钟感受一下全身的重量都交给支撑物。留意脸上、脖子、肩膀、手臂、胸背、腹部、臀部、双腿和双脚，每一处都比刚才更沉、更松。',
+      '当你准备好了，轻轻动一动手指和脚趾，然后慢慢睁开眼睛。'
+    ].join('\n') },
+    '5-4-3-2-1 着陆练习': { text: [
+      '好的，我们来一起做个小小的练习。先找一个舒服的姿势，坐着、靠着都可以。现在，看向周围，找到 5 件你能看到的东西。不需要是什么特别的物品，可以是光落在墙上的影子，可以是桌角的一缕灰尘，也可以是窗外摇晃的树叶。',
+      '接下来，把注意力带到你的身体附近，找到 4 件你能触摸到的东西。用手掌或指尖去感受它，哪怕只是轻轻碰一下。说出它们的名字，感受它们的质地。',
+      '然后，找到 3 个你现在能听到的声音。在心里数到第 3 个。',
+      '再接着，轻轻吸一口气，找到 2 种你现在能闻到的气味。如果闻不到明显的味道，也没关系，就感受空气本身那种无味的气息。在心里记下它们。',
+      '最后，把注意力带到嘴唇或舌尖，找到 1 样你能尝到的味道。可以是嘴里残留的一点点回甘，可以是喝过水后的清冽，也可以只是自己口腔里温暖的气息。不用刻意去找食物，只是感受现在这一刻的味道。',
+      '好了，慢慢呼出一口气。你刚刚已经把自己带回了这个房间，这个时刻，这个身体里。你做得很好。',
+      '如果愿意，可以再待一会儿，也可以慢慢动动手指、脚趾，然后再缓缓回到接下来的事情中。我在这里陪着你。'
+    ].join('\n') },
+    '安全空间想象': { text: [
+      '第一步：闭上眼睛。轻轻合上眼皮，让外界的光线离开你的视线。',
+      '第二步：在脑海中选一个地方。这个地方需要让你觉得安全、平静。可以是安静的海边，也可以是幽静的森林。如果你一时想不出，就选一个没有其他人的、温度适中的地方。',
+      '第三步：想象那个地方的声音。如果是海边，想象波浪一次次拍上沙滩又退去的声音，持续而规律。如果是森林，想象风吹过树叶发出的沙沙声，或者远处偶尔的鸟鸣。在心里持续听到那个声音。',
+      '第四步：想象那个地方的气味。慢慢地呼吸，让那种气味在你的想象中充满鼻腔。',
+      '第五步：感受那个地方的温度和触感。感受空气接触皮肤的温度，再感受脚下的触感，是粗糙的，还是柔软的？',
+      '第六步：停留一会儿。不需要做别的，就让自己停留在那个地方的声音、气味和温度里。待多久都可以。',
+      '当你准备好了，慢慢做一次深呼吸，然后轻轻动一动手指和脚趾。再缓缓睁开眼睛，回到现在这个房间。',
+      '你随时可以再回到那个地方。现在，按你自己的节奏回来就好。'
+    ].join('\n') }
+  };
+
+  // ===== 微软 Edge 神经网络语音（前端直连，自然音色） =====
+  const EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
+  const EDGE_VER = '1-143.0.3650.75';
+  const WIN_EPOCH = 11644473600;
+  function edgeHexId() {
+    const a = new Uint8Array(16); crypto.getRandomValues(a);
+    return Array.prototype.map.call(a, b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function edgeJsDate() {
+    const D = new Date();
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const p2 = n => String(n).padStart(2, '0');
+    return days[D.getUTCDay()] + ' ' + months[D.getUTCMonth()] + ' ' + p2(D.getUTCDate()) + ' ' +
+      D.getUTCFullYear() + ' ' + p2(D.getUTCHours()) + ':' + p2(D.getUTCMinutes()) + ':' + p2(D.getUTCSeconds()) +
+      ' GMT+0000 (Coordinated Universal Time)';
+  }
+  function edgeSecMsGec() {
+    let t = Math.floor(Date.now() / 1000);
+    t += WIN_EPOCH; t -= t % 300; t *= 10000000;
+    const data = new TextEncoder().encode(String(t) + EDGE_TOKEN);
+    return crypto.subtle.digest('SHA-256', data).then(hash =>
+      Array.prototype.map.call(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('').toUpperCase());
+  }
+  function edgeTTS(text, voice, ratePct) {
+    return edgeSecMsGec().then(gec => new Promise((resolve, reject) => {
+      const connId = edgeHexId();
+      const qs = '/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=' + EDGE_TOKEN +
+        '&ConnectionId=' + connId + '&Sec-MS-GEC=' + gec + '&Sec-MS-GEC-Version=' + EDGE_VER;
+      const ws = new WebSocket('wss://speech.platform.bing.com' + qs);
+      const chunks = []; ws.binaryType = 'arraybuffer';
+      const timer = setTimeout(() => { try { ws.close(); } catch(e){} reject(new Error('超时')); }, 30000);
+      ws.onopen = () => {
+        const ts = edgeJsDate();
+        const cfg = 'X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
+          JSON.stringify({ context: { synthesis: { audio: { metadataoptions: { sentenceBoundaryEnabled: 'false', wordBoundaryEnabled: 'false' }, outputFormat: 'audio-24khz-48kbitrate-mono-mp3' } } } });
+        ws.send(cfg);
+        const rate = (ratePct > 0 ? '+' : '') + ratePct + '%';
+        const ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'><voice name='" + voice + "'><prosody pitch='+0Hz' rate='" + rate + "' volume='+0%'>" + text + '</prosody></voice></speak>';
+        ws.send('X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml);
+      };
+      ws.onmessage = ev => {
+        if (typeof ev.data === 'string') {
+          if (ev.data.indexOf('Path:turn.end') >= 0) { clearTimeout(timer); try { ws.close(); } catch(e){} resolve(new Blob(chunks, { type: 'audio/mpeg' })); }
+        } else {
+          const buf = new Uint8Array(ev.data);
+          if (buf.length > 2) { const hlen = (buf[0] << 8) | buf[1]; if (buf.length > 2 + hlen) chunks.push(buf.slice(2 + hlen)); }
+        }
+      };
+      ws.onerror = () => { clearTimeout(timer); reject(new Error('连接失败')); };
+      ws.onclose = () => { clearTimeout(timer); reject(new Error('连接关闭')); };
+    }));
+  }
+
+  // ===== 系统语音兜底（离线也可朗读） =====
+  function pickZhVoice() {
+    try {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = speechSynthesis.getVoices() || [];
+      const zh = voices.filter(v => /^zh|^cmn|chinese/i.test(v.lang || ''));
+      if (!zh.length) return null;
+      const prefer = ['ting-ting','tingting','huihui','xiaoxiao','xiaoyi','yunxi','yunjian','meijia','sinji'];
+      for (let i = 0; i < prefer.length; i++)
+        for (let j = 0; j < zh.length; j++)
+          if ((zh[j].name || '').toLowerCase().indexOf(prefer[i]) >= 0) return zh[j];
+      const local = zh.filter(v => v.localService);
+      return (local.length ? local[0] : zh[0]);
+    } catch(e) { return null; }
+  }
+
+  // ===== 播放器 =====
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+  let queue = [], qIdx = 0, isPlaying = false, isPaused = false, curAudio = null;
+
+  function setPlayBtn(state) {
+    if (state === null) { playPauseBtn.hidden = true; return; }
+    playPauseBtn.hidden = false;
+    playPauseBtn.classList.toggle('playing', state);
+    playPauseBtn.innerHTML = state ? ICON_PAUSE : ICON_PLAY;
+  }
+
+  function startSpeak(text) {
+    stopSpeak();
+    queue = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    if (!queue.length) return;
+    qIdx = 0; isPlaying = true; isPaused = false;
+    setPlayBtn(true);
+    speakNext();
+  }
+
+  function speakNext() {
+    if (!isPlaying || isPaused) return;
+    if (qIdx >= queue.length) { finishSpeak(); return; }
+    const seg = queue[qIdx];
+    edgeTTS(seg, 'zh-CN-XiaoxiaoNeural', -5).then(blob => {
+      if (!isPlaying || isPaused) return;
+      playBlob(blob);
+    }).catch(() => {
+      if (!isPlaying || isPaused) return;
+      speakSystem(seg, () => { qIdx++; speakNext(); });
+    });
+  }
+
+  function playBlob(blob) {
+    const url = URL.createObjectURL(blob);
+    const a = new Audio(url);
+    curAudio = a;
+    a.onended = () => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); };
+    a.onerror = () => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); };
+    a.play().catch(() => { URL.revokeObjectURL(url); if (curAudio === a) curAudio = null; qIdx++; speakNext(); });
+  }
+
+  function speakSystem(text, done) {
+    let finished = false;
+    const finish = () => { if (!finished) { finished = true; done(); } };
+    try {
+      if ('speechSynthesis' in window) {
+        const u = new SpeechSynthesisUtterance(text);
+        const v = pickZhVoice(); if (v) u.voice = v;
+        u.lang = 'zh-CN'; u.rate = 0.95;
+        u.onend = finish; u.onerror = finish;
+        try { speechSynthesis.cancel(); } catch(e) {}
+        speechSynthesis.speak(u);
+        setTimeout(() => { if (!finished) { try { speechSynthesis.cancel(); } catch(e){} finish(); } }, 30000);
+        return;
+      }
+    } catch(e) {}
+    finish();
+  }
+
+  function stopSpeak() {
+    isPlaying = false; isPaused = false;
+    if (curAudio) { try { curAudio.pause(); } catch(e){} curAudio = null; }
+    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e) {}
+  }
+
+  function finishSpeak() {
+    isPlaying = false; isPaused = false; curAudio = null;
+    setPlayBtn(null);
+  }
+
+  function togglePlay() {
+    if (!isPlaying) return;
+    if (isPaused) {
+      isPaused = false; setPlayBtn(true);
+      if (curAudio) { curAudio.play().catch(() => { qIdx++; speakNext(); }); }
+      else speakNext();
+    } else {
+      isPaused = true; setPlayBtn(false);
+      if (curAudio) { try { curAudio.pause(); } catch(e){} }
+    }
+  }
+  playPauseBtn.addEventListener('click', togglePlay);
 
   // 温度计滑轨
   const ticksEl = document.getElementById('ticks');
