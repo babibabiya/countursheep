@@ -29,77 +29,12 @@
     try { localStorage.removeItem('sleep_process'); } catch (e) {}
   }
 
-  /* ===== 微软 Edge 神经网络语音（前端直连，无需本地中继） ===== */
-  var EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
-  var EDGE_VER = '1-143.0.3650.75';
-  var WIN_EPOCH = 11644473600;
-  function edgeHexId() {
-    var a = new Uint8Array(16);
-    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(a);
-    else for (var i = 0; i < 16; i++) a[i] = Math.floor(Math.random() * 256);
-    return Array.prototype.map.call(a, function (b) { return b.toString(16).padStart(2, '0'); }).join('');
-  }
-  function edgeJsDate() {
-    var D = new Date();
-    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var p2 = function (n) { return String(n).padStart(2, '0'); };
-    return days[D.getUTCDay()] + ' ' + months[D.getUTCMonth()] + ' ' + p2(D.getUTCDate()) + ' ' +
-      D.getUTCFullYear() + ' ' + p2(D.getUTCHours()) + ':' + p2(D.getUTCMinutes()) + ':' + p2(D.getUTCSeconds()) +
-      ' GMT+0000 (Coordinated Universal Time)';
-  }
-  function edgeSecMsGec() {
-    var t = Math.floor(Date.now() / 1000);
-    t += WIN_EPOCH;
-    t -= t % 300;
-    t *= 10000000;
-    var data = new TextEncoder().encode(String(t) + EDGE_TOKEN);
-    return crypto.subtle.digest('SHA-256', data).then(function (hash) {
-      return Array.prototype.map.call(new Uint8Array(hash), function (b) { return b.toString(16).padStart(2, '0'); }).join('').toUpperCase();
-    });
-  }
+  /* ===== 腾讯云语音合成（自然中文音色，国内可直连） ===== */
   function edgeTTS(text, voice, ratePct) {
-    return edgeSecMsGec().then(function (gec) {
-      return new Promise(function (resolve, reject) {
-        var connId = edgeHexId();
-        var qs = '/consumer/speech/synthesize/readaloud/edge/v1' +
-          '?TrustedClientToken=' + EDGE_TOKEN +
-          '&ConnectionId=' + connId +
-          '&Sec-MS-GEC=' + gec +
-          '&Sec-MS-GEC-Version=' + EDGE_VER;
-        var ws = new WebSocket('wss://speech.platform.bing.com' + qs);
-        var chunks = [];
-        ws.binaryType = 'arraybuffer';
-        var timer = setTimeout(function () { try { ws.close(); } catch (e) {} reject(new Error('Edge TTS 超时')); }, 30000);
-        ws.onopen = function () {
-          var ts = edgeJsDate();
-          var cfg = 'X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
-            JSON.stringify({ context: { synthesis: { audio: { metadataoptions: { sentenceBoundaryEnabled: 'false', wordBoundaryEnabled: 'false' }, outputFormat: 'audio-24khz-48kbitrate-mono-mp3' } } } });
-          ws.send(cfg);
-          var rate = (ratePct > 0 ? '+' : '') + ratePct + '%';
-          var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>" +
-            "<voice name='" + voice + "'><prosody pitch='+0Hz' rate='" + rate + "' volume='+0%'>" + text + '</prosody></voice></speak>';
-          var msg = 'X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
-          ws.send(msg);
-        };
-        ws.onmessage = function (ev) {
-          if (typeof ev.data === 'string') {
-            if (ev.data.indexOf('Path:turn.end') >= 0) {
-              clearTimeout(timer);
-              try { ws.close(); } catch (e) {}
-              resolve(new Blob(chunks, { type: 'audio/mpeg' }));
-            }
-          } else {
-            var buf = new Uint8Array(ev.data);
-            if (buf.length > 2) {
-              var hlen = (buf[0] << 8) | buf[1];
-              if (buf.length > 2 + hlen) chunks.push(buf.slice(2 + hlen));
-            }
-          }
-        };
-        ws.onerror = function () { clearTimeout(timer); reject(new Error('Edge TTS 连接失败')); };
-        ws.onclose = function () { clearTimeout(timer); reject(new Error('Edge TTS 连接关闭')); };
-      });
+    if (!window.TC_TTS) return Promise.reject(new Error('TC_TTS 未加载'));
+    var speed = Math.max(-2, Math.min(6, Math.round(ratePct / 50)));
+    return TC_TTS.synth(text, voice, speed).then(function (blobs) {
+      return blobs[0];
     });
   }
 
@@ -151,7 +86,7 @@
     var done = false;
     function finish() { if (!done) { done = true; after(); } }
     try {
-      edgeTTS(REMINDER_TEXT, 'zh-CN-XiaoxiaoNeural', -5).then(function (blob) {
+      edgeTTS(REMINDER_TEXT, 101001, -5).then(function (blob) {
         if (done) return;
         var url = URL.createObjectURL(blob);
         var a = new Audio(url);
