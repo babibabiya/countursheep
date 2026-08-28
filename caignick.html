@@ -932,9 +932,19 @@ function isGarbled(text){
   if(s.length < 2) return true;
   var hasChinese = /[\u4e00-\u9fa5]/.test(s);
   var hasWord = /[a-zA-Z]{2,}/.test(s);
+  /* 既无中文也无英文单词 → 乱码（纯数字/符号/乱字节） */
   if(!hasChinese && !hasWord) return true;
   var compact = s.replace(/[\s\p{P}]/gu, '');
+  /* 去掉空白标点后只剩同一种字符 → 乱码（如 aaaaa、11111、!!!!!） */
   if(compact && new Set(compact).size === 1) return true;
+  /* 无中文时：纯字母串若无元音、或整串是键盘同一行，通常是键盘乱按 */
+  if(!hasChinese){
+    var letters = s.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    if(letters.length >= 4){
+      if(!/[aeiou]/.test(letters)) return true;
+      if(/^[asdfghjkl]+$/.test(letters) || /^[qwertyuiop]+$/.test(letters) || /^[zxcvbnm]+$/.test(letters)) return true;
+    }
+  }
   return false;
 }
 
@@ -2288,8 +2298,14 @@ function bind(){
   $('#worryInput').addEventListener('input', updateCount);
   $('#btnGenerate').addEventListener('click', function(){
     var input = $('#worryInput').value.trim();
-    if(input.length < 4){ toast('再多写几个字，让 AI 更懂您'); return; }
-    if(isGarbled(input)){ toast('我好像没太读懂你的意思，可以换种方式再跟我说说吗？'); return; }
+    if(input.length < 4){ toast('再多写几个字，让 AI 更懂您'); $('#worryInput').focus(); return; }
+    if(isGarbled(input)){
+      toast('我好像没太读懂你的意思，可以换种方式再跟我说说吗？');
+      var el = $('#worryInput');
+      el.focus();
+      try{ el.select(); }catch(e){}
+      return;
+    }
     runGeneration(input);
   });
 
