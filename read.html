@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>阅读倒计时 - 好好睡觉</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #4a3a2a;
+  overflow: hidden;
+}
+
+.stage {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: #f6e8d4;
+  padding: 0;
+}
+
+.phone {
+  width: min(100vw, calc(100vh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  background: #f6e8d4;
+}
+
+/* 顶部黄色菜单栏 */
+.menu-bar {
+  position: relative;
+  z-index: 10;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #f5d97e 0%, #f3c662 100%);
+  box-shadow: 0 2px 8px rgba(160, 110, 40, 0.15);
+}
+.menu-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+.ctl {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid #2a3858;
+  background: #fff;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #2a3858;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: transform 0.12s ease;
+  font-family: inherit;
+}
+.ctl:active { transform: scale(0.92); }
+.ctl-plus {
+  background: repeating-linear-gradient(45deg, #4a6fa5 0 3px, #5a8fc5 3px 6px);
+  color: #fff;
+}
+.ctl-minus {
+  background: repeating-linear-gradient(135deg, #d96a3a 0 3px, #e88a5a 3px 6px);
+  color: #fff;
+}
+.ctl-clear {
+  background: #c84a3a;
+  color: #fff;
+}
+.ctl-start {
+  background: #2a4a78;
+  color: #fff;
+}
+.ctl-stop {
+  background: #d84a4a;
+  color: #fff;
+}
+
+/* 三层叠加（全部 chroma key 抠白色，原比例 contain） */
+.layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.layer canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.layer video,
+.layer img {
+  display: none;
+}
+/* 图层层级：melatonin(底) < melatonin2(中) < read-mid(顶) */
+.layer-bg  { z-index: 1; }
+.layer-mid { z-index: 2; }
+.layer-top { z-index: 3; }
+
+/* 左下角音符按钮 */
+.note-btn {
+  position: absolute;
+  left: 1%;
+  top: 82%;
+  width: 88px;
+  height: 88px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  color: #2a3858;
+  -webkit-tap-highlight-color: transparent;
+}
+.note-btn svg { width: 38px; height: 38px; opacity: 0; }
+
+/* 右下角隐形返回按钮：正方形，边长 = 圆半径长度 */
+.back-invisible {
+  position: absolute;
+  right: 1%;
+  bottom: 4%;
+  width: 24px;
+  height: 56px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 20;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 提示气泡 */
+.toast {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(60, 50, 40, 0.85);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 20px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* 数字倒计时 */
+.countdown {
+  position: absolute;
+  top: 33%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 84px;
+  font-weight: 900;
+  color: #4a4a4a;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 2px;
+  z-index: 20;
+  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+}
+.countdown #cdM,
+.countdown #cdS {
+  color: #bdbdbd;
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone" id="phone">
+
+    <div class="layer layer-bg">
+      <canvas id="cv1"></canvas>
+      <video id="vid1" src="assets/sound/Melatonin.mp4" loop muted playsinline></video>
+    </div>
+
+    <div class="layer layer-mid">
+      <canvas id="cv2"></canvas>
+      <video id="vid2" src="assets/sound/melatonin2.mp4" loop muted playsinline></video>
+    </div>
+
+    <div class="layer layer-top">
+      <canvas id="cv3"></canvas>
+      <img id="img3" src="assets/read/read-mid.png" alt="">
+    </div>
+
+    <button class="note-btn" id="noteBtn" aria-label="音符">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </button>
+
+    <div class="toast" id="toast"></div>
+
+    <button class="back-invisible" id="backInvisible" aria-label="返回主页"></button>
+
+    <div class="countdown"><span id="cdM">00</span><span>:</span><span id="cdS">00</span></div>
+
+    <div class="menu-bar">
+      <div class="menu-right">
+        <button class="ctl ctl-minus" id="btnMinus" aria-label="减少 1 分钟">−</button>
+        <button class="ctl ctl-plus"  id="btnPlus"  aria-label="增加 1 分钟">+</button>
+        <button class="ctl ctl-clear" id="btnClear" aria-label="清除">×</button>
+        <button class="ctl ctl-start" id="btnStart" aria-label="开始/暂停">▶</button>
+        <button class="ctl ctl-stop"  id="btnStop"  aria-label="停止">■</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ===== 数字倒计时 ===== */
+  var MAX_SEC = 30 * 60;   // 上限 30:00
+  var total = 0;           // 初始 00:00
+  var timer = null;
+  var running = false;
+
+  var cdM = document.getElementById('cdM');
+  var cdS = document.getElementById('cdS');
+  var btnMinus = document.getElementById('btnMinus');
+  var btnPlus = document.getElementById('btnPlus');
+  var btnClear = document.getElementById('btnClear');
+  var btnStart = document.getElementById('btnStart');
+  var btnStop = document.getElementById('btnStop');
+
+  function render() {
+    var m = Math.floor(total / 60);
+    var s = total % 60;
+    cdM.textContent = String(m).padStart(2, '0');
+    cdS.textContent = String(s).padStart(2, '0');
+  }
+
+  function updateIcon() {
+    btnStart.textContent = running ? '❚❚' : '▶';
+  }
+
+  function pause() {
+    running = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    updateIcon();
+  }
+
+  function start() {
+    if (running || total <= 0) return;
+    running = true;
+    timer = setInterval(function() {
+      if (total > 0) { total--; render(); }
+      if (total <= 0) pause();   // 到 00:00 自动停
+    }, 1000);
+    updateIcon();
+  }
+
+  // + 增加 1 分钟（上限 30:00）
+  btnPlus.addEventListener('click', function() {
+    total = Math.min(MAX_SEC, total + 60);
+    render();
+  });
+  // − 减少 1 分钟（下限 00:00；已在 00:00 时无事发生）
+  btnMinus.addEventListener('click', function() {
+    total = Math.max(0, total - 60);
+    render();
+  });
+  // × 清零
+  btnClear.addEventListener('click', function() {
+    pause();
+    total = 0;
+    render();
+  });
+  // ▶ 开始 / 暂停
+  btnStart.addEventListener('click', function() {
+    if (running) pause(); else start();
+  });
+  // ■ 暂停
+  btnStop.addEventListener('click', function() {
+    pause();
+  });
+
+  // 提示气泡
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() {
+      toastEl.classList.remove('show');
+    }, 1600);
+  }
+
+  // 左下角音符按钮：完全透明，点击区域有效
+  document.getElementById('noteBtn').addEventListener('click', function() {
+    showToast('♪ 音乐');
+  });
+
+  // 右下角隐形返回按钮 → 返回主页 index.html
+  document.getElementById('backInvisible').addEventListener('click', function() {
+    location.href = 'index.html';
+  });
+
+  render();
+  updateIcon();
+
+  /* ===== 三层 chroma key ===== */
+  function chroma(ctx, cw, ch, bgTh, bgDiff, edgeTh, edgeDiff) {
+    try {
+      var imgData = ctx.getImageData(0, 0, cw, ch);
+      var d = imgData.data;
+      for (var i = 0; i < d.length; i += 4) {
+        var r = d[i], g = d[i+1], b = d[i+2];
+        var mn = Math.min(r, g, b), mx = Math.max(r, g, b);
+        if (mx > bgTh && mx - mn < bgDiff) {
+          d[i+3] = 0;
+        } else if (mn > edgeTh && mx - mn < edgeDiff) {
+          d[i+3] = Math.min(d[i+3], Math.floor(((255 - mx) / 40) * 255));
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    } catch(e) {}
+  }
+
+  // 视频帧 contain 居中 + chroma key
+  function drawVideo(vid, ctx, cw, ch, opts) {
+    if (vid.readyState >= 2 && vid.videoWidth) {
+      var vw = vid.videoWidth, vh = vid.videoHeight;
+      var scale = Math.min(cw / vw, ch / vh);
+      var dw = vw * scale, dh = vh * scale;
+      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(vid, dx, dy, dw, dh);
+      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
+    }
+  }
+
+  // 图片帧 contain 居中 + chroma key
+  function drawImg(img, ctx, cw, ch, opts) {
+    if (img.complete && img.naturalWidth) {
+      var iw = img.naturalWidth, ih = img.naturalHeight;
+      var scale = Math.min(cw / iw, ch / ih);
+      var dw = iw * scale, dh = ih * scale;
+      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, dx, dy, dw, dh);
+      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
+    }
+  }
+
+  function setupLayer(canvasId, source, isVideo, layerEl, opts) {
+    var cv = document.getElementById(canvasId);
+    var ctx = cv.getContext('2d');
+
+    function size() {
+      var r = layerEl.getBoundingClientRect();
+      cv.width = Math.max(2, Math.round(r.width));
+      cv.height = Math.max(2, Math.round(r.height));
+    }
+    size();
+    window.addEventListener('resize', size);
+
+    function loop() {
+      var cw = cv.width, ch = cv.height;
+      if (isVideo) drawVideo(source, ctx, cw, ch, opts);
+      else drawImg(source, ctx, cw, ch, opts);
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    if (isVideo) {
+      // 绿色滚动的视频（中层 melatonin2）放慢播放
+      if (source.id === 'vid2') source.playbackRate = 0.4;
+      source.addEventListener('loadeddata', function() {
+        source.play().catch(function(){});
+      });
+      source.play().catch(function(){});
+    }
+  }
+
+  // melatonin（底层）与 read-mid（顶层）：常规抠白
+  var OPT_DEFAULT = { bgTh: 228, bgDiff: 22, edgeTh: 190, edgeDiff: 40 };
+  // melatonin2（中层）：保守抠白，只抠纯白背景，保留羊的奶白色/浅色部分
+  var OPT_CONSERVATIVE = { bgTh: 248, bgDiff: 10, edgeTh: 235, edgeDiff: 22 };
+
+  setupLayer('cv1', document.getElementById('vid1'), true,
+             document.querySelector('.layer-bg'), OPT_DEFAULT);
+  setupLayer('cv2', document.getElementById('vid2'), true,
+             document.querySelector('.layer-mid'), OPT_CONSERVATIVE);
+  setupLayer('cv3', document.getElementById('img3'), false,
+             document.querySelector('.layer-top'), OPT_DEFAULT);
+})();
+</script>
+
+<script src="process.js"></script>
+</body>
+</html>

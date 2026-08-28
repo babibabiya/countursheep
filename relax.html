@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>情绪练习 - 好好睡觉</title>
+<style>
+/* ============ 基础重置 ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #2a2418;
+  overflow: hidden;
+}
+
+.stage {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: #f1e5cf;
+  padding: 0;
+}
+
+.phone {
+  width: min(100vw, calc(100vh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  background: #f1e5cf;
+}
+
+/* ============ 背景层：铺满整个 phone ============ */
+.bg-layer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: url('assets/relax/bg-page1.png') center/cover no-repeat;
+  z-index: 0;
+  transition: background-image 0.3s ease;
+}
+
+/* ============ 固定标题栏 ============ */
+.topbar {
+  position: relative;
+  padding: 28px 16px 8px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.title-banner {
+  display: block;
+  width: 120%;
+  max-width: none;
+  height: auto;
+  margin-left: -18%;
+  filter: drop-shadow(0 4px 8px rgba(80, 60, 40, 0.18));
+}
+
+/* ============ 滑动页面 ============ */
+.pages {
+  flex: 1;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+  z-index: 5;
+}
+.pages::-webkit-scrollbar { display: none; }
+
+.page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 海螺和便利贴 */
+.shell {
+  position: absolute;
+  z-index: 1;
+  transform-origin: top center;
+  filter: drop-shadow(0 6px 12px rgba(80, 60, 40, 0.28));
+  cursor: pointer;
+}
+.shell:active { filter: drop-shadow(0 4px 8px rgba(80,60,40,0.4)) brightness(0.95); }
+.shell-blue {
+  top: 2%; left: -2%;
+  width: 40%;
+  animation: sway-blue 3.4s ease-in-out infinite;
+}
+.shell-purple {
+  top: 22%; left: 42%;
+  width: 40%;
+  animation: sway-purple 2.8s ease-in-out infinite;
+  animation-delay: 0.7s;
+}
+.shell-green {
+  bottom: 2%; right: -4%;
+  width: 40%;
+  animation: sway-green 3.9s ease-in-out infinite;
+  animation-delay: 1.4s;
+}
+
+@keyframes sway-blue {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(-3deg); }
+}
+@keyframes sway-purple {
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes sway-green {
+  0%, 100% { transform: rotate(5.5deg); }
+  50% { transform: rotate(10.5deg); }
+}
+.note {
+  position: absolute;
+  bottom: 4%; left: 2%;
+  width: 52%;
+  z-index: 0;
+  filter: drop-shadow(0 6px 12px rgba(80, 60, 40, 0.22));
+  transform: rotate(-5deg);
+}
+
+/* 温度计 */
+.thermo-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  max-width: 300px;
+  filter: drop-shadow(0 8px 16px rgba(60, 90, 110, 0.3));
+}
+.thermo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.slider-rail {
+  position: absolute;
+  top: 76%;
+  left: 7%;
+  right: 7%;
+  height: 12%;
+  z-index: 3;
+  background: #faf6ea;
+  border: 2px solid #f0ead8;
+  border-radius: 12px;
+  padding: 4px 4px 0;
+  box-shadow: 0 2px 6px rgba(80, 60, 40, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.rail-track {
+  position: absolute;
+  top: 62%;
+  left: 6px; right: 6px;
+  height: 8px;
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, #d8dfe2 0%, #b8c5c8 100%);
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(80, 100, 110, 0.4);
+}
+.ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+}
+.tick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 8px;
+  color: #5a4a3a;
+  font-weight: 600;
+  transform: translateY(-90%);
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+}
+.rail-handle {
+  position: absolute;
+  top: 62%;
+  left: 40%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  z-index: 4;
+  transition: left 0.18s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rail-handle svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgba(80, 100, 110, 0.4));
+}
+
+/* 数字覆盖层（覆盖原剪贴板上的"4 滑动标记"） */
+.num-cover {
+  position: absolute;
+  top: 47%;
+  left: 30%;
+  right: 30%;
+  height: 15%;
+  background: linear-gradient(180deg, #fdfaf0 0%, #f9f3e2 100%);
+  border-radius: 4px;
+  z-index: 3;
+  box-shadow: inset 0 1px 2px rgba(200, 180, 140, 0.12);
+}
+
+/* 剪贴板大数字（显示在覆盖层上方） */
+.big-num {
+  position: absolute;
+  top: 54.5%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", cursive;
+  font-size: 48px;
+  font-weight: 700;
+  color: #2a5878;
+  line-height: 1;
+  z-index: 4;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+/* 详情按钮 */
+.detail-btn {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 5px 22px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(60, 90, 120, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  z-index: 5;
+}
+.detail-btn:active { transform: translateX(-50%) scale(0.96); }
+
+/* ============ 详情弹窗 ============ */
+.modal-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(40, 30, 20, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-mask.show { opacity: 1; pointer-events: auto; }
+.modal {
+  width: 78%;
+  max-width: 320px;
+  background: #fff8e7;
+  border-radius: 20px;
+  padding: 26px 22px 20px;
+  text-align: center;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+.modal-mask.show .modal { transform: translateY(0) scale(1); }
+.modal-num {
+  width: 52px; height: 52px;
+  margin: 0 auto 12px;
+  background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  font-weight: 700;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  box-shadow: 0 3px 8px rgba(60, 90, 120, 0.3);
+}
+.modal-text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #4a3a2a;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  margin-bottom: 18px;
+}
+.modal-close {
+  background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%);
+  color: #fff;
+  border: none;
+  border-radius: 18px;
+  padding: 8px 30px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(60, 90, 120, 0.3);
+}
+.modal-close:active { transform: scale(0.96); }
+
+/* ============ 页指示器 ============ */
+.indicator {
+  flex-shrink: 0;
+  display: flex; justify-content: center; gap: 8px;
+  padding: 10px 0 16px;
+  z-index: 10;
+  position: relative;
+}
+.dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: rgba(120, 90, 60, 0.3);
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.dot.active {
+  background: #5dade2;
+  transform: scale(1.25);
+}
+
+/* ============ 返回按钮 ============ */
+.back-btn {
+  position: absolute;
+  top: 12px; left: 12px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255, 248, 230, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 2px 8px rgba(80, 60, 40, 0.15);
+  transition: transform 0.15s ease;
+}
+.back-btn:active { transform: scale(0.9); }
+.back-btn svg { width: 18px; height: 18px; color: #3a2e1e; }
+
+/* ============ Toast ============ */
+.toast {
+  position: absolute;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(40, 30, 20, 0.85);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 22px;
+  font-size: 13px;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 200;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone" id="phone">
+
+    <!-- 背景层（覆盖整个 phone，根据当前页切换） -->
+    <div class="bg-layer" id="bgLayer"></div>
+
+    <!-- 返回按钮 -->
+    <div class="back-btn" id="backBtn" aria-label="返回">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 6 9 12 15 18"/>
+      </svg>
+    </div>
+
+    <!-- 固定标题 -->
+    <div class="topbar">
+      <img src="assets/relax/title.png" class="title-banner" alt="情绪练习">
+    </div>
+
+    <!-- 左右滑动的两页 -->
+    <div class="pages" id="pages">
+      <div class="page">
+        <img class="shell shell-blue" src="assets/relax/shell-blue.png" alt="渐进式肌肉放松" data-name="渐进式肌肉放松">
+        <img class="shell shell-purple" src="assets/relax/shell-purple.png" alt="5-4-3-2-1 着陆练习" data-name="5-4-3-2-1 着陆练习">
+        <img class="shell shell-green" src="assets/relax/shell-green.png" alt="安全空间想象" data-name="安全空间想象">
+        <img class="note" src="assets/relax/note.png" alt="便利贴">
+      </div>
+
+      <div class="page">
+        <div class="thermo-wrapper">
+          <img class="thermo" src="assets/relax/thermo-slider.png" alt="情绪温度计">
+          <div class="num-cover"></div>
+          <div class="big-num" id="bigNum">4</div>
+          <div class="slider-rail" id="sliderRail">
+            <div class="rail-track"></div>
+            <div class="ticks" id="ticks"></div>
+            <div class="rail-handle" id="railHandle">
+              <svg viewBox="0 0 36 36">
+                <defs>
+                  <radialGradient id="hs" cx="40%" cy="35%">
+                    <stop offset="0%" stop-color="#fff"/>
+                    <stop offset="50%" stop-color="#a8c8d8"/>
+                    <stop offset="100%" stop-color="#5a8090"/>
+                  </radialGradient>
+                </defs>
+                <path d="M18 4 C 8 12, 6 22, 10 30 C 14 34, 22 34, 26 30 C 30 22, 28 12, 18 4 Z" fill="url(#hs)" stroke="#3a5870" stroke-width="0.6"/>
+                <line x1="18" y1="8" x2="18" y2="32" stroke="#3a5870" stroke-width="0.5" opacity="0.6"/>
+                <line x1="18" y1="14" x2="11" y2="24" stroke="#3a5870" stroke-width="0.4" opacity="0.5"/>
+                <line x1="18" y1="14" x2="25" y2="24" stroke="#3a5870" stroke-width="0.4" opacity="0.5"/>
+                <line x1="18" y1="20" x2="10" y2="28" stroke="#3a5870" stroke-width="0.4" opacity="0.4"/>
+                <line x1="18" y1="20" x2="26" y2="28" stroke="#3a5870" stroke-width="0.4" opacity="0.4"/>
+              </svg>
+            </div>
+          </div>
+          <button class="detail-btn" id="detailBtn">详情</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 页指示器 -->
+    <div class="indicator">
+      <div class="dot active" data-idx="0"></div>
+      <div class="dot" data-idx="1"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-mask" id="modalMask">
+      <div class="modal">
+        <div class="modal-num" id="modalNum">4</div>
+        <div class="modal-text" id="modalText"></div>
+        <button class="modal-close" id="modalClose">知道了</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const pagesEl = document.getElementById('pages');
+  const dots = document.querySelectorAll('.dot');
+  const toast = document.getElementById('toast');
+  const bgLayer = document.getElementById('bgLayer');
+  let toastTimer = null;
+
+  const BG1 = "url('assets/relax/bg-page1.png') center/cover no-repeat";
+  const BG2 = "url('assets/relax/bg-page2.png') center/cover no-repeat";
+
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  function updatePage(idx) {
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+    bgLayer.style.background = (idx === 0) ? BG1 : BG2;
+  }
+
+  pagesEl.addEventListener('scroll', () => {
+    const w = pagesEl.clientWidth;
+    const idx = Math.round(pagesEl.scrollLeft / w);
+    updatePage(idx);
+  });
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const idx = parseInt(dot.dataset.idx, 10);
+      pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+    });
+  });
+
+  document.querySelectorAll('.shell').forEach(shell => {
+    shell.addEventListener('click', e => {
+      e.stopPropagation();
+      showToast('选择了：' + (shell.dataset.name || ''));
+    });
+  });
+
+  // 温度计滑轨
+  const ticksEl = document.getElementById('ticks');
+  const rail = document.getElementById('sliderRail');
+  const handle = document.getElementById('railHandle');
+  const bigNum = document.getElementById('bigNum');
+  let railValue = 4;
+  const TOTAL = 10;
+
+  for (let i = 1; i <= TOTAL; i++) {
+    const t = document.createElement('span');
+    t.className = 'tick';
+    t.textContent = i;
+    t.dataset.i = i;
+    t.addEventListener('click', () => setValue(i));
+    ticksEl.appendChild(t);
+  }
+
+  function setValue(v) {
+    railValue = Math.max(1, Math.min(TOTAL, v));
+    const pct = ((railValue - 1) / (TOTAL - 1)) * 100;
+    handle.style.left = pct + '%';
+    bigNum.textContent = railValue;
+  }
+
+  // 拖动滑块
+  let dragging = false;
+  function updateFromPointer(clientX) {
+    const rect = rail.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    const v = Math.round(pct * (TOTAL - 1)) + 1;
+    setValue(v);
+  }
+  handle.addEventListener('pointerdown', e => {
+    dragging = true;
+    handle.setPointerCapture(e.pointerId);
+  });
+  handle.addEventListener('pointermove', e => { if (dragging) updateFromPointer(e.clientX); });
+  handle.addEventListener('pointerup', e => { dragging = false; handle.releasePointerCapture(e.pointerId); });
+  handle.addEventListener('pointercancel', () => { dragging = false; });
+  rail.addEventListener('click', e => {
+    if (e.target === handle || e.target.closest('.rail-handle')) return;
+    updateFromPointer(e.clientX);
+  });
+  setValue(4);
+
+  // 详情按钮（弹窗）
+  const modalMask = document.getElementById('modalMask');
+  const modalNum = document.getElementById('modalNum');
+  const modalText = document.getElementById('modalText');
+  const DETAILS = {
+    '1-2': '此刻情绪比较平稳，试着记住这种舒展的感觉。',
+    '3-4': '有一点情绪起伏，是很自然的事，允许它存在。',
+    '5-6': '情绪正在积累，先慢慢做几次深呼吸，不用急。',
+    '7-8': '情绪有些满了，不着急，先陪自己安静地待一会儿。',
+    '9-10': '情绪很满很急，你已经很努力在扛了。可以试试下面的放松练习。'
+  };
+  function getDetail(v) {
+    if (v <= 2) return DETAILS['1-2'];
+    if (v <= 4) return DETAILS['3-4'];
+    if (v <= 6) return DETAILS['5-6'];
+    if (v <= 8) return DETAILS['7-8'];
+    return DETAILS['9-10'];
+  }
+  document.getElementById('detailBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    modalNum.textContent = railValue;
+    modalText.textContent = getDetail(railValue);
+    modalMask.classList.add('show');
+  });
+  function closeModal() { modalMask.classList.remove('show'); }
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  modalMask.addEventListener('click', e => {
+    if (e.target === modalMask) closeModal();
+  });
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    window.history.length > 1 ? history.back() : (location.href = 'index.html');
+  });
+
+})();
+</script>
+
+<script src="process.js"></script>
+</body>
+</html>

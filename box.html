@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>烦恼收纳箱 - 好好睡觉</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body {
+  width: 100%; height: 100%;
+  font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #4a3a2a;
+  overflow: hidden;
+}
+
+.stage {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background: #f6e8d4;
+  padding: 0;
+}
+
+.phone {
+  width: min(100vw, calc(100vh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  position: relative;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  background: #f6e8d4;
+}
+
+/* ============ 顶部 ============ */
+.topbar {
+  position: relative;
+  padding: 14px 16px 0;
+  flex-shrink: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.back-btn, .add-btn {
+  position: absolute;
+  top: 14px;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 248, 230, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  z-index: 12;
+  box-shadow: 0 2px 6px rgba(80, 60, 40, 0.12);
+  transition: transform 0.15s ease;
+}
+.back-btn { left: 16px; }
+.add-btn { right: 16px; }
+.back-btn:active, .add-btn:active { transform: scale(0.9); }
+.back-btn svg { width: 18px; height: 18px; color: #3a2e1e; }
+.add-btn svg { width: 20px; height: 20px; color: #3a2e1e; }
+
+.title-banner {
+  display: block;
+  width: 92%;
+  max-width: 400px;
+  height: auto;
+  margin: 0 auto;
+  filter: drop-shadow(0 3px 6px rgba(80, 60, 40, 0.12));
+}
+
+/* ============ 便签容器 ============ */
+.notes-area {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 10;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.notes-area::-webkit-scrollbar { display: none; }
+.notes-inner {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.note-item {
+  position: absolute;
+  width: 42%;
+  aspect-ratio: 1 / 1.05;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  z-index: 5;
+  transform-origin: center;
+  transition: transform 0.18s cubic-bezier(.34,1.3,.64,1);
+}
+.note-item.dragging {
+  cursor: grabbing;
+  z-index: 1000;
+  transform: scale(1.05) rotate(-2deg);
+}
+.note-item.dropping {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.note-item .paper {
+  position: absolute;
+  inset: 0;
+  background: url('assets/relax/note-blank.png') center/contain no-repeat;
+  filter: drop-shadow(0 4px 10px rgba(80, 60, 40, 0.18));
+}
+.note-item .clip {
+  position: absolute;
+  top: 6%; left: 50%;
+  transform: translateX(-50%);
+  width: 22%; height: 16%;
+  z-index: 3;
+  pointer-events: none;
+}
+.note-item .clip svg { width: 100%; height: 100%; }
+.note-item .content {
+  position: absolute;
+  top: 22%; left: 12%; right: 12%;
+  bottom: 22%;
+  z-index: 2;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4a3a2a;
+  outline: none;
+  cursor: text;
+  overflow: hidden;
+  word-break: break-all;
+  text-align: right;
+}
+.note-item .content:empty::before {
+  content: '写烦恼...';
+  color: #b8a888;
+}
+.note-item .date {
+  position: absolute;
+  bottom: 8%; left: 14%;
+  z-index: 2;
+  color: #b8a888;
+  font-size: 9px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.note-item .date .day { display: block; }
+.note-item .date .time { display: block; }
+
+/* ============ 底部纸箱 ============ */
+.box-bottom {
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 50;
+  padding: 0;
+  text-align: center;
+  position: relative;
+  margin-top: -120px;
+}
+.box-bottom img {
+  display: inline-block;
+  width: 90%;
+  max-width: 380px;
+  height: auto;
+  filter: drop-shadow(0 -2px 8px rgba(80, 60, 40, 0.08));
+}
+.box-bottom.drop-target {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============ 输入弹窗 ============ */
+.input-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(40, 30, 20, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.input-mask.show { opacity: 1; pointer-events: auto; }
+.input-modal {
+  width: 80%;
+  max-width: 320px;
+  background: #fff8e7;
+  border-radius: 18px;
+  padding: 22px 20px 18px;
+  text-align: center;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+.input-mask.show .input-modal { transform: translateY(0) scale(1); }
+.input-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4a3a2a;
+  margin-bottom: 14px;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+}
+.input-modal textarea {
+  width: 100%;
+  height: 88px;
+  border: 1px solid #e0d0b0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #4a3a2a;
+  resize: none;
+  outline: none;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  background: #fdf8ec;
+}
+.input-modal textarea:focus { border-color: #c8b088; }
+.input-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+.input-btns button {
+  flex: 1;
+  padding: 9px 0;
+  border: none;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+}
+.input-cancel {
+  background: #ece0c8;
+  color: #7a6a50;
+}
+.input-ok {
+  background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%);
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(60, 90, 120, 0.3);
+}
+.input-btns button:active { transform: scale(0.96); }
+
+/* 释怀确认弹窗 */
+.confirm-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(40, 30, 20, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-mask.show { opacity: 1; pointer-events: auto; }
+.confirm-modal {
+  width: 80%;
+  max-width: 320px;
+  background: #fff8e7;
+  border-radius: 18px;
+  padding: 26px 20px 20px;
+  text-align: center;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.28);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+.confirm-mask.show .confirm-modal { transform: translateY(0) scale(1); }
+.confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4a3a2a;
+  margin-bottom: 20px;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+  letter-spacing: 1px;
+}
+
+/* 提示 toast */
+.toast {
+  position: fixed;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(60, 50, 40, 0.88);
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 20px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  max-width: 80%;
+  text-align: center;
+  line-height: 1.6;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.03);
+}
+
+/* ============ 便签展开 ============ */
+.expand-btn {
+  position: absolute;
+  bottom: 6%; right: 7%;
+  z-index: 4;
+  font-size: 10px;
+  color: #8a6a4a;
+  background: rgba(255, 248, 230, 0.92);
+  border: 1px solid #d8c4a0;
+  border-radius: 999px;
+  padding: 3px 12px;
+  cursor: pointer;
+  display: inline-block;
+  opacity: 0.6;
+  font-family: inherit;
+  pointer-events: auto;
+}
+.note-item.overflow .expand-btn {
+  opacity: 1;
+  font-weight: 600;
+  background: #fff2d8;
+  border-color: #c8a878;
+}
+
+.expand-mask {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.expand-mask.show { opacity: 1; pointer-events: auto; }
+
+.note-item.expanded {
+  position: fixed !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: min(92vw, calc(84vh * 0.952)) !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1.05;
+  z-index: 2147483647;
+  cursor: default;
+  transition: none !important;
+  touch-action: auto;
+  animation: noteExpand 0.26s cubic-bezier(.34,1.3,.64,1);
+}
+@keyframes noteExpand {
+  from { transform: translate(-50%, -50%) scale(0.72); opacity: 0.5; }
+  to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.note-item.collapsing {
+  animation: noteCollapse 0.2s ease forwards;
+}
+@keyframes noteCollapse {
+  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  to   { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+}
+.note-item.expanded .content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 16px;
+  line-height: 1.6;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+.note-item.expanded .content::-webkit-scrollbar { width: 4px; }
+.note-item.expanded .content::-webkit-scrollbar-thumb { background: #d8c4a0; border-radius: 2px; }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="phone" id="phone">
+
+    <div class="back-btn" id="backBtn" aria-label="返回">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 6 9 12 15 18"/>
+      </svg>
+    </div>
+
+    <div class="add-btn" id="addBtn" aria-label="新增">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+    </div>
+
+    <div class="topbar">
+      <img src="assets/relax/title-box.png" class="title-banner" alt="烦恼收纳箱">
+    </div>
+
+    <div class="notes-area" id="notesArea">
+      <div class="notes-inner" id="notesInner"></div>
+    </div>
+
+    <div class="box-bottom" id="boxBottom">
+      <img src="assets/relax/box-bottom.png" alt="收纳箱">
+    </div>
+
+    <!-- 输入弹窗 -->
+    <div class="input-mask" id="inputMask">
+      <div class="input-modal">
+        <div class="input-title">写下你的烦恼</div>
+        <textarea id="inputText" placeholder="写烦恼..."></textarea>
+        <div class="input-btns">
+          <button class="input-cancel" id="inputCancel">取消</button>
+          <button class="input-ok" id="inputOk">放进箱子</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 展开遮罩 -->
+    <div class="expand-mask" id="expandMask"></div>
+
+    <!-- 释怀确认弹窗 -->
+    <div class="confirm-mask" id="confirmMask">
+      <div class="confirm-modal">
+        <div class="confirm-title">您释怀了吗？</div>
+        <div class="input-btns">
+          <button class="input-cancel" id="confirmNo">还没有</button>
+          <button class="input-ok" id="confirmYes">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 未完成确认弹窗 -->
+    <div class="confirm-mask" id="unfinishedMask">
+      <div class="confirm-modal">
+        <div class="confirm-title">这些想法，还觉得没处理完吗？</div>
+        <div class="input-btns">
+          <button class="input-cancel" id="unfinishedNo">不，我感觉轻松了</button>
+          <button class="input-ok" id="unfinishedYes">是，帮我再理一理</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提示 toast -->
+    <div class="toast" id="toast"></div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const notesArea = document.getElementById('notesArea');
+  const notesInner = document.getElementById('notesInner');
+  const addBtn = document.getElementById('addBtn');
+  const boxBottom = document.getElementById('boxBottom');
+  const backBtn = document.getElementById('backBtn');
+  const expandMask = document.getElementById('expandMask');
+
+  // 回形针 SVG
+  const CLIP_SVG = `<svg viewBox="0 0 26 38">
+    <path d="M9 4 C 9 2, 11 1, 13 1 C 15 1, 17 2, 17 4 L 17 30 C 17 34, 15 36, 13 36 C 11 36, 9 34, 9 30 L 9 8 C 9 7, 10 6, 11 6 C 12 6, 13 7, 13 8 L 13 28" fill="none" stroke="#a08868" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>`;
+
+  let noteCount = 0;
+  let pendingNote = null;
+
+  function nowStr() {
+    const d = new Date();
+    const days = ['今天', '昨天'];
+    const now = new Date();
+    const yest = new Date(now - 86400000);
+    function same(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+    const day = same(d, now) ? '今天' : (same(d, yest) ? '昨天' : `${d.getMonth()+1}-${String(d.getDate()).padStart(2,'0')}`);
+    const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return { day, time };
+  }
+
+  function getGridPos(i) {
+    const areaW = notesInner.clientWidth;
+    const noteW = Math.min(areaW * 0.42, 160);
+    const noteH = noteW * 1.05;
+    const gap = 12;
+    const cols = 2;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const totalW = noteW * cols + gap * (cols - 1);
+    const startX = (areaW - totalW) / 2;
+    const startY = 14;
+    return {
+      x: startX + col * (noteW + gap),
+      y: startY + row * (noteH + gap),
+      w: noteW,
+      h: noteH
+    };
+  }
+
+  // 重排所有便签到网格位置（删除时往前补位）
+  function repositionAll() {
+    const items = notesInner.querySelectorAll('.note-item');
+    let maxBottom = 0;
+    items.forEach((el, i) => {
+      const pos = getGridPos(i);
+      el.style.width = pos.w + 'px';
+      el.style.height = pos.h + 'px';
+      el.style.position = 'absolute';
+      el.style.zIndex = '5';
+      el.style.transition = 'left 0.25s ease, top 0.25s ease, width 0.25s ease, height 0.25s ease';
+      el.style.left = pos.x + 'px';
+      el.style.top = pos.y + 'px';
+      maxBottom = Math.max(maxBottom, pos.y + pos.h);
+    });
+    // 更新 inner 高度，让便签区可上下滚动（+120 让便签能滚到纸箱后面）
+    notesInner.style.height = (maxBottom + 140) + 'px';
+  }
+
+  function createNote(text = '') {
+    const items = notesInner.querySelectorAll('.note-item');
+    const i = items.length;
+    const pos = getGridPos(i);
+    const { day, time } = nowStr();
+    const note = document.createElement('div');
+    note.className = 'note-item';
+    note.style.left = pos.x + 'px';
+    note.style.top = pos.y + 'px';
+    note.style.width = pos.w + 'px';
+    note.style.height = pos.h + 'px';
+    note.innerHTML = `
+      <div class="paper"></div>
+      <div class="clip">${CLIP_SVG}</div>
+      <div class="content" contenteditable="true" spellcheck="false">${text}</div>
+      <div class="date">
+        <span class="day">${day}</span>
+        <span class="time">${time}</span>
+      </div>
+      <button class="expand-btn">展开</button>
+    `;
+    notesInner.appendChild(note);
+
+    // 溢出检测 + 展开功能
+    const contentEl = note.querySelector('.content');
+    const expandBtn = note.querySelector('.expand-btn');
+
+    function checkOverflow() {
+      const overflow = contentEl.scrollHeight > contentEl.offsetHeight + 2;
+      note.classList.toggle('overflow', overflow);
+    }
+    requestAnimationFrame(checkOverflow);
+    setTimeout(checkOverflow, 250);
+    contentEl.addEventListener('input', checkOverflow);
+
+    let isExpanded = false;
+    let collapseTimer = null;
+    function expandNote() {
+      if (isExpanded) return;
+      // 先收起其他已展开的便签
+      document.querySelectorAll('.note-item.expanded').forEach(function(o) {
+        if (o._collapse) o._collapse();
+      });
+      isExpanded = true;
+      note.classList.add('expanded');
+      document.body.appendChild(note);
+      expandMask.classList.add('show');
+      contentEl.style.overflowY = 'auto';
+    }
+    function collapseNote() {
+      if (!isExpanded) return;
+      isExpanded = false;
+      // 折叠动画（缩小 + 淡出），结束后移回网格
+      note.classList.remove('expanded');
+      note.classList.add('collapsing');
+      if (collapseTimer) clearTimeout(collapseTimer);
+      collapseTimer = setTimeout(function() {
+        note.classList.remove('collapsing');
+        contentEl.style.overflowY = '';
+        notesInner.appendChild(note);
+        note.style.position = 'absolute';
+        note.style.zIndex = '5';
+        repositionAll();
+        expandMask.classList.remove('show');
+      }, 200);
+    }
+    note._collapse = collapseNote;
+    expandBtn.addEventListener('click', e => { e.stopPropagation(); expandNote(); });
+
+    // 拖动逻辑（拖动时移到 body 置顶，松手恢复）
+    let dragging = false;
+    let startX, startY, origX, origY;
+    note.addEventListener('pointerdown', e => {
+      if (e.target.classList.contains('content')) return; // 编辑时不可拖
+      if (e.target.closest('.expand-btn')) return; // 展开按钮不拖
+      if (isExpanded) return; // 展开状态不拖
+      dragging = true;
+      note.setPointerCapture(e.pointerId);
+      const r = note.getBoundingClientRect();
+      origX = r.left;
+      origY = r.top;
+      startX = e.clientX;
+      startY = e.clientY;
+      // 移出容器到 body，固定定位 + 最高层级
+      document.body.appendChild(note);
+      note.style.position = 'fixed';
+      note.style.left = r.left + 'px';
+      note.style.top = r.top + 'px';
+      note.style.zIndex = '9999';
+      note.style.transition = 'none';
+      note.classList.add('dragging');
+    });
+    note.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      note.style.left = (origX + dx) + 'px';
+      note.style.top = (origY + dy) + 'px';
+    });
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      try { note.releasePointerCapture(e.pointerId); } catch(_) {}
+      note.classList.remove('dragging');
+      // 先判断是否拖到纸箱（此时 note 仍在 body，坐标是视口坐标）
+      const noteR = note.getBoundingClientRect();
+      const boxR = boxBottom.getBoundingClientRect();
+      const noteCx = noteR.left + noteR.width / 2;
+      const noteCy = noteR.top + noteR.height / 2;
+      const dropped = noteCx > boxR.left && noteCx < boxR.right &&
+                     noteCy > boxR.top && noteCy < boxR.bottom;
+      if (dropped) {
+        // 先移回原位，弹出"您释怀了吗"确认框
+        notesInner.appendChild(note);
+        note.style.position = 'absolute';
+        note.style.zIndex = '5';
+        repositionAll();
+        pendingNote = note;
+        confirmMask.classList.add('show');
+      } else {
+        // 移回容器，恢复网格位置
+        notesInner.appendChild(note);
+        note.style.position = 'absolute';
+        note.style.zIndex = '5';
+        repositionAll();
+      }
+    }
+    note.addEventListener('pointerup', endDrag);
+    note.addEventListener('pointercancel', e => {
+      if (!dragging) return;
+      dragging = false;
+      note.classList.remove('dragging');
+      notesInner.appendChild(note);
+      note.style.position = 'absolute';
+      note.style.zIndex = '5';
+      repositionAll();
+    });
+
+    // 创建后重排（刷新 inner 高度）
+    repositionAll();
+    return note;
+  }
+
+  // + 号点击：弹出输入弹窗
+  const inputMask = document.getElementById('inputMask');
+  const inputText = document.getElementById('inputText');
+  const inputCancel = document.getElementById('inputCancel');
+  const inputOk = document.getElementById('inputOk');
+
+  function openInput() {
+    inputText.value = '';
+    inputMask.classList.add('show');
+    setTimeout(() => inputText.focus(), 250);
+  }
+  function closeInput() { inputMask.classList.remove('show'); }
+
+  addBtn.addEventListener('click', openInput);
+  inputCancel.addEventListener('click', closeInput);
+  inputOk.addEventListener('click', () => {
+    const text = inputText.value.trim();
+    if (text !== '') createNote(text);
+    closeInput();
+  });
+  inputMask.addEventListener('click', e => {
+    if (e.target === inputMask) closeInput();
+  });
+
+  // 返回
+  backBtn.addEventListener('click', () => {
+    window.history.length > 1 ? history.back() : (location.href = 'index.html');
+  });
+
+  // 点击遮罩关闭展开的便签
+  expandMask.addEventListener('click', () => {
+    const expanded = document.querySelector('.note-item.expanded');
+    if (expanded && expanded._collapse) expanded._collapse();
+  });
+
+  // ===== 释怀确认弹窗 =====
+  const confirmMask = document.getElementById('confirmMask');
+  const confirmYes = document.getElementById('confirmYes');
+  const confirmNo = document.getElementById('confirmNo');
+  const toast = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(text) {
+    toast.textContent = text;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  confirmYes.addEventListener('click', () => {
+    confirmMask.classList.remove('show');
+    const target = pendingNote;
+    pendingNote = null;
+    if (target) {
+      const contentEl = target.querySelector('.content');
+      lastThought = contentEl ? contentEl.textContent.trim() : '';
+      target.classList.add('dropping');
+      setTimeout(() => {
+        target.remove();
+        repositionAll();
+        // 删除后再问：这些想法还觉得没处理完吗？
+        unfinishedMask.classList.add('show');
+      }, 300);
+    }
+  });
+
+  confirmNo.addEventListener('click', () => {
+    confirmMask.classList.remove('show');
+    pendingNote = null;
+    showToast('没事，让情绪和您再待一会，不着急');
+  });
+
+  // ===== 未完成衔接：传给思绪整理（caignick） =====
+  const unfinishedMask = document.getElementById('unfinishedMask');
+  const unfinishedYes = document.getElementById('unfinishedYes');
+  const unfinishedNo = document.getElementById('unfinishedNo');
+  let lastThought = '';
+
+  unfinishedYes.addEventListener('click', () => {
+    unfinishedMask.classList.remove('show');
+    try { localStorage.setItem('thought_box_handoff', lastThought); } catch(e) {}
+    location.href = 'caignick.html';
+  });
+  unfinishedNo.addEventListener('click', () => {
+    unfinishedMask.classList.remove('show');
+    showToast('今晚就让它们安心待着吧，晚安。');
+  });
+
+})();
+</script>
+
+<script src="process.js"></script>
+</body>
+</html>
