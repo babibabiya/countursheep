@@ -190,36 +190,6 @@ html, body {
   filter: drop-shadow(0 4px 5px rgba(46, 34, 20, 0.55));
 }
 
-/* 入睡计划卡片（图文混排） */
-.card-sched {
-  padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 12px;
-  background: linear-gradient(180deg, #fffdf6 0%, #f8edd4 100%);
-  border: 1.5px solid rgba(184, 152, 92, 0.28);
-  box-shadow: 0 4px 12px rgba(184, 152, 92, 0.15);
-}
-.card-sched .sched-row { display: flex; align-items: center; gap: 12px; }
-.card-sched .sched-icon {
-  width: 42px; height: 42px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(184, 152, 92, 0.18);
-  color: #b8884a;
-}
-.card-sched .sched-icon svg { width: 22px; height: 22px; }
-.card-sched .sched-text { flex: 1; min-width: 0; }
-.card-sched .sched-title { font-size: 14px; font-weight: 700; color: #5a4a2a; letter-spacing: 0.5px; }
-.card-sched .sched-hint { font-size: 11px; color: #a08a70; margin-top: 2px; }
-.card-sched .sched-time { font-size: 22px; font-weight: 800; color: #b8884a; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.card-sched .sched-arrow { color: #b8a07a; font-size: 20px; font-weight: 300; }
-.card-sched .sched-divider { height: 1px; background: rgba(184, 152, 92, 0.18); }
-.card-sched .sched-date { font-size: 13px; color: #7a6a50; letter-spacing: 1px; }
-.card-sched .sched-lock {
-  font-size: 11px; color: #b8884a; font-weight: 600;
-  padding: 3px 10px; border: 1px solid #d4b888; border-radius: 999px;
-  background: #fff8e6; flex-shrink: 0;
-}
-
 /* ============ 推荐结果弹层 ============ */
 .rec-mask {
   position: absolute; inset: 0;
@@ -420,28 +390,8 @@ html, body {
       </div>
 
       <div class="page" id="pageSchedule">
-        <div class="card card-sched" data-name="日程" data-page="routine.html">
-          <div class="sched-row">
-            <div class="sched-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <polyline points="12 7 12 12 15 14"/>
-              </svg>
-            </div>
-            <div class="sched-text">
-              <div class="sched-title">今晚入睡时间</div>
-              <div class="sched-hint">建议提前开始准备</div>
-            </div>
-            <div class="sched-time" id="schedTime">23:00</div>
-            <div class="sched-arrow">›</div>
-          </div>
-          <div class="sched-divider"></div>
-          <div class="sched-row">
-            <div class="sched-text">
-              <div class="sched-date" id="schedDate">2026年8月29日</div>
-            </div>
-            <div class="sched-lock">· 锁定</div>
-          </div>
+        <div class="card card-sched" data-name="日程" data-desc="规划你的睡前一小时">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-7-removebg-preview.png" alt="日程">
         </div>
       </div>
     </div>
@@ -806,22 +756,6 @@ html, body {
       subtitleEl.textContent = '温柔陪伴你的第 ' + days + ' 个夜晚';
     })();
   }
-
-  // ===== 入睡计划卡片：动态填充时间 + 日期 =====
-  (function() {
-    const timeEl = document.getElementById('schedTime');
-    const dateEl = document.getElementById('schedDate');
-    if (timeEl) {
-      try {
-        const data = JSON.parse(localStorage.getItem('sleep_archive') || '{}');
-        if (data && data.bedtime) timeEl.textContent = data.bedtime;
-      } catch (e) {}
-    }
-    if (dateEl) {
-      const d = new Date();
-      dateEl.textContent = d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日';
-    }
-  })();
 
 })();
 </script>
