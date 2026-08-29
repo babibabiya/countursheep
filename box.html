@@ -752,15 +752,24 @@ html, body {
   });
 
   // ===== 引导页传来的烦恼：自动创建便签 =====
-  try {
-    const incoming = localStorage.getItem('box_incoming');
-    if (incoming && incoming.trim()) {
-      localStorage.removeItem('box_incoming');
-      createNote(incoming.trim());
-      repositionAll();
-      showToast('从月亮书房收来一条烦恼，已经放进箱子啦');
-    }
-  } catch(e) {}
+  function checkIncoming() {
+    try {
+      const incoming = localStorage.getItem('box_incoming');
+      if (incoming && incoming.trim()) {
+        localStorage.removeItem('box_incoming');
+        createNote(incoming.trim());
+        repositionAll();
+        showToast('从月亮书房收来一条烦恼，已经放进箱子啦');
+      }
+    } catch(e) {}
+  }
+  checkIncoming();
+  // 从浏览器缓存/返回键恢复页面时也检测（bfcache 恢复会触发 pageshow）
+  window.addEventListener('pageshow', checkIncoming);
+  // 别的标签页（引导页）写入时，本页实时收到并创建
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'box_incoming') checkIncoming();
+  });
 
 })();
 </script>
