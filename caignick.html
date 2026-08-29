@@ -87,6 +87,9 @@
   #scr-input .back-btn{position:relative; z-index:9; background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.3); color:#fff; backdrop-filter:blur(4px); font-size:22px; line-height:1;}
   /* 遮罩：盖住背景图里自带的"返回箭头"和"安睡引导"标题（避免和我们的 back-btn + 视觉元素重叠） */
   #scr-input .bg-mask-top{position:absolute; top:0; left:0; right:0; height:200px; background:linear-gradient(180deg, rgba(11,13,42,0.85) 0%, rgba(11,13,42,0.55) 60%, rgba(11,13,42,0) 100%); z-index:6; pointer-events:none;}
+  /* 输入页专属闪烁星星（浮在背景图之上） */
+  #scr-input #inputStars{position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;}
+  #scr-input #inputStars .star{position:absolute; border-radius:50%; background:#fff; animation:tw linear infinite;}
   /* textarea 和按钮放到背景图下半部分（山水剪影区上方） */
   #scr-input #worryInput{
     position:absolute; left:24px; right:24px; bottom:140px;
@@ -627,6 +630,7 @@
         <div class="nav-right"></div>
       </div>
       <div class="bg-mask-top"></div>
+      <div id="inputStars"></div>
       <div class="input-hero">
         <h2>今晚，是什么<br>在您脑子里转？</h2>
         <p>简单几句话就好。AI 会读懂您的情绪，用心理学的视角帮您看清它、安放它，再带您放松下来。</p>
@@ -1082,6 +1086,24 @@ function renderStars(){
     s.style.animationDelay = (Math.random()*dur).toFixed(2) + 's';
     if(Math.random() > 0.86){ s.style.boxShadow = '0 0 6px rgba(233,205,154,.8)'; }
     wrap.appendChild(s);
+  }
+  /* 输入页额外一层更密集的闪烁星星 */
+  var iw = document.getElementById('inputStars');
+  if(iw){
+    for(var k=0;k<46;k++){
+      var sp = document.createElement('span');
+      sp.className = 'star';
+      var sz = (Math.random()*2.2 + 0.8).toFixed(1);
+      sp.style.width = sz + 'px';
+      sp.style.height = sz + 'px';
+      sp.style.left = (Math.random()*100).toFixed(2) + '%';
+      sp.style.top = (Math.random()*78).toFixed(2) + '%';
+      var d = (Math.random()*3 + 1.6).toFixed(2);
+      sp.style.animationDuration = d + 's';
+      sp.style.animationDelay = (Math.random()*d).toFixed(2) + 's';
+      if(Math.random() > 0.88){ sp.style.boxShadow = '0 0 7px rgba(255,255,255,.75)'; }
+      iw.appendChild(sp);
+    }
   }
 }
 function tickClock(){
