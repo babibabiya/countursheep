@@ -743,11 +743,7 @@ html, body {
 
   unfinishedYes.addEventListener('click', () => {
     unfinishedMask.classList.remove('show');
-    try {
-      localStorage.setItem('thought_box_handoff', lastThought);
-      // 这条烦恼用户已选择释放并带走整理，引导页生成后不再回流收纳箱
-      localStorage.setItem('skip_box_incoming', '1');
-    } catch(e) {}
+    try { localStorage.setItem('thought_box_handoff', lastThought); } catch(e) {}
     location.href = 'caignick.html';
   });
   unfinishedNo.addEventListener('click', () => {

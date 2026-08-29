@@ -2322,15 +2322,8 @@ function bind(){
       try{ el.select(); }catch(e){}
       return;
     }
-    /* 烦恼同步收纳箱：生成引导时，把烦恼传给烦恼收藏箱自动创建便签
-       （从收纳箱衔接过来的不再回流——用户已经选择释放它） */
-    try {
-      if (localStorage.getItem('skip_box_incoming') === '1') {
-        localStorage.removeItem('skip_box_incoming');
-      } else {
-        localStorage.setItem('box_incoming', input);
-      }
-    } catch(e) {}
+    /* 烦恼同步收纳箱：每一次生成的烦恼都进箱 */
+    try { localStorage.setItem('box_incoming', input); } catch(e) {}
     runGeneration(input);
   });
 
