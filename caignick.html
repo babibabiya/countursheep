@@ -84,24 +84,28 @@
   #scr-input .input-hero{display:none;}
   #scr-input .nav-title{display:none;}
   #scr-input .nav{position:absolute; top:14px; left:14px; right:14px; margin:0; min-height:auto; justify-content:flex-start; z-index:7; overflow:visible;}
-  #scr-input .back-btn{position:relative; z-index:8; background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.3); color:#fff; backdrop-filter:blur(4px);}
+  #scr-input .back-btn{position:relative; z-index:9; background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.3); color:#fff; backdrop-filter:blur(4px); font-size:22px; line-height:1;}
+  /* 遮罩：盖住背景图里自带的"返回箭头"和"安睡引导"标题（避免和我们的 back-btn + 视觉元素重叠） */
+  #scr-input .bg-mask-top{position:absolute; top:0; left:0; right:0; height:200px; background:linear-gradient(180deg, rgba(11,13,42,0.85) 0%, rgba(11,13,42,0.55) 60%, rgba(11,13,42,0) 100%); z-index:6; pointer-events:none;}
   /* textarea 和按钮放到背景图下半部分（山水剪影区上方） */
   #scr-input #worryInput{
-    position:absolute; left:24px; right:24px; bottom:160px;
+    position:absolute; left:24px; right:24px; bottom:140px;
     background:rgba(255,255,255,0.10);
     border:1.5px solid rgba(255,255,255,0.22);
-    border-radius:18px; color:#e9edf8;
-    padding:14px; font-size:14px; line-height:1.7; height:120px;
+    border-radius:16px; color:#e9edf8;
+    padding:12px 14px; font-size:13px; line-height:1.6; height:88px;
     backdrop-filter:blur(6px);
+    max-width:calc(100% - 48px);
   }
-  #scr-input #worryInput::placeholder{color:rgba(233,237,248,0.5);}
-  #scr-input .count{position:absolute; right:30px; bottom:138px; color:rgba(233,237,248,0.6); font-size:11px;}
+  #scr-input #worryInput::placeholder{color:rgba(233,237,248,0.5); white-space:normal;}
+  #scr-input .count{position:absolute; right:30px; bottom:120px; color:rgba(233,237,248,0.6); font-size:11px;}
   #scr-input .cta{
-    position:absolute; left:24px; right:24px; bottom:46px;
-    margin:0;
+    position:absolute; left:24px; right:24px; bottom:38px;
+    margin:0; height:48px;
     background:linear-gradient(135deg,#a982d4 0%,#b48ad6 100%);
     color:#fff;
     box-shadow:0 6px 18px rgba(140,100,200,0.45);
+    max-width:calc(100% - 48px);
   }
 
   /* ---------- home ---------- */
@@ -622,6 +626,7 @@
         <div class="nav-title">蔡格尼克音频</div>
         <div class="nav-right"></div>
       </div>
+      <div class="bg-mask-top"></div>
       <div class="input-hero">
         <h2>今晚，是什么<br>在您脑子里转？</h2>
         <p>简单几句话就好。AI 会读懂您的情绪，用心理学的视角帮您看清它、安放它，再带您放松下来。</p>
