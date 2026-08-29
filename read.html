@@ -65,14 +65,17 @@ html, body {
 .timer-zone {
   position: absolute;
   left: 0; right: 0;
-  bottom: 6%;
+  bottom: 0;
   z-index: 6;
-  display: flex; flex-direction: column; align-items: center;
-  gap: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px;
+  /* 覆盖背景图白色框区域，把背景图自带的"开始阅读"按钮遮掉 */
+  padding: 26px 0 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fffdf8 22%, #fffdf8 100%);
 }
 .timer-ring {
   position: relative;
-  width: 46%;
+  width: 58%;
   aspect-ratio: 1 / 1;
 }
 .timer-ring svg {
