@@ -78,10 +78,12 @@
     background-position:center;
     background-repeat:no-repeat;
   }
-  /* 背景图已包含"安睡引导"标题+大标题+副标题+山水剪影，隐藏前端的重复元素 */
+  /* 背景图已包含"安睡引导"标题+大标题+副标题+山水剪影，隐藏前端的重复元素 + 清掉 .screen padding 避免 absolute 定位溢出 */
+  #scr-input{padding:0 !important;}
   #scr-input .input-hero{display:none;}
   #scr-input .nav-title{display:none;}
-  #scr-input .nav{justify-content:flex-start;}
+  #scr-input .nav{position:absolute; top:14px; left:14px; right:14px; margin:0; min-height:auto; justify-content:flex-start; z-index:7;}
+  #scr-input .back-btn{position:relative; z-index:8; background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.3); color:#fff; backdrop-filter:blur(4px);}
   /* textarea 和按钮放到背景图下半部分（山水剪影区上方） */
   #scr-input #worryInput{
     position:absolute; left:24px; right:24px; bottom:160px;
