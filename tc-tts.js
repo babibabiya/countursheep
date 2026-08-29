@@ -42,18 +42,14 @@ window.TC_TTS = (function () {
     });
   }
 
-  /* 合成一段文本（自动拆分），返回 Promise<Blob[]> */
+  /* 合成一段文本（自动拆分），并行请求所有分句，返回 Promise<Blob[]> */
   function synth(text, voiceType, speed) {
     voiceType = voiceType || 101001;
     speed = (speed === undefined) ? -0.3 : speed; // 默认稍慢，适合助眠
     var chunks = splitText(text);
-    var chain = Promise.resolve([]);
-    chunks.forEach(function (c) {
-      chain = chain.then(function (acc) {
-        return synthOne(c, voiceType, speed).then(function (blob) { acc.push(blob); return acc; });
-      });
-    });
-    return chain;
+    return Promise.all(chunks.map(function (c) {
+      return synthOne(c, voiceType, speed);
+    }));
   }
 
   return { VOICES: VOICES, synth: synth };
