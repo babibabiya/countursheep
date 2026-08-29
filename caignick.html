@@ -96,7 +96,7 @@
     background:rgba(255,255,255,0.10);
     border:1.5px solid rgba(255,255,255,0.22);
     border-radius:16px; color:#e9edf8;
-    padding:12px 14px; font-size:13px; line-height:1.6; height:88px;
+    padding:12px 14px; font-size:13px; line-height:1.6; height:88px; min-height:88px;
     backdrop-filter:blur(6px);
     max-width:calc(100% - 48px);
   }
@@ -613,12 +613,13 @@
 
   /* ---------- 从收纳箱选择烦恼 ---------- */
   #scr-input .box-pick-trigger{
-    position:absolute; left:24px; bottom:236px; z-index:8;
+    position:absolute; left:24px; bottom:240px; z-index:8;
     display:inline-flex; align-items:center; gap:6px;
     color:rgba(233,237,248,0.9); font-size:12px; letter-spacing:.5px;
     background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22);
     border-radius:99px; padding:7px 13px;
     backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    white-space:nowrap;
     cursor:pointer; transition:background .15s, transform .15s;
   }
   #scr-input .box-pick-trigger:active{background:rgba(255,255,255,0.18);transform:scale(.96);}
