@@ -126,21 +126,23 @@ html, body {
   position: relative;
   z-index: 5;
 }
-.rec-q { font-size: 15px; font-weight: 700; color: #3a2e1e; padding-right: 40px; }
+.rec-q { font-size: 15px; font-weight: 700; color: #3a2e1e; padding-right: 48px; }
 .cal-btn {
   position: absolute;
-  top: 12px; right: 12px;
-  width: 32px; height: 32px;
-  border: none; border-radius: 9px;
-  background: rgba(122, 156, 200, 0.12);
-  color: #5a7aa8;
+  top: 10px; right: 10px;
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(90, 122, 168, 0.4);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #6a8cc0 0%, #4a6a98 100%);
+  color: #fff;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
-  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 2px 6px rgba(74, 106, 152, 0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.cal-btn:active { transform: scale(0.9); }
-.cal-btn:hover { background: rgba(122, 156, 200, 0.22); }
-.cal-btn svg { width: 18px; height: 18px; }
+.cal-btn:active { transform: scale(0.9); box-shadow: 0 1px 3px rgba(74, 106, 152, 0.3); }
+.cal-btn:hover { box-shadow: 0 3px 10px rgba(74, 106, 152, 0.4); }
+.cal-btn svg { width: 19px; height: 19px; }
 .rec-sub { font-size: 11px; color: #9a8a70; margin: 3px 0 8px; line-height: 1.5; }
 .rec-input {
   width: 100%; height: 50px;
