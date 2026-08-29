@@ -980,8 +980,8 @@
       PROXY.url、项目 anon key 填进 PROXY.anonKey，并删除 DEEPSEEK_KEY 一行。
       key 只存服务端 secret（supabase secrets set DEEPSEEK_API_KEY=...），
       泄漏可随时轮换，客户端无感。 */
-var PROXY = { url: '', anonKey: '' };
-var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
+var PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
+var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用（直连模式）
 var TRACKING_ID = 'e3b7568d-299a-4b40-baab-7321b38abd46';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 /* 自然语音（微软 Edge 神经网络音色）固定走本地中继 /tts；

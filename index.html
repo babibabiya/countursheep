@@ -530,8 +530,9 @@ html, body {
     '{"need_type":"需求类型英文","primary_function":"主推荐功能id","secondary_function":"次推荐功能id","message":"一句话安抚+点出需求"}'
   ].join('\n');
 
-  const DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
-  const API_URL = 'https://api.deepseek.com/chat/completions';
+  const PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
+  const DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用
+  const API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 
   function analyzeReason(input) {
     return new Promise(function(resolve, reject) {
@@ -552,10 +553,15 @@ html, body {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + DEEPSEEK_KEY
+          'apikey': PROXY.anonKey
         },
         body: JSON.stringify(body)
       };
+      if (PROXY.url) {
+        // 代理模式：apikey 门禁（不传 Authorization，避免泄露真实 key）
+      } else {
+        opts.headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
+      }
       if (ctrl) opts.signal = ctrl.signal;
 
       fetch(API_URL, opts).then(function(res) {
