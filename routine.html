@@ -228,7 +228,7 @@ html,body{
       <div class="sleep-row">
         <div>
           <div class="big">今晚打算几点入睡</div>
-          <div class="sleep-hint">档案将从入睡时间前 60 分钟开启</div>
+          <div class="sleep-hint">档案时段按你的安排自动倒推</div>
         </div>
         <input type="time" id="sleepTime" value="23:00">
       </div>
@@ -240,7 +240,7 @@ html,body{
       <!-- 自定义 -->
       <div class="add-row">
         <input type="text" id="customName" placeholder="自定义内容名称" maxlength="20">
-        <input type="number" id="customMin" placeholder="分钟" min="5" max="60" step="5">
+        <input type="number" id="customMin" placeholder="分钟" min="1" step="5">
         <button id="addBtn">归档 +</button>
       </div>
 
@@ -249,14 +249,14 @@ html,body{
         <div class="section-label">03 / 档案封存 — SUMMARY</div>
         <div class="bar"><div class="fill" id="barFill"></div></div>
         <div class="total-line">
-          <span class="tt" id="totalText">0 <small>/ 60 MIN</small></span>
+          <span class="tt" id="totalText">0 <small>MIN</small></span>
           <span class="meta" id="startEndText"></span>
         </div>
         <div class="timeline" id="timeline"></div>
         <div class="error" id="errorMsg"></div>
         <button class="cta" id="startBtn">封存 · 开始睡前一小时</button>
         <div class="notes">
-          ※ 总时长不得超过 60 分钟<br>
+          ※ 时长可自由安排，无上限限制<br>
           ※ 睡前 15 分钟为无屏时段，烦恼收藏箱不得排入（红线区）<br>
           ※ 封存后将依次进入各环节，请将设备搁置一旁
         </div>
@@ -311,7 +311,9 @@ html,body{
   /* ============ 调度（倒推各模块时间） ============ */
   function schedule() {
     const sleep = sleepDate();
-    let cursor = new Date(sleep.getTime() - MAX_MIN * 60000);
+    const total = items.reduce((s, i) => s + i.min, 0);
+    // 档案时段按实际总时长倒推（不强制 60 分钟）
+    let cursor = new Date(sleep.getTime() - total * 60000);
     return {
       sleep,
       rows: items.map(it => {
@@ -332,7 +334,7 @@ html,body{
       const inDeadzone = it.key === 'worry' && it.min > 0 && rows[i].end.getTime() > sleep.getTime() - DEADZONE * 60000;
       const row = document.createElement('div');
       row.className = 'item' + (inDeadzone ? ' deadline' : '');
-      const minv = 0, maxv = MAX_MIN;
+      const minv = 0, maxv = 600;
       row.innerHTML = `
         <div class="no">N°${pad(i+1)}</div>
         <div>
@@ -373,9 +375,9 @@ html,body{
     const total = items.reduce((s, i) => s + i.min, 0);
     const fill = $('barFill');
     fill.style.width = Math.min(100, total / MAX_MIN * 100) + '%';
-    fill.classList.toggle('over', total > MAX_MIN);
-    $('totalText').innerHTML = `${total} <small>/ ${MAX_MIN} MIN</small>`;
-    $('startEndText').textContent = `档案时段 ${fmtHM(new Date(sleep.getTime() - MAX_MIN * 60000))} — ${fmtHM(sleep)}`;
+    fill.classList.remove('over');
+    $('totalText').innerHTML = `${total} <small>MIN</small>`;
+    $('startEndText').textContent = `档案时段 ${fmtHM(new Date(sleep.getTime() - total * 60000))} — ${fmtHM(sleep)}`;
 
     const tl = $('timeline');
     tl.innerHTML = '';
@@ -387,19 +389,12 @@ html,body{
       row.innerHTML = `<span class="t">${fmtHM(r.start)}–${fmtHM(r.end)}</span><span class="dot"></span><span class="n">${r.it.name}</span><span class="d">${r.it.min} MIN</span>`;
       tl.appendChild(row);
     });
-    if (total < MAX_MIN && total > 0) {
-      const blank = document.createElement('div');
-      blank.className = 'tl-row';
-      blank.innerHTML = `<span class="t">${fmtHM(new Date(sleep.getTime() - (MAX_MIN - total) * 60000))}–${fmtHM(sleep)}</span><span class="dot" style="background:transparent;border:1px solid var(--ink3)"></span><span class="tl-blank">留白（无安排）</span><span class="d">${MAX_MIN - total} MIN</span>`;
-      tl.appendChild(blank);
-    }
     validate(total, sleep, rows);
   }
 
   function validate(total, sleep, rows) {
     const err = $('errorMsg');
     const msgs = [];
-    if (total > MAX_MIN) msgs.push(`× 超时：共 ${total} 分钟，超出上限 ${total - MAX_MIN} 分钟`);
     if (total === 0) msgs.push('× 档案为空：请至少为一个模块安排时长');
     rows.forEach(r => {
       if (r.it.key === 'worry' && r.it.min > 0 && r.end.getTime() > sleep.getTime() - DEADZONE * 60000)
@@ -439,8 +434,8 @@ html,body{
     const name = $('customName').value.trim();
     const min = parseInt($('customMin').value, 10);
     if (!name) { $('customName').focus(); return; }
-    if (!min || min < 5) { $('customMin').focus(); return; }
-    items.push({ key:'c' + Date.now(), name, en:'CUSTOM', desc:'自定义条目', min:Math.min(60, Math.max(5, min)), page:'', screen:false, tag:null, builtin:false });
+    if (!min || min < 1) { $('customMin').focus(); return; }
+    items.push({ key:'c' + Date.now(), name, en:'CUSTOM', desc:'自定义条目', min:Math.max(1, min), page:'', screen:false, tag:null, builtin:false });
     $('customName').value = ''; $('customMin').value = '';
     render();
   });

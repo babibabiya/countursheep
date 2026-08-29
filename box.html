@@ -778,7 +778,7 @@ html, body {
   unfinishedYes.addEventListener('click', () => {
     unfinishedMask.classList.remove('show');
     try { localStorage.setItem('thought_box_handoff', lastThought); } catch(e) {}
-    location.href = 'caignick.html';
+    location.href = 'caignick.html?v=3';
   });
   unfinishedNo.addEventListener('click', () => {
     unfinishedMask.classList.remove('show');

@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>好好睡觉</title>
+<script>
+/* 缓存破坏：URL 无版本参数时自动带参重载（确保手机摆脱旧缓存、加载最新版） */
+(function(){
+  try {
+    if (new URLSearchParams(location.search).get('v') !== '3') {
+      location.replace(location.pathname + '?v=3' + location.hash);
+    }
+  } catch(e) {}
+})();
+</script>
 <style>
 /* ============ 基础重置 ============ */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -171,6 +181,32 @@ html, body {
   -ms-overflow-style: none;
 }
 .cards .page::-webkit-scrollbar { display: none; }
+
+/* 分页导航栏 */
+.pager {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  padding: 4px 0 12px;
+}
+.pager-arrow {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid rgba(90, 122, 168, 0.35);
+  background: rgba(255, 255, 255, 0.65); color: #4a6a98;
+  font-size: 20px; line-height: 1; cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(74, 106, 152, 0.15);
+  transition: transform .15s, opacity .15s;
+}
+.pager-arrow:active { transform: scale(.88); }
+.pager-arrow:disabled { opacity: .3; cursor: default; }
+.pager-dots { display: flex; gap: 8px; }
+.pager-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(90, 122, 168, 0.25);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.pager-dot.active { background: #4a6a98; transform: scale(1.3); }
 
 .card {
   position: relative;
@@ -396,6 +432,16 @@ html, body {
       </div>
     </div>
 
+    <!-- 分页导航栏 -->
+    <div class="pager">
+      <button class="pager-arrow" id="pagerPrev" aria-label="上一页">‹</button>
+      <div class="pager-dots">
+        <span class="pager-dot active" data-page="0"></span>
+        <span class="pager-dot" data-page="1"></span>
+      </div>
+      <button class="pager-arrow" id="pagerNext" aria-label="下一页">›</button>
+    </div>
+
     <!-- 推荐结果弹层 -->
     <div class="rec-mask" id="recMask">
       <div class="rec-modal">
@@ -496,7 +542,7 @@ html, body {
   // ====== 功能映射 ======
   const FUNC = {
     thought_box:       { name: '烦恼收纳箱',     desc: '把想说的话、放不下的事先写下来，收进箱子里。', page: 'box.html', dur: 10 },
-    thought_completion:{ name: '引导入睡音频',   desc: '一段专属的睡前思绪整理，帮你把这件事想完、放下。', page: 'caignick.html', dur: 10 },
+    thought_completion:{ name: '引导入睡音频',   desc: '一段专属的睡前思绪整理，帮你把这件事想完、放下。', page: 'caignick.html?v=3', dur: 10 },
     reading:           { name: '睡前阅读',       desc: '放下手机，读一会儿，让脑子慢慢安静下来。', page: 'read.html', dur: 30 },
     relaxation:        { name: '放松练习',       desc: '呼吸、冥想、渐进放松，让紧绷的身体松弛下来。', page: 'relax.html', dur: 10 },
     white_noise:       { name: '白噪音',         desc: '自然声音盖住杂音，营造安静入睡的氛围。', page: 'sound.html', dur: 0 },
@@ -535,6 +581,17 @@ html, body {
   const API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 
   function analyzeReason(input) {
+    /* 代理优先；代理网络失败时自动降级直连（两层保障） */
+    if (PROXY.url) {
+      return analyzeOnce(input, PROXY.url, true).catch(function(e) {
+        if (e && e.name === 'AbortError') throw e;
+        return analyzeOnce(input, 'https://api.deepseek.com/chat/completions', false);
+      });
+    }
+    return analyzeOnce(input, API_URL, false);
+  }
+
+  function analyzeOnce(input, url, viaProxy) {
     return new Promise(function(resolve, reject) {
       const ctrl = ('AbortController' in window) ? new AbortController() : null;
       const to = ctrl ? setTimeout(function(){ ctrl.abort(); }, 60000) : null;
@@ -550,7 +607,7 @@ html, body {
         response_format: { type: 'json_object' }
       };
       const headers = {};
-      if (PROXY.url) {
+      if (viaProxy) {
         // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
         body.key = PROXY.anonKey;
         headers['Content-Type'] = 'text/plain';
@@ -566,7 +623,7 @@ html, body {
       };
       if (ctrl) opts.signal = ctrl.signal;
 
-      fetch(API_URL, opts).then(function(res) {
+      fetch(url, opts).then(function(res) {
         if (to) clearTimeout(to);
         if (!res.ok) {
           return res.json().catch(function(){ return null; }).then(function(j) {
@@ -707,8 +764,8 @@ html, body {
       e.stopPropagation();
       const name = card.dataset.name;
       const map = {
-        '引导入睡音频': 'caignick.html',
-        '蔡格尼克': 'caignick.html',
+        '引导入睡音频': 'caignick.html?v=3',
+        '蔡格尼克': 'caignick.html?v=3',
         '白噪音': 'sound.html',
         '阅读倒计时': 'read.html',
         '放松练习': 'relax.html',
@@ -780,6 +837,32 @@ html, body {
       subtitleEl.textContent = '温柔陪伴你的第 ' + days + ' 个夜晚';
     })();
   }
+
+  // ===== 底部左右分页导航 =====
+  (function() {
+    const cards = document.getElementById('cards');
+    const prev = document.getElementById('pagerPrev');
+    const next = document.getElementById('pagerNext');
+    const dots = document.querySelectorAll('.pager-dot');
+    if (!cards || !prev || !next) return;
+    const totalPages = dots.length || 2;
+    function curPage() { return Math.round(cards.scrollLeft / cards.clientWidth); }
+    function update() {
+      const p = Math.max(0, Math.min(totalPages - 1, curPage()));
+      prev.disabled = p <= 0;
+      next.disabled = p >= totalPages - 1;
+      dots.forEach((d, i) => d.classList.toggle('active', i === p));
+    }
+    function go(p) {
+      cards.scrollTo({ left: p * cards.clientWidth, behavior: 'smooth' });
+    }
+    prev.addEventListener('click', () => go(Math.max(0, curPage() - 1)));
+    next.addEventListener('click', () => go(Math.min(totalPages - 1, curPage() + 1)));
+    dots.forEach((d) => d.addEventListener('click', () => go(parseInt(d.dataset.page, 10))));
+    cards.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
 
 })();
 </script>

@@ -7,6 +7,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>落定 · 睡前思绪整理</title>
+<script>
+/* 缓存破坏：URL 无版本参数时自动带参重载（确保手机摆脱旧缓存、加载最新版） */
+(function(){
+  try {
+    if (new URLSearchParams(location.search).get('v') !== '3') {
+      location.replace(location.pathname + '?v=3' + location.hash);
+    }
+  } catch(e) {}
+})();
+</script>
 <style>
   :root{
     --bg0:#070a16;
@@ -1264,6 +1274,17 @@ function runGeneration(input){
 }
 
 function callAPI(input, signal){
+  /* 代理优先；代理网络失败时自动降级直连（两层保障） */
+  if (PROXY.url) {
+    return callAPIOnce(input, signal, PROXY.url, true).catch(function(err){
+      if (err && err.name === 'AbortError') throw err;
+      return callAPIOnce(input, signal, 'https://api.deepseek.com/chat/completions', false);
+    });
+  }
+  return callAPIOnce(input, signal, API_URL, false);
+}
+
+function callAPIOnce(input, signal, url, viaProxy){
   return new Promise(function(resolve, reject){
     var ctrl = null;
     var to = null;
@@ -1286,7 +1307,7 @@ function callAPI(input, signal){
       response_format: { type: 'json_object' }
     };
     var headers = {};
-    if (PROXY.url) {
+    if (viaProxy) {
       // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
       body.key = PROXY.anonKey;
       headers['Content-Type'] = 'text/plain';
@@ -1302,7 +1323,7 @@ function callAPI(input, signal){
     };
     if(ctrl) opts.signal = ctrl.signal;
 
-    fetch(API_URL, opts).then(function(res){
+    fetch(url, opts).then(function(res){
       if(to) clearTimeout(to);
       if(!res.ok){
         return res.json().catch(function(){ return null; }).then(function(j){
