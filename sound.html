@@ -885,9 +885,8 @@
 var PROXY = { url: '', anonKey: '' };
 var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
-/* 自然语音（中继 /tts，微软 Edge 神经网络音色）；仅本地中继模式可用，
-   其他模式自动降级为系统 Web Speech */
-var TTS_URL = /\/chat\/completions$/.test(PROXY.url) ? PROXY.url.replace(/\/chat\/completions$/, '/tts') : '';
+/* 自然语音统一走 tc-tts.js（TC_TTS.synth → GPU 服务器 Qwen3-TTS-VoiceDesign）；
+   服务不可用时自动降级为系统 Web Speech，无需本地中继 */
 
 var SYSTEM_PROMPT = [
 '你是"落定"App 的睡前思绪整理引擎，基于"蔡格尼克效应"工作：未完成的思绪会被大脑反复提起，影响入睡。你的任务是：把用户的睡前担忧整理到一个"暂时可以放下"的位置，再引导身体放松、进入睡眠。',
@@ -1366,10 +1365,11 @@ function pickVoice(){
   return zh[0];
 }
 
-/* ================= 腾讯云语音合成（自然中文音色，国内可直连） ================= */
+/* ================= Qwen3-TTS 语音合成（GPU 服务器，自然中文音色） ================= */
 var EDGE_VOICES = (window.TC_TTS && TC_TTS.VOICES) || [];
-/* 前端直连腾讯云 TTS，语音合成（voice 为音色 ID，ratePct 转成 Speed） */
+/* 语音合成统一入口（TC_TTS → GPU 服务器 Qwen3-TTS-VoiceDesign；voice 为音色 ID） */
 function edgeTTS(text, voice, ratePct){
+  if(!(window.TC_TTS && TC_TTS.synth)) return Promise.reject(new Error('TTS 模块未加载'));
   var speed = Math.max(-2, Math.min(6, Math.round(ratePct / 50)));
   return TC_TTS.synth(text, voice, speed).then(function(blobs){
     /* 句子已拆分，通常单段 */
@@ -1378,7 +1378,7 @@ function edgeTTS(text, voice, ratePct){
 }
 
 var EDGE = {
-  ok: true,             /* 腾讯云 TTS；连续失败才降级系统语音 */
+  ok: true,             /* Qwen3-TTS；连续失败才降级系统语音 */
   warned: false,
   fails: 0,             /* 连续失败计数（成功即清零） */
   voice: EDGE_VOICES.length ? EDGE_VOICES[0].id : 101001,
@@ -1400,13 +1400,13 @@ try{
 }catch(e){}
 function voiceLabel(){
   for(var i=0;i<EDGE_VOICES.length;i++){ if(EDGE_VOICES[i].id === EDGE.voice) return EDGE_VOICES[i].label; }
-  return '智瑜';
+  return '温柔女声';
 }
 
 function edgeAudio(text){
   var key = EDGE.voice + '|' + player.rate + '|' + text;
   if(EDGE.cache.has(key)) return EDGE.cache.get(key);
-  /* 前端直连微软 Edge 神经网络语音，无需本地中继 */
+  /* Qwen3-TTS 服务端合成，前端直接播放音频 Blob */
   var p = edgeTTS(text, EDGE.voice, Math.round((player.rate - 1) * 100));
   p.catch(function(){ EDGE.cache.delete(key); });
   if(EDGE.cache.size > 160) EDGE.cache.delete(EDGE.cache.keys().next().value);
@@ -1612,7 +1612,7 @@ function speakCurrent(){
     }, delay);
   }
 
-  /* 优先走中继的 Edge 神经网络语音（自然音色），失败自动降级系统语音 */
+  /* 优先 Qwen3-TTS 自然音色，失败自动降级系统语音 */
   if(EDGE.ok){
     var p1 = player.seq[player.idx + 1], p2 = player.seq[player.idx + 2];
     if(p1) edgeAudio(player.flat[p1.fi].text);
@@ -2053,17 +2053,15 @@ function readTick(){
 }
 
 function readPlayPhrase(text){
-  if(!TTS_URL){ return; }
-  fetch(TTS_URL, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ text: text, voice: 'zh-CN-XiaoxiaoNeural', rate: -10 }) })
-    .then(function(r){ if(!r.ok) throw 0; return r.blob(); })
-    .then(function(blob){
-      if(!READ.audioEl) READ.audioEl = new Audio();
-      if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
-      READ.audioEl.src = URL.createObjectURL(blob);
-      READ.audioEl.volume = 0.55;
-      READ.audioEl.play().catch(function(){});
-    }).catch(function(){});
+  if(!(window.TC_TTS && TC_TTS.synth)){ return; }
+  TC_TTS.synth(text, EDGE.voice, -0.3).then(function(blobs){
+    if(!blobs || !blobs.length) throw 0;
+    if(!READ.audioEl) READ.audioEl = new Audio();
+    if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
+    READ.audioEl.src = URL.createObjectURL(blobs[0]);
+    READ.audioEl.volume = 0.55;
+    READ.audioEl.play().catch(function(){});
+  }).catch(function(){});
 }
 
 function readStart(){
@@ -2103,9 +2101,7 @@ function readFinish(){
   hideBubble();
   // 自动进入后续睡眠流程：goodnight 覆盖层
   $('#goodnight').classList.add('show');
-  if(TTS_URL){
-    readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
-  }
+  readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
 }
 
 function showBubble(){

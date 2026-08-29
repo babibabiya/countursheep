@@ -1,12 +1,14 @@
-/* ============ CosyVoice 语音合成（自建 GPU 服务器 API） ============ */
-/* 接口形状与原腾讯云版本保持一致，调用方（caignick/sound/relax/process.js）无需改动：
+/* ============ Qwen3-TTS 语音合成（自建 GPU 服务器 API） ============ */
+/* 后端模型：Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign（AutoDL GPU 实例，音色由
+   VoiceDesign instruct 指令渲染）。接口形状与原腾讯云版本保持一致，
+   调用方（caignick/sound/relax/process.js）无需改动：
    TC_TTS.synth(text, voiceType, speed) -> Promise<Blob[]>
-   voiceType 为音色 id（101001 等），由服务端 CosyVoice2 用 instruct 指令渲染 */
+   voiceType 为音色 id（101001 等），由服务端映射为 VoiceDesign instruct */
 window.TC_TTS = (function () {
   'use strict';
 
-  var API_BASE = 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443'; // CosyVoice API（AutoDL 自定义服务 6006 端口）
-  var MAX_LEN = 200; // 单段上限（CosyVoice 支持长文本，适当放宽）
+  var API_BASE = 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443'; // Qwen3-TTS API（AutoDL 自定义服务）
+  var MAX_LEN = 200; // 单段上限（Qwen3-TTS 支持长文本，适当放宽）
 
   /* 音色列表（id 与旧版一致） */
   var VOICES = [

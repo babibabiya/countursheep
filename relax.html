@@ -565,10 +565,10 @@ html, body {
     ].join('\n') }
   };
 
-  // ===== 腾讯云语音合成（自然中文音色，国内可直连），音色列表来自 tc-tts.js =====
+  // ===== Qwen3-TTS 语音合成（GPU 服务器，自然中文音色），音色列表来自 tc-tts.js =====
   const VOICES = (window.TC_TTS && TC_TTS.VOICES) || [];
 
-  // ===== 系统语音兜底（腾讯云失败/离线时可朗读） =====
+  // ===== 系统语音兜底（Qwen3-TTS 失败/离线时可朗读） =====
   function pickZhVoice() {
     try {
       if (!('speechSynthesis' in window)) return null;
@@ -622,7 +622,7 @@ html, body {
     playSegment(queue[qIdx]);
   }
 
-  // 播放一段：优先腾讯云自然音色，失败降级系统语音
+  // 播放一段：优先 Qwen3-TTS 自然音色，失败降级系统语音
   function playSegment(seg) {
     const token = ++genToken;
     curAudio = null; curSystem = false; curBlobs = []; curBlobIdx = 0;
@@ -726,7 +726,7 @@ html, body {
   }
   playPauseBtn.addEventListener('click', togglePlay);
 
-  // 音色切换（腾讯云自然音色循环）
+  // 音色切换（Qwen3-TTS 自然音色循环）
   function cycleVoice() {
     if (!VOICES.length) return;
     const i = VOICES.findIndex(v => v.id === currentVoice);

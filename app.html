@@ -19,6 +19,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #f6e8d4; }
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>好好睡觉</title>
+<script>
+/* 缓存破坏：URL 无版本参数时自动带参重载（确保手机摆脱旧缓存、加载最新版） */
+(function(){
+  try {
+    if (new URLSearchParams(location.search).get('v') !== '3') {
+      location.replace(location.pathname + '?v=3' + location.hash);
+    }
+  } catch(e) {}
+})();
+</script>
 <style>
 /* ============ 基础重置 ============ */
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -46,24 +56,24 @@ html, body {
   position: relative;
   overflow: hidden;
   display: flex; flex-direction: column;
-  background: url('assets/bg.png') center/cover no-repeat;
+  background: url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/bg.png') center/cover no-repeat;
 }
 
 /* ============ 顶部导航区 ============ */
 .topbar {
   position: relative;
-  padding: 40px 24px 6px;
+  padding: 34px 24px 6px;
   flex-shrink: 0;
 }
 
 .title-wrap {
-  margin-top: 14px;
+  margin-top: 8px;
   position: relative;
   z-index: 2;
 }
 .title-main {
   font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.3;
   color: #2d2417;
@@ -74,9 +84,9 @@ html, body {
   gap: 6px;
 }
 .subtitle {
-  margin-top: 10px;
+  margin-top: 8px;
   font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: #8a7858;
   letter-spacing: 0.5px;
@@ -85,19 +95,20 @@ html, body {
 /* 撕纸月亮装饰（使用图片） */
 .celestial {
   position: absolute;
-  top: 22px; right: 14px;
-  width: 130px; height: 130px;
+  top: 16px; right: 14px;
+  width: 118px; height: 118px;
   pointer-events: auto;
   z-index: 1;
 }
 .celestial img {
   width: 100%; height: 100%;
   object-fit: contain;
+  cursor: pointer;
   filter: drop-shadow(0 6px 12px rgba(40, 40, 80, 0.25));
-  pointer-events: none;
 }
+.celestial img:active { transform: scale(0.94); }
 
-/* 星星闪烁（位于月亮内部的天空区域） */
+/* 星星闪烁 */
 .celestial .star {
   position: absolute;
   border-radius: 50%;
@@ -128,17 +139,89 @@ html, body {
   50% { opacity: 0.8; transform: scale(1.1); }
 }
 
+/* ============ 睡眠原因推荐 ============ */
+.rec-box {
+  flex-shrink: 0;
+  margin: 8px 16px 4px;
+  padding: 14px;
+  background: rgba(255, 248, 236, 0.88);
+  border-radius: 16px;
+  border: 1.5px solid rgba(200, 160, 110, 0.25);
+  box-shadow: 0 4px 14px rgba(80, 60, 40, 0.08);
+  position: relative;
+  z-index: 5;
+}
+.rec-q { font-size: 15px; font-weight: 700; color: #3a2e1e; }
+.rec-sub { font-size: 11px; color: #9a8a70; margin: 3px 0 8px; line-height: 1.5; }
+.rec-input {
+  width: 100%; height: 50px;
+  border: 1px solid #e2d2b8; border-radius: 10px;
+  padding: 8px 10px; font-size: 13px;
+  resize: none; outline: none;
+  background: #fffdf8; color: #4a3a2a;
+  font-family: inherit; line-height: 1.5;
+}
+.rec-input:focus { border-color: #c8a878; }
+.rec-btn {
+  width: 100%; margin-top: 8px; padding: 9px 0;
+  border: none; border-radius: 20px;
+  background: linear-gradient(180deg, #7a9cc8 0%, #5a7aa8 100%);
+  color: #fff; font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(90, 122, 168, 0.25);
+}
+.rec-btn:active { transform: scale(0.97); }
+.rec-btn:disabled { opacity: 0.55; pointer-events: none; }
+
 /* ============ 按钮列表 ============ */
 .cards {
   flex: 1;
-  padding: 8px 16px 12px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   -ms-overflow-style: none;
   position: relative;
 }
 .cards::-webkit-scrollbar { display: none; }
+.cards .page {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  padding: 8px 16px 12px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cards .page::-webkit-scrollbar { display: none; }
+
+/* 分页导航栏 */
+.pager {
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  padding: 4px 0 12px;
+}
+.pager-arrow {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1.5px solid rgba(90, 122, 168, 0.35);
+  background: rgba(255, 255, 255, 0.65); color: #4a6a98;
+  font-size: 20px; line-height: 1; cursor: pointer; font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(74, 106, 152, 0.15);
+  transition: transform .15s, opacity .15s;
+}
+.pager-arrow:active { transform: scale(.88); }
+.pager-arrow:disabled { opacity: .3; cursor: default; }
+.pager-dots { display: flex; gap: 8px; }
+.pager-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(90, 122, 168, 0.25);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.pager-dot.active { background: #4a6a98; transform: scale(1.3); }
 
 .card {
   position: relative;
@@ -158,6 +241,59 @@ html, body {
   filter: drop-shadow(0 4px 5px rgba(46, 34, 20, 0.55));
 }
 
+/* ============ 推荐结果弹层 ============ */
+.rec-mask {
+  position: absolute; inset: 0;
+  background: rgba(40, 30, 20, 0.45);
+  z-index: 300;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.rec-mask.show { opacity: 1; pointer-events: auto; }
+.rec-modal {
+  width: 82%;
+  max-width: 300px;
+  background: #fff8e9;
+  border-radius: 20px;
+  padding: 24px 20px 20px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
+}
+.rec-mask.show .rec-modal { transform: translateY(0) scale(1); }
+.rec-loading { font-size: 14px; color: #8a7a60; line-height: 1.8; padding: 20px 0; }
+.rec-loading .dot { display: inline-block; animation: blink 1.2s infinite; }
+.rec-loading .dot:nth-child(2){ animation-delay: .2s; }
+.rec-loading .dot:nth-child(3){ animation-delay: .4s; }
+@keyframes blink { 0%,80%,100%{opacity:.2;} 40%{opacity:1;} }
+.rec-msg { font-size: 14px; color: #4a3a2a; line-height: 1.7; text-align: left; margin-bottom: 16px; }
+.rec-reco { font-size: 12px; color: #9a8a70; letter-spacing: 1px; margin-bottom: 8px; }
+.rec-name {
+  font-family: "Yuanti SC","YouYuan","幼圆","PingFang SC",sans-serif;
+  font-size: 20px; font-weight: 700; color: #3a4a6a; margin-bottom: 6px;
+}
+.rec-desc { font-size: 13px; color: #7a6a50; line-height: 1.6; margin-bottom: 16px; }
+.rec-actions { display: flex; gap: 10px; }
+.rec-actions button {
+  flex: 1; padding: 11px 0; border: none; border-radius: 20px;
+  font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.rec-start { background: linear-gradient(180deg, #7a9cc8 0%, #5a7aa8 100%); color: #fff; box-shadow: 0 3px 10px rgba(90,122,168,0.3); }
+.rec-add { background: #ece0c8; color: #7a6a50; }
+.rec-actions button:active { transform: scale(0.96); }
+.rec-sec {
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px dashed #e0d0b8;
+  font-size: 12px; color: #9a8a70;
+}
+.rec-sec span { color: #6a5a42; font-weight: 600; }
+.rec-close {
+  margin-top: 14px; font-size: 12px; color: #b0a088;
+  background: none; border: none; cursor: pointer; font-family: inherit;
+}
+
 /* ============ Toast ============ */
 .toast {
   position: absolute;
@@ -171,14 +307,73 @@ html, body {
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s ease;
-  z-index: 200;
+  z-index: 400;
   white-space: nowrap;
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  max-width: 88%;
 }
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ============ 用户协议弹窗 ============ */
+.terms-mask {
+  position: absolute; inset: 0;
+  background: rgba(30, 22, 40, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.terms-mask.show { opacity: 1; pointer-events: auto; }
+.terms-modal {
+  width: 82%; max-width: 300px; max-height: 84%;
+  background: #fffdf8;
+  border-radius: 22px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34, 1.3, .64, 1);
+  overflow-y: auto;
+  text-align: center;
+}
+.terms-mask.show .terms-modal { transform: translateY(0) scale(1); }
+.terms-title {
+  font-size: 18px; font-weight: 800; color: #4a3a6a;
+  letter-spacing: 2px; margin-bottom: 4px;
+}
+.terms-app {
+  font-size: 11px; color: #a08aa8; letter-spacing: 3px; margin-bottom: 14px;
+}
+.terms-body {
+  text-align: left; font-size: 13px; line-height: 1.8; color: #5a4a60;
+  margin-bottom: 14px;
+}
+.terms-body strong { color: #4a3a6a; }
+.terms-view {
+  display: inline-block; font-size: 13px; font-weight: 600;
+  color: #6a5aa8; text-decoration: underline; cursor: pointer;
+  margin-bottom: 16px; background: none; border: none; font-family: inherit;
+}
+.terms-actions { display: flex; flex-direction: column; gap: 10px; }
+.terms-agree {
+  width: 100%; padding: 13px 0;
+  border: none; border-radius: 22px;
+  background: linear-gradient(180deg, #8a7ab8 0%, #6a5aa8 100%);
+  color: #fff; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 5px 14px rgba(106, 90, 168, 0.35);
+}
+.terms-agree:active { transform: scale(0.97); }
+.terms-disagree {
+  width: 100%; padding: 11px 0;
+  border: none; border-radius: 20px;
+  background: #f0e8f4; color: #8a7aa0;
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  cursor: pointer; font-family: inherit;
+}
+.terms-disagree:active { transform: scale(0.97); }
 
 </style>
 </head>
@@ -192,12 +387,12 @@ html, body {
       <div class="title-wrap">
         <div class="title-main">好好睡觉</div>
         <div class="title-main">从今天开始</div>
-        <div class="subtitle">温柔陪伴每一个夜晚</div>
+        <div class="subtitle" id="subtitle">温柔陪伴你的第 1 个夜晚</div>
       </div>
 
       <!-- 撕纸月亮星星 -->
       <div class="celestial" aria-hidden="true">
-        <img id="moonBtn" src="assets/moon-clean.png" alt="月亮">
+        <img id="moonBtn" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/moon-clean.png" alt="月亮">
         <span class="star s1"></span>
         <span class="star s2"></span>
         <span class="star s3"></span>
@@ -217,33 +412,88 @@ html, body {
       </div>
     </div>
 
-    <!-- 卡片列表 -->
+    <!-- 睡眠原因推荐 -->
+    <div class="rec-box">
+      <div class="rec-q">今晚为什么睡不着？</div>
+      <div class="rec-sub">告诉我你脑子里在想什么，或者你此刻的感觉。</div>
+      <textarea id="recInput" class="rec-input" placeholder="例如：我有很多话想说，却没人可以倾诉……" maxlength="400"></textarea>
+      <button id="recBtn" class="rec-btn">看看什么能帮到你</button>
+    </div>
+
+    <!-- 功能卡片列表（左右滑动分页） -->
     <div class="cards" id="cards">
-      <div class="card card-01" data-name="引导入睡音频" data-desc="个性化语音引导，帮你整理思绪">
-        <img src="assets/btn-01.png" alt="引导入睡音频">
+      <div class="page" id="pageMain">
+        <div class="card card-01" data-name="引导入睡音频" data-desc="个性化语音引导，帮你整理思绪">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-5-removebg-preview.png" alt="引导入睡音频">
+        </div>
+        <div class="card card-02" data-name="白噪音" data-desc="多种自然声音，营造宁静氛围">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-6_%E5%89%AF%E6%9C%AC2-removebg-preview.png" alt="白噪音">
+        </div>
+        <div class="card card-05" data-name="阅读倒计时" data-desc="专注阅读，放松身心">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-5-removebg-preview_%E5%89%AF%E6%9C%AC.png" alt="阅读倒计时">
+        </div>
+        <div class="card card-06" data-name="放松练习" data-desc="呼吸、冥想、渐进放松等练习">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-78-removebg-preview.png" alt="放松练习">
+        </div>
+        <div class="card card-07" data-name="烦恼收藏箱" data-desc="写下烦恼，暂时收起来">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-6_%E5%89%AF%E6%9C%AC-removebg-preview.png" alt="烦恼收藏箱">
+        </div>
       </div>
-      <div class="card card-02" data-name="白噪音" data-desc="多种自然声音，营造宁静氛围">
-        <img src="assets/btn-02.png" alt="白噪音">
+
+      <div class="page" id="pageSchedule">
+        <div class="card card-sched" data-name="日程" data-desc="规划你的睡前一小时">
+          <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/icons/Melatonin-7-removebg-preview.png" alt="日程">
+        </div>
       </div>
-      <div class="card card-03" data-name="论坛" data-desc="分享经验，互相陪伴成长">
-        <img src="assets/btn-03.png" alt="论坛">
+    </div>
+
+    <!-- 分页导航栏 -->
+    <div class="pager">
+      <button class="pager-arrow" id="pagerPrev" aria-label="上一页">‹</button>
+      <div class="pager-dots">
+        <span class="pager-dot active" data-page="0"></span>
+        <span class="pager-dot" data-page="1"></span>
       </div>
-      <div class="card card-04" data-name="百科" data-desc="睡眠知识库，科学改善睡眠">
-        <img src="assets/btn-04.png" alt="百科">
-      </div>
-      <div class="card card-05" data-name="阅读倒计时" data-desc="专注阅读，放松身心">
-        <img src="assets/btn-05.png" alt="阅读倒计时">
-      </div>
-      <div class="card card-06" data-name="放松练习" data-desc="呼吸、冥想、渐进放松等练习">
-        <img src="assets/btn-06.png" alt="放松练习">
-      </div>
-      <div class="card card-07" data-name="烦恼收藏箱" data-desc="写下烦恼，暂时收起来">
-        <img src="assets/btn-07.png" alt="烦恼收藏箱">
+      <button class="pager-arrow" id="pagerNext" aria-label="下一页">›</button>
+    </div>
+
+    <!-- 推荐结果弹层 -->
+    <div class="rec-mask" id="recMask">
+      <div class="rec-modal">
+        <div class="rec-loading" id="recLoading">正在理解你的心情<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+        <div class="rec-result" id="recResult" hidden>
+          <div class="rec-msg" id="recMsg"></div>
+          <div class="rec-reco">为你推荐</div>
+          <div class="rec-name" id="recName"></div>
+          <div class="rec-desc" id="recDesc"></div>
+          <div class="rec-actions">
+            <button class="rec-start" id="recStart">立即开始</button>
+            <button class="rec-add" id="recAdd">加入睡前流程</button>
+          </div>
+          <div class="rec-sec" id="recSec" hidden>也可以试试：<span id="recSecName"></span></div>
+          <button class="rec-close" id="recClose">先不用了，我自己逛逛</button>
+        </div>
       </div>
     </div>
 
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
+
+    <!-- 用户协议弹窗 -->
+    <div class="terms-mask" id="termsMask">
+      <div class="terms-modal">
+        <div class="terms-title">欢迎使用「落定」</div>
+        <div class="terms-app">L U Ò D Ì N G</div>
+        <div class="terms-body">
+          使用本应用前，请仔细阅读并同意<strong>《用户服务协议》</strong>。本应用提供睡眠引导与辅助服务，内容仅为生活辅助与信息参考，<strong>不构成医疗诊断或治疗建议</strong>。点击"同意并继续"即表示您已阅读并同意协议全部条款。
+        </div>
+        <button class="terms-view" id="termsView">查看《用户服务协议》全文</button>
+        <div class="terms-actions">
+          <button class="terms-agree" id="termsAgree">同意并继续</button>
+          <button class="terms-disagree" id="termsDisagree">暂不同意</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -254,27 +504,288 @@ html, body {
 
   // ====== DOM ======
   const toast = document.getElementById('toast');
+  const recInput = document.getElementById('recInput');
+  const recBtn = document.getElementById('recBtn');
+  const recMask = document.getElementById('recMask');
+  const recLoading = document.getElementById('recLoading');
+  const recResult = document.getElementById('recResult');
+  const recMsg = document.getElementById('recMsg');
+  const recName = document.getElementById('recName');
+  const recDesc = document.getElementById('recDesc');
+  const recStart = document.getElementById('recStart');
+  const recAdd = document.getElementById('recAdd');
+  const recSec = document.getElementById('recSec');
+  const recSecName = document.getElementById('recSecName');
+  const recClose = document.getElementById('recClose');
 
   let toastTimer = null;
   function showToast(text) {
     toast.textContent = text;
     toast.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
   }
 
-  // 各功能按钮跳转到对应独立页面
+  // ====== 内容审核（纯前端本地规则，不依赖 DeepSeek，拦截乱码/无意义输入） ======
+  function isGarbled(text) {
+    const s = String(text || '').trim();
+    if (s.length < 2) return true;   // 过短
+    if (s.length > 400) return true; // 超长
+
+    const hasChinese = /[\u4e00-\u9fa5]/.test(s);
+    const hasWord = /[a-zA-Z]{2,}/.test(s);
+
+    // 1. 既无中文也无英文单词 → 纯符号/数字/emoji/乱码
+    if (!hasChinese && !hasWord) return true;
+
+    // 2. 键盘乱敲（同一行/相邻键连击，如 asdf、qwer、zxcv、hjkl 等）
+    if (/(asdf|qwer|zxcv|hjkl|wert|sdfg|dfgh|fghj|ghjk|tyui|rtyu|yuiop|asd|qwe|zxc|hjk|jkl|fdsa|rewq|lkjh)/i.test(s)) return true;
+
+    // 3. 无中文的随机字母数字混合（如 a8f3k9d2）
+    if (!hasChinese && /^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,}$/i.test(s)) return true;
+
+    // 4. 纯数字 / 纯标点 / 纯符号
+    if (/^[\d\s\p{P}\p{S}]+$/u.test(s)) return true;
+
+    // 5. 去空格标点数字后有效字符种类过少（重复单字符，如 啊啊啊啊 / hahahaha / 哈哈哈哈）
+    const compact = s.replace(/[\s\p{P}\d]/gu, '');
+    if (compact.length >= 4 && new Set(compact).size <= 2) return true;
+
+    return false;
+  }
+
+  // ====== 功能映射 ======
+  const FUNC = {
+    thought_box:       { name: '烦恼收纳箱',     desc: '把想说的话、放不下的事先写下来，收进箱子里。', page: 'box.html', dur: 10 },
+    thought_completion:{ name: '引导入睡音频',   desc: '一段专属的睡前思绪整理，帮你把这件事想完、放下。', page: 'caignick.html?v=3', dur: 10 },
+    reading:           { name: '睡前阅读',       desc: '放下手机，读一会儿，让脑子慢慢安静下来。', page: 'read.html', dur: 30 },
+    relaxation:        { name: '放松练习',       desc: '呼吸、冥想、渐进放松，让紧绷的身体松弛下来。', page: 'relax.html', dur: 10 },
+    white_noise:       { name: '白噪音',         desc: '自然声音盖住杂音，营造安静入睡的氛围。', page: 'sound.html', dur: 0 },
+    music:             { name: '音乐',           desc: '听点轻柔安神的音乐，陪你慢慢入睡。', page: 'sound.html', dur: 0 },
+    sleep_audio:       { name: '助眠音频',       desc: '舒缓的声音引导，帮你放松入睡。', page: 'sound.html', dur: 0 },
+    safety:            { name: '陪伴与支持',     desc: '此刻你并不孤单，我们更想先陪你聊一聊。', page: 'safety', dur: 0 }
+  };
+
+  // ====== 推荐引擎 prompt（只做需求识别+功能推荐，不做心理诊断） ======
+  const REC_PROMPT = [
+    '你是一个睡眠辅助应用的「需求识别与功能推荐」引擎。用户会描述自己为什么睡不着。请判断用户此刻最需要什么，从下面的功能里选一个最合适的作为主推荐（primary_function），再选一个作为次推荐（secondary_function）。',
+    '',
+    '功能列表（只能从这些 id 里选）：',
+    '- thought_box：烦恼收纳箱——表达、倾诉、把想法写下来、记录明天要做的事、安放悬而未决的担心',
+    '- thought_completion：引导入睡音频——反复回想某件事、后悔、反刍、对未来的担忧、需要把一件事"想完放下"',
+    '- reading：睡前阅读——脑子活跃但没有具体烦恼、单纯不困、想转移注意力',
+    '- relaxation：放松练习——身体紧绷、心跳快、坐立不安、身体很清醒',
+    '- white_noise：白噪音——被环境噪音干扰、想要安静氛围',
+    '- music：音乐——想听点安神的东西',
+    '- sleep_audio：助眠音频——想要舒缓声音引导入睡',
+    '',
+    '映射提示：想表达/倾诉/心里堵得慌 → thought_box；回想过去/后悔/反刍/翻来覆去想一件事 → thought_completion；对未来担忧/焦虑明天 → thought_completion；需要记住明天的事/任务清单 → thought_box；身体紧绷/心跳快/坐立不安/浑身酸痛 → relaxation；脑子活跃但无具体担忧 → reading；单纯不困/想刷手机又停不下来 → reading；环境噪音/室友吵/窗外吵 → white_noise；想听点安神的声音/有点孤单空落落 → music 或 white_noise；做噩梦/害怕/惊醒了 → thought_completion 或 sleep_audio；跟人吵架/生气/委屈/被误解 → thought_box；说不清具体原因、单纯睡不着（"不知道""没什么原因就是睡不着"）→ reading。',
+    '',
+    '要求：',
+    '1. 不要诊断用户。不要写"你有焦虑症""你有情绪压抑"这类话；如需提及心理概念，用"这有点像……的模式"。',
+    '2. message 用温暖、口语化的中文，一句话点出用户此刻的需求（例如"听起来你脑子里装了很多话，需要一个地方把它们安放下来。"），统一用"你"，不要长篇大论。',
+    '3. 安全：如果用户提到自残、自杀、立即危险、被虐待等严重情况，primary_function 固定返回 "safety"，message 给予安抚与陪伴，并温和建议联系信任的人或专业帮助；此时 secondary_function 也返回 "safety"。',
+    '4. 重要——不要轻易返回 "unclear"：用户输入常常是口语化、碎片化、带错别字甚至只有半句话。只要你能大致猜到方向（哪怕线索很少），就选最接近的功能推荐，并在 message 里温柔地回应用户可能想表达的意思。宁可合理地猜一个方向，也不要轻易说"没读懂"。只有输入是明显乱码（无意义字符、随机字母数字、键盘乱敲、纯符号）时才返回 "unclear"，并用温和、高情商、口语化的方式请用户重新表达（例如"我好像没太读懂你的意思，可以换个方式再跟我说说吗？"），不要指责。',
+    '',
+    '只输出 JSON，不要输出任何其他文字：',
+    '{"need_type":"需求类型英文","primary_function":"主推荐功能id","secondary_function":"次推荐功能id","message":"一句话安抚+点出需求"}'
+  ].join('\n');
+
+  const PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
+  const DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用
+  const API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
+
+  function analyzeReason(input) {
+    /* 代理优先；代理网络失败时自动降级直连（两层保障） */
+    if (PROXY.url) {
+      return analyzeOnce(input, PROXY.url, true).catch(function(e) {
+        if (e && e.name === 'AbortError') throw e;
+        return analyzeOnce(input, 'https://api.deepseek.com/chat/completions', false);
+      });
+    }
+    return analyzeOnce(input, API_URL, false);
+  }
+
+  function analyzeOnce(input, url, viaProxy) {
+    return new Promise(function(resolve, reject) {
+      const ctrl = ('AbortController' in window) ? new AbortController() : null;
+      const to = ctrl ? setTimeout(function(){ ctrl.abort(); }, 60000) : null;
+      const body = {
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: REC_PROMPT },
+          { role: 'user', content: input }
+        ],
+        temperature: 0.5,
+        max_tokens: 400,
+        stream: false,
+        response_format: { type: 'json_object' }
+      };
+      const headers = {};
+      if (viaProxy) {
+        // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
+        body.key = PROXY.anonKey;
+        headers['Content-Type'] = 'text/plain';
+      } else {
+        // 直连模式
+        headers['Content-Type'] = 'application/json';
+        headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
+      }
+      const opts = {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(body)
+      };
+      if (ctrl) opts.signal = ctrl.signal;
+
+      fetch(url, opts).then(function(res) {
+        if (to) clearTimeout(to);
+        if (!res.ok) {
+          return res.json().catch(function(){ return null; }).then(function(j) {
+            const msg = (j && j.error && j.error.message) ? j.error.message : ('HTTP ' + res.status);
+            throw new Error(msg);
+          });
+        }
+        return res.json();
+      }).then(function(j) {
+        if (!j || !j.choices || !j.choices[0] || !j.choices[0].message || !j.choices[0].message.content) {
+          throw new Error('模型没有返回内容，请重试');
+        }
+        let raw = String(j.choices[0].message.content).trim();
+        raw = raw.replace(/^```(json)?/i, '').replace(/```\s*$/, '').trim();
+        const a = raw.indexOf('{'), b = raw.lastIndexOf('}');
+        if (a >= 0 && b > a) raw = raw.slice(a, b + 1);
+        const data = JSON.parse(raw);
+        if (!data.primary_function) throw new Error('返回结构不完整');
+        resolve(data);
+      }).catch(function(e) {
+        if (to) clearTimeout(to);
+        if (e && e.name === 'AbortError') { reject(new Error('请求超时，请重试')); return; }
+        reject(e);
+      });
+    });
+  }
+
+  // ====== 展示推荐 ======
+  let currentRec = null;
+
+  function showRecommend(data) {
+    const pf = data.primary_function;
+    const sec = data.secondary_function;
+    const func = FUNC[pf] || FUNC.thought_box;
+    currentRec = data;
+
+    recLoading.hidden = true;
+    recResult.hidden = false;
+    recMsg.textContent = data.message || '';
+    recName.textContent = func.name;
+    recDesc.textContent = func.desc;
+
+    // 安全路由：不推荐正常功能
+    if (pf === 'safety') {
+      recName.textContent = FUNC.safety.name;
+      recDesc.textContent = '请优先联系你信任的人，或寻求专业帮助。你不是一个人，我们一直都在。';
+      recStart.textContent = '我知道了';
+      recAdd.hidden = true;
+      recSec.hidden = true;
+      currentRec.safety = true;
+    } else if (pf === 'unclear') {
+      // 高情商退回：没读懂，请用户重新输入
+      recName.textContent = '再跟我说说';
+      recDesc.textContent = '可以说说具体发生了什么，或者你此刻身体、心里的感觉。';
+      recStart.textContent = '重新输入';
+      recAdd.hidden = true;
+      recSec.hidden = true;
+      currentRec = { safety: true, unclear: true };
+    } else {
+      recStart.textContent = '立即开始';
+      recAdd.hidden = false;
+      if (sec && FUNC[sec] && sec !== pf) {
+        recSec.hidden = false;
+        recSecName.textContent = FUNC[sec].name;
+      } else {
+        recSec.hidden = true;
+      }
+      currentRec.safety = false;
+    }
+  }
+
+  recBtn.addEventListener('click', function() {
+    const text = recInput.value.trim();
+    if (!text) { showToast('先写两句，告诉我你此刻的心情吧'); return; }
+    if (isGarbled(text)) {
+      showToast('我好像没太读懂你的意思，可以换种方式再跟我说说吗？');
+      return;
+    }
+    recBtn.disabled = true;
+    recBtn.textContent = '正在理解你的心情…';
+    recLoading.hidden = false;
+    recResult.hidden = true;
+    recMask.classList.add('show');
+
+    analyzeReason(text).then(function(data) {
+      showRecommend(data);
+    }).catch(function(e) {
+      recMask.classList.remove('show');
+      showToast('没能连上服务：' + (e.message || '请稍后再试'));
+    }).finally(function() {
+      recBtn.disabled = false;
+      recBtn.textContent = '看看什么能帮到你';
+    });
+  });
+
+  // 立即开始
+  recStart.addEventListener('click', function() {
+    if (!currentRec) return;
+    if (currentRec.unclear) {
+      recMask.classList.remove('show');
+      recInput.focus();
+      return;
+    }
+    if (currentRec.safety) {
+      recMask.classList.remove('show');
+      return;
+    }
+    const func = FUNC[currentRec.primary_function];
+    if (func && func.page && func.page !== 'safety') {
+      location.href = func.page;
+    }
+  });
+
+  // 加入睡前流程
+  recAdd.addEventListener('click', function() {
+    if (!currentRec || currentRec.safety) return;
+    const func = FUNC[currentRec.primary_function];
+    try {
+      localStorage.setItem('routine_add', JSON.stringify({
+        type: currentRec.primary_function,
+        name: func.name,
+        dur: func.dur
+      }));
+    } catch(e) {}
+    location.href = 'routine.html';
+  });
+
+  recClose.addEventListener('click', function() {
+    recMask.classList.remove('show');
+  });
+  recMask.addEventListener('click', function(e) {
+    if (e.target === recMask) recMask.classList.remove('show');
+  });
+
+  // ====== 各功能按钮跳转到对应独立页面 ======
   document.querySelectorAll('.card').forEach(card => {
     card.addEventListener('click', e => {
       e.stopPropagation();
       const name = card.dataset.name;
       const map = {
-        '引导入睡音频': 'caignick.html',
-        '蔡格尼克': 'caignick.html',
+        '引导入睡音频': 'caignick.html?v=3',
+        '蔡格尼克': 'caignick.html?v=3',
         '白噪音': 'sound.html',
         '阅读倒计时': 'read.html',
         '放松练习': 'relax.html',
-        '烦恼收藏箱': 'box.html'
+        '烦恼收藏箱': 'box.html',
+        '日程': 'routine.html'
       };
       if (map[name]) {
         location.href = map[name];
@@ -283,6 +794,90 @@ html, body {
       }
     });
   });
+
+  // 月亮 → 查看用户协议
+  const moonBtn = document.getElementById('moonBtn');
+  if (moonBtn) {
+    moonBtn.addEventListener('click', () => { location.href = 'agreement.html'; });
+  }
+
+  // ===== 用户协议：首次使用必须同意，否则不进入主页 =====
+  const termsMask = document.getElementById('termsMask');
+  const termsView = document.getElementById('termsView');
+  const termsAgree = document.getElementById('termsAgree');
+  const termsDisagree = document.getElementById('termsDisagree');
+
+  // 查看协议全文
+  if (termsView) termsView.addEventListener('click', () => { location.href = 'agreement.html'; });
+
+  // 同意并继续
+  if (termsAgree) termsAgree.addEventListener('click', () => {
+    try { localStorage.setItem('agreed_terms', '1'); } catch (e) {}
+    termsMask.classList.remove('show');
+  });
+
+  // 暂不同意：给出提示，不关闭（必须同意才能进主页）
+  if (termsDisagree) termsDisagree.addEventListener('click', () => {
+    showToast('同意协议后才能开始使用，谢谢理解');
+  });
+
+  // 首次使用检查：未同意则弹协议，且无法进入主页
+  try {
+    if (localStorage.getItem('agreed_terms') !== '1') {
+      termsMask.classList.add('show');
+    }
+  } catch (e) {
+    termsMask.classList.add('show');
+  }
+
+  // ===== 陪伴天数：温柔陪伴你的第 X 天（首次使用自动记录） =====
+  const subtitleEl = document.getElementById('subtitle');
+  if (subtitleEl) {
+    (function() {
+      let days = 1;
+      try {
+        const key = 'first_use_date';
+        const today = new Date();
+        const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        let first = localStorage.getItem(key);
+        if (!first) {
+          first = todayStr;
+          localStorage.setItem(key, first);
+        }
+        const f = new Date(first + 'T00:00:00');
+        const t = new Date(todayStr + 'T00:00:00');
+        const diff = Math.round((t - f) / 86400000);
+        days = Math.max(1, diff + 1);
+      } catch (e) {}
+      subtitleEl.textContent = '温柔陪伴你的第 ' + days + ' 个夜晚';
+    })();
+  }
+
+  // ===== 底部左右分页导航 =====
+  (function() {
+    const cards = document.getElementById('cards');
+    const prev = document.getElementById('pagerPrev');
+    const next = document.getElementById('pagerNext');
+    const dots = document.querySelectorAll('.pager-dot');
+    if (!cards || !prev || !next) return;
+    const totalPages = dots.length || 2;
+    function curPage() { return Math.round(cards.scrollLeft / cards.clientWidth); }
+    function update() {
+      const p = Math.max(0, Math.min(totalPages - 1, curPage()));
+      prev.disabled = p <= 0;
+      next.disabled = p >= totalPages - 1;
+      dots.forEach((d, i) => d.classList.toggle('active', i === p));
+    }
+    function go(p) {
+      cards.scrollTo({ left: p * cards.clientWidth, behavior: 'smooth' });
+    }
+    prev.addEventListener('click', () => go(Math.max(0, curPage() - 1)));
+    next.addEventListener('click', () => go(Math.min(totalPages - 1, curPage() + 1)));
+    dots.forEach((d) => d.addEventListener('click', () => go(parseInt(d.dataset.page, 10))));
+    cards.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  })();
 
 })();
 </script>
@@ -301,6 +896,16 @@ html, body {
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>落定 · 睡前思绪整理</title>
+<script>
+/* 缓存破坏：URL 无版本参数时自动带参重载（确保手机摆脱旧缓存、加载最新版） */
+(function(){
+  try {
+    if (new URLSearchParams(location.search).get('v') !== '3') {
+      location.replace(location.pathname + '?v=3' + location.hash);
+    }
+  } catch(e) {}
+})();
+</script>
 <style>
   :root{
     --bg0:#070a16;
@@ -320,11 +925,12 @@ html, body {
     --sans:-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
+  html,body{height:100%;overflow-x:hidden;overscroll-behavior-x:contain;}
   body{
-    margin:0;background:#04060d;display:flex;justify-content:center;align-items:center;padding:0;overflow:hidden;
+    margin:0;background:#04060d;display:flex;justify-content:center;align-items:center;padding:0;overflow:hidden;overscroll-behavior:none;
     font-family:var(--sans);color:var(--text);
     -webkit-font-smoothing:antialiased;
+    touch-action:pan-y;
   }
   button{font-family:inherit;border:none;background:none;color:inherit;cursor:pointer;padding:0;}
   .hidden{display:none!important;}
@@ -363,6 +969,46 @@ html, body {
   }
   .screen.active{opacity:1;transform:none;pointer-events:auto;}
   #scr-player{display:flex;flex-direction:column;overflow:hidden;padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+
+  /* ===== 输入页背景图（紫色星空） ===== */
+  #scr-input{
+    background-color:#0b0d2a;
+    background-image:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/WechatIMG8373.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+  }
+  /* 背景图已包含"安睡引导"标题+大标题+副标题+山水剪影，隐藏前端的重复元素 + 清掉 .screen padding 避免 absolute 定位溢出 */
+  #scr-input{padding:0 !important; overflow-x:hidden !important;}
+  #scr-input .input-hero{display:none;}
+  #scr-input .nav-title{display:none;}
+  #scr-input .nav{position:absolute; top:14px; left:14px; right:14px; margin:0; min-height:auto; justify-content:flex-start; z-index:7; overflow:visible;}
+  #scr-input .back-btn{position:relative; z-index:9; background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.3); color:#fff; backdrop-filter:blur(4px); font-size:22px; line-height:1;}
+  /* 遮罩：盖住背景图里自带的"返回箭头"和"安睡引导"标题（避免和我们的 back-btn + 视觉元素重叠） */
+  #scr-input .bg-mask-top{position:absolute; top:0; left:0; right:0; height:200px; background:linear-gradient(180deg, rgba(11,13,42,0.85) 0%, rgba(11,13,42,0.55) 60%, rgba(11,13,42,0) 100%); z-index:6; pointer-events:none;}
+  /* 输入页专属闪烁星星（浮在背景图之上） */
+  #scr-input #inputStars{position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden;}
+  #scr-input #inputStars .star{position:absolute; border-radius:50%; background:#fff; animation:tw linear infinite;}
+  /* textarea 和按钮放到背景图下半部分（山水剪影区上方） */
+  #scr-input #worryInput{
+    position:absolute; left:24px; right:24px; bottom:140px;
+    background:rgba(255,255,255,0.10);
+    border:1.5px solid rgba(255,255,255,0.22);
+    border-radius:16px; color:#e9edf8;
+    padding:12px 14px; font-size:13px; line-height:1.6; height:88px; min-height:88px;
+    backdrop-filter:blur(6px);
+    max-width:calc(100% - 48px);
+  }
+  #scr-input #worryInput::placeholder{color:rgba(233,237,248,0.5); white-space:normal;}
+  #scr-input .count{position:absolute; right:30px; bottom:120px; color:rgba(233,237,248,0.6); font-size:11px;}
+  #scr-input .cta{
+    position:absolute; left:24px; right:24px; bottom:38px;
+    margin:0; height:48px;
+    background:linear-gradient(135deg,#a982d4 0%,#b48ad6 100%);
+    color:#fff;
+    box-shadow:0 6px 18px rgba(140,100,200,0.45);
+    max-width:calc(100% - 48px);
+  }
 
   /* ---------- home ---------- */
   .home-head{display:flex;align-items:baseline;justify-content:space-between;margin-top:10px;}
@@ -711,7 +1357,7 @@ html, body {
   .read-vid-canvas{bottom:0;transform:translateX(-50%);z-index:2;}
   .read-vid-canvas2{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     width:100%;aspect-ratio:9/16;z-index:4;pointer-events:none;}
-  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
+  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
   /* 混音/阅读模式：隐藏星光、状态栏文字颜色适配背景 */
   #phone.read-mode #starfield{display:none;}
   #phone.read-mode .statusbar{display:none;}
@@ -863,6 +1509,52 @@ html, body {
     opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;
   }
   .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- 从收纳箱选择烦恼 ---------- */
+  #scr-input .box-pick-trigger{
+    position:absolute; left:24px; bottom:240px; z-index:8;
+    display:inline-flex; align-items:center; gap:6px;
+    color:rgba(233,237,248,0.9); font-size:12px; letter-spacing:.5px;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22);
+    border-radius:99px; padding:7px 13px;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    white-space:nowrap;
+    cursor:pointer; transition:background .15s, transform .15s;
+  }
+  #scr-input .box-pick-trigger:active{background:rgba(255,255,255,0.18);transform:scale(.96);}
+  #scr-input .box-pick-trigger svg{width:14px;height:14px;flex-shrink:0;}
+
+  .box-pick-mask{
+    position:absolute; inset:0; z-index:60;
+    background:rgba(3,5,11,.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .box-pick-mask.show{opacity:1; pointer-events:auto;}
+  .box-pick-panel{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(180deg,#161d3a,#10152c);
+    border-radius:26px 26px 0 0; border:1px solid var(--line); border-bottom:none;
+    padding:16px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height:72%; display:flex; flex-direction:column;
+    transform:translateY(105%); transition:transform .38s cubic-bezier(.32,.72,.28,1);
+  }
+  .box-pick-mask.show .box-pick-panel{transform:none;}
+  .box-pick-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .box-pick-title{font-size:16px; font-weight:600; letter-spacing:1px; color:var(--text);}
+  .box-pick-close{background:none; border:none; color:var(--muted); font-size:26px; line-height:1; cursor:pointer; padding:0 4px;}
+  .box-pick-list{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:8px 0 4px; scrollbar-width:none;}
+  .box-pick-list::-webkit-scrollbar{display:none;}
+  .box-pick-item{
+    text-align:left; width:100%;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    border-radius:14px; padding:12px 14px; cursor:pointer;
+    transition:background .15s;
+  }
+  .box-pick-item:active{background:rgba(255,255,255,0.12);}
+  .box-pick-item .t{font-size:13px; color:var(--text); line-height:1.6;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .box-pick-item .d{font-size:11px; color:var(--muted); margin-top:6px; letter-spacing:.5px;}
+  .box-pick-empty{padding:34px 0; text-align:center; font-size:13px; color:var(--muted);}
 </style>
 </head>
 <body>
@@ -882,10 +1574,16 @@ html, body {
         <div class="nav-title">蔡格尼克音频</div>
         <div class="nav-right"></div>
       </div>
+      <div class="bg-mask-top"></div>
+      <div id="inputStars"></div>
       <div class="input-hero">
         <h2>今晚，是什么<br>在您脑子里转？</h2>
         <p>简单几句话就好。AI 会读懂您的情绪，用心理学的视角帮您看清它、安放它，再带您放松下来。</p>
       </div>
+      <button class="box-pick-trigger" id="boxPickTrigger" aria-label="从收纳箱选择烦恼">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg>
+        从收纳箱选择烦恼
+      </button>
       <textarea id="worryInput" maxlength="400" placeholder="例如：明天有一场很重要的考试，总觉得还没准备好……"></textarea>
       <div class="count"><span id="charCount">0</span> / 400</div>
       <button class="cta" id="btnGenerate">生成专属引导音频</button>
@@ -1013,9 +1711,9 @@ html, body {
     <section class="screen" id="scr-read">
       <!-- 三段背景：图15 顶 / 图16 中(z-top) / 图17 底；等比 9:16，原比例不裁不拉 -->
       <div class="read-bg-top"></div>
-      <video id="readVid" src="melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas" class="read-vid-canvas"></canvas>
-      <video id="readVid2" src="melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid2" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas2" class="read-vid-canvas2"></canvas>
       <div class="read-bg-mid"></div>
 
@@ -1151,9 +1849,22 @@ html, body {
     </div>
   </div>
 
+  <!-- ===== 从收纳箱选择烦恼 ===== -->
+  <div class="box-pick-mask" id="boxPickMask">
+    <div class="box-pick-panel">
+      <div class="box-pick-head">
+        <div class="box-pick-title">从收纳箱选择烦恼</div>
+        <button class="box-pick-close" id="boxPickClose" aria-label="关闭">×</button>
+      </div>
+      <div class="box-pick-list" id="boxPickList"></div>
+      <div class="box-pick-empty" id="boxPickEmpty">收纳箱还是空的，先去写一条烦恼吧</div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
+<script src="tc-tts.js?v=2"></script>
 <script>
 'use strict';
 /* ================= 配置 ================= */
@@ -1168,56 +1879,68 @@ html, body {
       PROXY.url、项目 anon key 填进 PROXY.anonKey，并删除 DEEPSEEK_KEY 一行。
       key 只存服务端 secret（supabase secrets set DEEPSEEK_API_KEY=...），
       泄漏可随时轮换，客户端无感。 */
-var PROXY = { url: '', anonKey: '' };
-var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
+var PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
+var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用（直连模式）
 var TRACKING_ID = 'e3b7568d-299a-4b40-baab-7321b38abd46';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
-/* 自然语音（微软 Edge 神经网络音色）固定走本地中继 /tts；
-   API 仍走直连，仅语音合成依赖本地中继（node luoding-proxy copy.js） */
-var TTS_URL = '';
+/* 自然语音统一走 tc-tts.js（TC_TTS.synth → GPU 服务器 Qwen3-TTS-VoiceDesign）；
+   服务不可用时自动降级为系统 Web Speech，无需本地中继 */
 
 var SYSTEM_PROMPT = [
-'你是一个经验丰富的AI心理咨询助手，擅长分析用户无法睡眠的原因。请根据用户输入的睡前担忧，针对这位失眠用户，生成一段完整、自然、口语化的分析与引导。',
+'你是一个温和、有共情力的睡眠陪伴型 AI。你的任务不是教育用户、纠正用户，也不是给用户下心理诊断，而是陪用户把睡前脑海里反复出现的事情慢慢理清，让他感到"被理解、事情可以暂时放下"。',
 '',
-'【心理学概念库（全程只选用一个概念，锐评和安慰都用它，绝不罗列多个概念；定义和通俗举例严格参考以下内容校准）】',
-'1. 控制点：分内部控制点和外部控制点。内控者相信成败取决于自己的决定、能力和努力；外控者认为事情多由运气、命运或他人等外部因素决定。举例：林肯多次竞选失败后反思自身不足，最终51岁当选总统。',
-'2. 自我效能：对自己"这件事我能做成"的信心。自我效能高的人面对困难更积极、更有毅力，愿意付出更多努力。举例：莫扎特5岁作曲、8岁写交响乐、12岁写歌剧，即使被排挤也坚信自己能完成最好的作品。',
-'3. 自我控制：一种有限的心理资源，像一块会耗电的电池。每次克制冲动、控制情绪、专注做事都会消耗它；没忍住不代表没自制力，只是"电池"快没电了。举例：减肥屡次失败，不是意志力不足，而是没学会有效自我控制、能量耗尽了。',
-'4. 自我展示：希望给他人留下好印象、管理自己在他人心中的形象。举例：诸葛亮自号"卧龙"、自比管仲乐毅，三顾茅庐时以衣着配饰和农夫吟歌展示清雅高士形象。但过于在意他人看法可能失去自我。',
-'5. 归因理论：给事件或行为找原因，分内部归因（归因于个人能力、努力、情绪）和外部归因（归因于环境、他人、任务难度）。举例：杜威说拍蚊子永远拍不完，清积水才能从根源解决。',
-'6. 自我服务偏见：把成功归因于自己（聪明、努力），把失败归因于外部（题目难、不公平）。举例：考得好说是自己聪明努力，考得差说题目太难、老师不公平。',
+'请根据用户分享的内容，生成一段自然、连贯、像真人在床边轻声陪伴一样的文案。这段文案只负责"理解 + 陪伴 + 轻轻解释 + 制造心理上的结束感"，不要包含呼吸练习（呼吸由系统另配）。',
 '',
-'【输出内容（写成一段完整连贯的话，不分点、不加小标题、不出现"情绪识别""正向推理""反向逆思""视域融合""深层真相""核心命题""总结锐评""但我想安慰你"等任何引导词和术语）】',
-'按这个顺序写：',
-'1. 先说出您识别到的情绪，告诉用户这很正常，简要说明原因。',
-'2. 用大白话把用户的真实想法说出来：用户真正在意的、最担心发生的、以及换个角度能看到的事实，最后用一句话点出失眠的根源。',
-'3. 引入心理学概念做锐评，固定句式："心理学中有个概念：{概念名}。它的意思是{定义}。比如，{通俗举例}。您现在{结合用户的具体情况}，其实就是被{概念名}这个心理机制困住了。"',
-'4. 基于同一个概念安慰（不要引入新概念）：先温和地说出这件事的另一面，让用户感到被理解、被肯定，再点出这个概念背后用户身上可贵、值得被照顾的地方。',
-'5. 用一句简短、温和但有分量的话做总结。',
-'6. 用 Zeigarnik 效应收尾：强调"这件事已经完成、无法改变、今晚应该结束了"，引导用户停止反复回想，安心入睡。',
+'【核心原则】先理解再分析，先陪伴再引导。不要急着告诉用户问题在哪，也不要试图证明他的想法是错的。先站在他当下的视角理解：如果我是他，为什么这件事此刻会这么难放下。保持不确定感，多用"听起来……""也许……""会不会有一部分的你……""有时候大脑会……"；少用"你的核心问题是""你其实就是""你必须""这说明你"。',
 '',
-'【必须遵守的规则】',
-'1. 全程只用一个心理学概念，锐评和安慰都用它，绝不罗列多个概念',
-'2. 概念必须给出"定义 + 通俗举例"，用"心理学中有个概念：X。它的意思是……比如，……"的句式',
-'3. 安慰必须基于同一个概念，从正面、保护性的角度重新解读，语气温和、有情商；绝不说"其实别人没那么在乎你""别人根本没看到你"这类让人更难受、更孤单的话',
-'4. 必须用 Zeigarnik 效应作为收尾机制，帮助用户认知到"事情已结束"',
-'5. 语言温暖、口语化、有洞察力但不居高临下；避免"你应该"，多用"请允许""你可以试试"',
-'6. 不出现"正向推理""反向逆思""视域融合""深层真相""核心命题""命题提炼"等术语和华丽词藻，全部用大白话',
-'7. 全文统一用"您"，不用"你"',
+'【回应逻辑】（输出时不要出现任何步骤名、术语、引导词，像自然聊天）',
+'1. 先捕捉用户最明显的情绪，结合他分享的具体经历说明这种感受为什么可以理解。不要机械说"这很正常"，而是像"难怪你现在脑子还停不下来，白天那一幕对你来说可能还没真正过去。"',
+'2. 推测他脑海里真正没有结束的那个念头：先顺着他的逻辑理解，再从另一个角度看，最后找到更深层真正担心的东西。不要把推测说成绝对事实，信息不足时多用"也许""可能""听起来像"。例如"你表面上可能一直在想刚才是不是说错话了，但更深一点，也许你担心的是别人会不会因此改变对你的看法。"',
+'3. 选 1 个最贴切的心理学概念（最多 2 个），只作为帮他理解自己的工具，不贴标签、不写教科书。自然融入，定义控制在一句话左右，举例尽量用他自己的情境。如果概念会打断情绪，可以不说名称，只用背后的逻辑。',
+'4. 解释之后不要马上给改正意见。先告诉他这种心理反应可能在保护什么，例如"你这么在意，某种程度上是因为这段关系对你很重要。""脑子一直回去检查这件事，可能只是它想确认自己有没有漏掉什么。"',
+'5. 用 Zeigarnik 效应帮他暂时结束思考，但不生硬强调"事情已结束"。自然说明"大脑容易反复打开那些它觉得还没处理完的事，所以你现在一直想它，不代表今晚非解决不可"，然后帮他制造心理句号："今晚不需要把它彻底想明白""你可以先把这件事留在这里""如果明天醒来还觉得重要，那时再处理也来得及"。根据他的事件给一句自然的结束语，不要每次相同。',
 '',
-'只输出 JSON，不要输出任何其他文字。JSON 格式：',
-'{"type":"类型代码","summary":"一句话概括用户的思绪","analysis":"上述完整的一段话"}',
+'【语言风格】温暖、克制、自然，有洞察力但不煽情，像懂心理学但此刻只是坐在床边陪他聊天的人。句子短，一两句表达一个意思，适合慢速朗读，减少复杂从句和连续转折，避免连续提问。不用"你要学会""其实根本没什么""不要想太多""你只是"这类居高临下的话。全文统一用"你"，不用"您"。',
+'',
+'【长度】约 400-600 字（仅理解+陪伴+解释+结束感，不含呼吸）。',
+'',
+'【特别】不诊断心理疾病，不把推测当事实，不把普通情绪病理化，不总结成性格缺陷。最终让他感到："它好像懂我为什么放不下""我的大脑这样反应是有原因的""这件事今晚可以先不用想了"。',
+'',
+'只输出 JSON，不要输出任何其他文字：',
+'{"type":"类型代码","summary":"一句话概括他的思绪","analysis":"上述完整文案"}',
 '类型代码七选一：future、uncertain_regret、definite_regret、sleep_anxiety、hypervigilance、flashback、excitement'
 ].join('\n');
 
 /* ================= 固定文案（不随用户变化，不调用 DeepSeek、不缓存） ================= */
-var FIXED_OPEN = '现在，请把手机放在一旁，让自己躺得舒服一点。我来帮您把脑子里还在转的事，慢慢理一理。';
-var FIXED_RELAX = '现在把您的注意力从刚才那件事上移开，移到您的呼吸上。用鼻子吸气，默数四秒。吸气时，让腹部鼓起。感受气息从鼻腔进入，经过喉咙，充满整个腹部。现在屏住呼吸，默数七秒。感受身体在这一刻的静止。然后，用嘴巴缓缓呼气，默数八秒。呼气时，想象肚脐眼沉到脊柱的方向。感受腹部内收，肩膀下沉，下巴放松。眼皮变重。每一次呼气，您的身体都更沉一点，更靠近睡眠一点。';
-var FIXED_END = '记住Zeigarnik效应的核心：大脑最放不下的，是"以为还能改"的。但今晚，这些"未完成"都是幻觉——今天已经结束，你无法再改变它。现在请闭上眼睛，告诉自己："这件事，结束了。"晚安，祝您一夜好梦。';
+var FIXED_OPEN = '现在，让自己躺得舒服一点。不用急着睡着。我们先一起，把脑子里还在转的事，慢慢理一理。';
+var FIXED_RELAX = '现在，如果愿意的话，我们把注意力慢慢从那些念头里，收回到呼吸上。接下来的几次呼吸，不需要做得特别标准，跟不上也没关系，跟着我的声音就好。慢慢吸气，一、二、三、四。轻轻停在这里，一、二、三、四、五、六、七。现在慢慢呼出去，一、二、三、四、五、六、七、八。很好，什么都不用想，再来一次。慢慢吸气，一、二、三、四。停留一下，一、二、三、四、五、六、七。然后把这一口气慢慢呼出去，一、二、三、四、五、六、七、八。再吸一口气，慢慢数到四。停在这里，七秒。然后更慢地呼出去，八秒。如果刚才那件事又跑回来，也没关系。知道它来了，就够了。让它待在旁边，然后再回到这一口呼气。';
+var FIXED_END = '今晚已经够了。现在没有什么需要解决的。床在托着你，让身体慢慢沉下去。念头来了，也可以让它自己过去。你不用回答，也不用处理。慢慢呼气。今晚先到这里。剩下的，明天再说。现在，可以休息了。';
 
 /* ================= 工具 ================= */
 function $(s){ return document.querySelector(s); }
 function $$(s){ return document.querySelectorAll(s); }
+
+/* 判断输入是否为乱码/无意义内容 */
+function isGarbled(text){
+  var s = String(text || '').trim();
+  if(s.length < 2) return true;
+  var hasChinese = /[\u4e00-\u9fa5]/.test(s);
+  var hasWord = /[a-zA-Z]{2,}/.test(s);
+  /* 既无中文也无英文单词 → 乱码（纯数字/符号/乱字节） */
+  if(!hasChinese && !hasWord) return true;
+  var compact = s.replace(/[\s\p{P}]/gu, '');
+  /* 去掉空白标点后只剩同一种字符 → 乱码（如 aaaaa、11111、!!!!!） */
+  if(compact && new Set(compact).size === 1) return true;
+  /* 无中文时：纯字母串若无元音、或整串是键盘同一行，通常是键盘乱按 */
+  if(!hasChinese){
+    var letters = s.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    if(letters.length >= 4){
+      if(!/[aeiou]/.test(letters)) return true;
+      if(/^[asdfghjkl]+$/.test(letters) || /^[qwertyuiop]+$/.test(letters) || /^[zxcvbnm]+$/.test(letters)) return true;
+    }
+  }
+  return false;
+}
 
 function showScreen(id){
   $$('.screen').forEach(function(s){ s.classList.toggle('active', s.id === id); });
@@ -1297,6 +2020,40 @@ function closeSheet(){
   $('#sheet').classList.remove('show');
 }
 
+/* ================= 从收纳箱选择烦恼 ================= */
+function openBoxPick(){
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('box_notes') || '[]'); } catch(e) {}
+  if(!Array.isArray(list)) list = [];
+  list = list.filter(function(x){ return x && x.text && String(x.text).trim(); });
+  var wrap = $('#boxPickList');
+  var empty = $('#boxPickEmpty');
+  wrap.innerHTML = '';
+  if(list.length === 0){
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.forEach(function(item){
+      var btn = document.createElement('button');
+      btn.className = 'box-pick-item';
+      btn.innerHTML = '<div class="t"></div><div class="d"></div>';
+      btn.querySelector('.t').textContent = String(item.text).trim();
+      btn.querySelector('.d').textContent = ((item.day || '') + ' ' + (item.time || '')).trim();
+      btn.addEventListener('click', function(){
+        $('#worryInput').value = String(item.text).trim();
+        updateCount();
+        closeBoxPick();
+        toast('已填入这条烦恼');
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  $('#boxPickMask').classList.add('show');
+}
+function closeBoxPick(){
+  $('#boxPickMask').classList.remove('show');
+}
+
 /* ================= 星空 / 时钟 ================= */
 function renderStars(){
   var wrap = $('#starfield');
@@ -1314,6 +2071,24 @@ function renderStars(){
     s.style.animationDelay = (Math.random()*dur).toFixed(2) + 's';
     if(Math.random() > 0.86){ s.style.boxShadow = '0 0 6px rgba(233,205,154,.8)'; }
     wrap.appendChild(s);
+  }
+  /* 输入页额外一层更密集的闪烁星星 */
+  var iw = document.getElementById('inputStars');
+  if(iw){
+    for(var k=0;k<46;k++){
+      var sp = document.createElement('span');
+      sp.className = 'star';
+      var sz = (Math.random()*2.2 + 0.8).toFixed(1);
+      sp.style.width = sz + 'px';
+      sp.style.height = sz + 'px';
+      sp.style.left = (Math.random()*100).toFixed(2) + '%';
+      sp.style.top = (Math.random()*78).toFixed(2) + '%';
+      var d = (Math.random()*3 + 1.6).toFixed(2);
+      sp.style.animationDuration = d + 's';
+      sp.style.animationDelay = (Math.random()*d).toFixed(2) + 's';
+      if(Math.random() > 0.88){ sp.style.boxShadow = '0 0 7px rgba(255,255,255,.75)'; }
+      iw.appendChild(sp);
+    }
   }
 }
 function tickClock(){
@@ -1387,6 +2162,17 @@ function runGeneration(input){
 }
 
 function callAPI(input, signal){
+  /* 代理优先；代理网络失败时自动降级直连（两层保障） */
+  if (PROXY.url) {
+    return callAPIOnce(input, signal, PROXY.url, true).catch(function(err){
+      if (err && err.name === 'AbortError') throw err;
+      return callAPIOnce(input, signal, 'https://api.deepseek.com/chat/completions', false);
+    });
+  }
+  return callAPIOnce(input, signal, API_URL, false);
+}
+
+function callAPIOnce(input, signal, url, viaProxy){
   return new Promise(function(resolve, reject){
     var ctrl = null;
     var to = null;
@@ -1408,13 +2194,16 @@ function callAPI(input, signal){
       stream: false,
       response_format: { type: 'json_object' }
     };
-    var headers = { 'Content-Type': 'application/json' };
-    if (PROXY.url) {
-      headers['apikey'] = PROXY.anonKey;   // 代理模式：anon key 门禁，密钥在服务端
+    var headers = {};
+    if (viaProxy) {
+      // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
+      body.key = PROXY.anonKey;
+      headers['Content-Type'] = 'text/plain';
     } else {
-      headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY; // 直连模式
+      // 直连模式
+      headers['Content-Type'] = 'application/json';
+      headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
     }
-    headers['X-Tracking-Id'] = TRACKING_ID;
     var opts = {
       method: 'POST',
       headers: headers,
@@ -1422,7 +2211,7 @@ function callAPI(input, signal){
     };
     if(ctrl) opts.signal = ctrl.signal;
 
-    fetch(API_URL, opts).then(function(res){
+    fetch(url, opts).then(function(res){
       if(to) clearTimeout(to);
       if(!res.ok){
         return res.json().catch(function(){ return null; }).then(function(j){
@@ -1578,93 +2367,22 @@ function estTotal(){
   return t;
 }
 
-/* ================= 语音（前端直连 Edge 神经网络语音） ================= */
-
-/* ================= Edge 神经网络语音（前端直连，自然音色） ================= */
-var EDGE_VOICES = [
-  { id: 'zh-CN-XiaoxiaoNeural', label: '晓晓', desc: '温柔女声' },
-  { id: 'zh-CN-YunxiNeural',    label: '云希', desc: '沉静男声' },
-  { id: 'zh-CN-YunjianNeural',  label: '云健', desc: '浑厚男声' },
-  { id: 'zh-CN-YunyangNeural',  label: '云扬', desc: '清晰男声' },
-  { id: 'zh-CN-XiaoyiNeural',   label: '晓伊', desc: '轻柔女声' }
-];
-/* 前端直连微软 Edge 神经网络语音（无需中继） */
-var EDGE_TOKEN = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
-var EDGE_VER = '1-143.0.3650.75';
-var WIN_EPOCH = 11644473600;
-function edgeHexId(){
-  var a = new Uint8Array(16); crypto.getRandomValues(a);
-  return Array.prototype.map.call(a, function(b){ return b.toString(16).padStart(2,'0'); }).join('');
-}
-function edgeJsDate(){
-  var D = new Date();
-  var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var p2 = function(n){ return String(n).padStart(2,'0'); };
-  return days[D.getUTCDay()] + ' ' + months[D.getUTCMonth()] + ' ' + p2(D.getUTCDate()) + ' ' +
-    D.getUTCFullYear() + ' ' + p2(D.getUTCHours()) + ':' + p2(D.getUTCMinutes()) + ':' + p2(D.getUTCSeconds()) +
-    ' GMT+0000 (Coordinated Universal Time)';
-}
-function edgeSecMsGec(){
-  var t = Math.floor(Date.now() / 1000);
-  t += WIN_EPOCH;
-  t -= t % 300;
-  t *= 10000000;
-  var data = new TextEncoder().encode(String(t) + EDGE_TOKEN);
-  return crypto.subtle.digest('SHA-256', data).then(function(hash){
-    return Array.prototype.map.call(new Uint8Array(hash), function(b){ return b.toString(16).padStart(2,'0'); }).join('').toUpperCase();
-  });
-}
+/* ================= Qwen3-TTS 语音合成（GPU 服务器，自然中文音色） ================= */
+var EDGE_VOICES = (window.TC_TTS && TC_TTS.VOICES) || [];
+/* 语音合成统一入口（TC_TTS → GPU 服务器 Qwen3-TTS-VoiceDesign；voice 为音色 ID） */
 function edgeTTS(text, voice, ratePct){
-  return edgeSecMsGec().then(function(gec){
-    return new Promise(function(resolve, reject){
-      var connId = edgeHexId();
-      var qs = '/consumer/speech/synthesize/readaloud/edge/v1' +
-        '?TrustedClientToken=' + EDGE_TOKEN +
-        '&ConnectionId=' + connId +
-        '&Sec-MS-GEC=' + gec +
-        '&Sec-MS-GEC-Version=' + EDGE_VER;
-      var ws = new WebSocket('wss://speech.platform.bing.com' + qs);
-      var chunks = [];
-      ws.binaryType = 'arraybuffer';
-      var timer = setTimeout(function(){ try{ ws.close(); }catch(e){} reject(new Error('Edge TTS 超时')); }, 30000);
-      ws.onopen = function(){
-        var ts = edgeJsDate();
-        var cfg = 'X-Timestamp:' + ts + '\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n' +
-          JSON.stringify({ context:{ synthesis:{ audio:{ metadataoptions:{ sentenceBoundaryEnabled:'false', wordBoundaryEnabled:'false' }, outputFormat:'audio-24khz-48kbitrate-mono-mp3' } } } });
-        ws.send(cfg);
-        var rate = (ratePct > 0 ? '+' : '') + ratePct + '%';
-        var ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'>" +
-          "<voice name='" + voice + "'><prosody pitch='+0Hz' rate='" + rate + "' volume='+0%'>" + text + '</prosody></voice></speak>';
-        var msg = 'X-RequestId:' + connId + '\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:' + ts + 'Z\r\nPath:ssml\r\n\r\n' + ssml;
-        ws.send(msg);
-      };
-      ws.onmessage = function(ev){
-        if(typeof ev.data === 'string'){
-          if(ev.data.indexOf('Path:turn.end') >= 0){
-            clearTimeout(timer);
-            try{ ws.close(); }catch(e){}
-            resolve(new Blob(chunks, { type: 'audio/mpeg' }));
-          }
-        } else {
-          var buf = new Uint8Array(ev.data);
-          if(buf.length > 2){
-            var hlen = (buf[0] << 8) | buf[1];
-            if(buf.length > 2 + hlen) chunks.push(buf.slice(2 + hlen));
-          }
-        }
-      };
-      ws.onerror = function(){ clearTimeout(timer); reject(new Error('Edge TTS 连接失败')); };
-      ws.onclose = function(){ clearTimeout(timer); reject(new Error('Edge TTS 连接关闭')); };
-    });
+  if(!(window.TC_TTS && TC_TTS.synth)) return Promise.reject(new Error('TTS 模块未加载'));
+  var speed = Math.max(-2, Math.min(6, Math.round(ratePct / 50)));
+  return TC_TTS.synth(text, voice, speed).then(function(blobs){
+    /* 句子已按 ≤90 字拆分，通常单段 */
+    return blobs[0];
   });
 }
 var EDGE = {
-  ok: !!TTS_URL,        /* 中继 /tts 可用性；连续失败才降级 */
-
+  ok: true,             /* Qwen3-TTS；连续失败才降级系统语音 */
   warned: false,
   fails: 0,             /* 连续失败计数（成功即清零） */
-  voice: EDGE_VOICES[0].id,
+  voice: EDGE_VOICES.length ? EDGE_VOICES[0].id : 101001,
   cache: new Map(),     /* 'voice|rate|text' → Promise<Blob> */
   audio: null, url: null
 };
@@ -1676,27 +2394,22 @@ function edgeFail(){
   }
 }
 try{
-  var savedVoice = localStorage.getItem('ld_voice');
+  var savedVoice = parseInt(localStorage.getItem('ld_voice'), 10);
   for(var ev=0; ev<EDGE_VOICES.length; ev++){
     if(EDGE_VOICES[ev].id === savedVoice){ EDGE.voice = savedVoice; break; }
   }
 }catch(e){}
 function voiceLabel(){
   for(var i=0;i<EDGE_VOICES.length;i++){ if(EDGE_VOICES[i].id === EDGE.voice) return EDGE_VOICES[i].label; }
-  return '晓晓';
+  return '温柔女声';
 }
 
 function edgeAudio(text){
   var key = EDGE.voice + '|' + player.rate + '|' + text;
   if(EDGE.cache.has(key)) return EDGE.cache.get(key);
-  var p = fetch(TTS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: text, voice: EDGE.voice, rate: Math.round((player.rate - 1) * 100) })
-  }).then(function(r){
-    if(!r.ok) throw new Error('tts ' + r.status);
-    return r.blob();
-  });
+  var ratePct = Math.round((player.rate - 1) * 100);
+  /* Qwen3-TTS 服务端合成，前端直接播放音频 Blob */
+  var p = edgeTTS(text, EDGE.voice, ratePct);
   p.catch(function(){ EDGE.cache.delete(key); });
   if(EDGE.cache.size > 160) EDGE.cache.delete(EDGE.cache.keys().next().value);
   EDGE.cache.set(key, p);
@@ -1891,7 +2604,7 @@ function speakCurrent(){
     }, delay);
   }
 
-  /* 优先走中继的 Edge 神经网络语音（自然音色），失败自动降级系统语音 */
+  /* 优先 Qwen3-TTS 自然音色，失败自动降级系统语音 */
   if(EDGE.ok){
     var p1 = player.seq[player.idx + 1], p2 = player.seq[player.idx + 2];
     if(p1) edgeAudio(player.flat[p1.fi].text);
@@ -1921,15 +2634,63 @@ function speakCurrent(){
 
 function speakWeb(st, token, next){
   var it = player.flat[st.fi];
-  /* 完全使用 Edge 神经网络语音，不再降级系统 Web Speech（机械读音） */
+  /* 优先 Qwen3-TTS 自然朗读；失败降级系统语音，保证离线也能读 */
   edgeAudio(it.text).then(function(blob){
     if(token !== player.token || !player.playing) return;
     playEdgeBlob(blob, st, token, next);
   }).catch(function(){
     if(token !== player.token || !player.playing) return;
-    /* Edge 直连失败：静默按估算时长推进，不播放机械读音 */
-    next(Math.max(800, estMs(it.text)));
+    speakSystem(st, token, next);
   });
+}
+
+/* 选择系统里最自然的中文音色 */
+function pickZhVoice(){
+  try {
+    if(!('speechSynthesis' in window)) return null;
+    var voices = speechSynthesis.getVoices() || [];
+    if(!voices.length) return null;
+    var zh = voices.filter(function(v){ return /^zh|^cmn|chinese/i.test(v.lang || ''); });
+    if(!zh.length) return null;
+    // 优先已知的自然音色（macOS Ting-Ting、Windows Huihui、Edge Xiaoxiao 等）
+    var preferred = ['ting-ting','tingting','huihui','xiaoxiao','xiaoyi','yunxi','yunjian','yunjie','meijia','sinji'];
+    for(var i=0;i<preferred.length;i++){
+      for(var j=0;j<zh.length;j++){
+        if((zh[j].name||'').toLowerCase().indexOf(preferred[i]) >= 0) return zh[j];
+      }
+    }
+    // 其次本地服务音色
+    var local = zh.filter(function(v){ return v.localService; });
+    if(local.length) return local[0];
+    return zh[0];
+  } catch(e){ return null; }
+}
+
+/* 系统语音兜底：Edge 全部失败/离线时，用 speechSynthesis 保证出声 */
+function speakSystem(st, token, next){
+  var it = player.flat[st.fi];
+  var estimated = Math.max(800, estMs(it.text));
+  function done(){ if(token === player.token && player.playing) next(300); }
+  try {
+    if('speechSynthesis' in window){
+      var u = new SpeechSynthesisUtterance(it.text);
+      var v = pickZhVoice();
+      if(v) u.voice = v;
+      u.lang = 'zh-CN';
+      u.rate = 0.95;
+      u.pitch = 1;
+      var finished = false;
+      function finish(){ if(!finished){ finished = true; done(); } }
+      u.onend = finish;
+      u.onerror = finish;
+      try { speechSynthesis.cancel(); } catch(e) {}
+      speechSynthesis.speak(u);
+      // 兜底：超过估算时长仍未结束则强制推进
+      setTimeout(function(){ if(!finished){ finished = true; try{ speechSynthesis.cancel(); }catch(e){} done(); } }, estimated + 1500);
+      return;
+    }
+  } catch(e) {}
+  done();
 }
 
 function startTick(){
@@ -2077,22 +2838,21 @@ function cycleVoice(){
 /* ================= Function 2：音乐 + 白噪音混音 ================= */
 var MIX = {
   music: [
-    { name:'钢琴', sub:'轻柔琴键', bg:'linear-gradient(135deg,#b48ef2,#6b4fb8)', src:null },
-    { name:'氛围', sub:'梦境低鸣', bg:'linear-gradient(135deg,#f4a8c4,#b48ef2)', src:'sleep.mp3' },
-    { name:'自然', sub:'林间清风', bg:'linear-gradient(135deg,#8fd4a0,#5ba8d0)', src:null },
-    { name:'古典', sub:'弦乐低语', bg:'linear-gradient(135deg,#e9cd9a,#b48ef2)', src:null }
+    { name:'钢琴', sub:'轻柔琴键', bg:'linear-gradient(135deg,#b48ef2,#6b4fb8)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/sleep.m4a' },
+    { name:'氛围', sub:'梦境低鸣', bg:'linear-gradient(135deg,#f4a8c4,#b48ef2)', src:'assets/sound/concentrate.m4a' },
+    { name:'自然', sub:'林间清风', bg:'linear-gradient(135deg,#8fd4a0,#5ba8d0)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-lullaby.m4a' },
+    { name:'朝霞', sub:'晨光微曦', bg:'linear-gradient(135deg,#f7c88a,#e8967a)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-morning-light.m4a' }
   ],
   noise: [
-    { name:'雨声', sub:'细雨轻敲', bg:'linear-gradient(135deg,#5a6a88,#2a3450)', src:'rain.mp3'  },
-    { name:'海浪', sub:'潮起潮落', bg:'linear-gradient(135deg,#5ba8d0,#2a6890)', src:'ocean.mp3' },
-    { name:'森林', sub:'鸟鸣叶响', bg:'linear-gradient(135deg,#7ab878,#3a7848)', src:null },
-    { name:'风声', sub:'远处低吟', bg:'linear-gradient(135deg,#a8c4e0,#6888a8)', src:null },
-    { name:'炉火', sub:'木柴噼啪', bg:'linear-gradient(135deg,#ff9a5a,#c84a2a)', src:null },
+    { name:'雨声', sub:'细雨轻敲', bg:'linear-gradient(135deg,#5a6a88,#2a3450)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rain.m4a'  },
+    { name:'海浪', sub:'潮起潮落', bg:'linear-gradient(135deg,#5ba8d0,#2a6890)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/ocean.m4a' },
+    { name:'森林', sub:'鸟鸣叶响', bg:'linear-gradient(135deg,#7ab878,#3a7848)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/night-forest.m4a' },
+    { name:'风声', sub:'远处低吟', bg:'linear-gradient(135deg,#a8c4e0,#6888a8)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/wind.m4a' },
+    { name:'炉火', sub:'木柴噼啪', bg:'linear-gradient(135deg,#ff9a5a,#c84a2a)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/campfire.m4a' },
     { name:'鸟鸣', sub:'清晨百啭', bg:'linear-gradient(135deg,#f4d870,#c8a848)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/birds.m4a' },
-    { name:'溪流', sub:'石上流水', bg:'linear-gradient(135deg,#8ad4d0,#5898a0)', src:null },
-    { name:'虫鸣', sub:'夏夜低鸣', bg:'linear-gradient(135deg,#8a7848,#4a3a28)', src:null },
-    { name:'雷雨', sub:'远雷阵阵', bg:'linear-gradient(135deg,#5a5a78,#2a2a48)', src:null },
-    { name:'静电', sub:'白噪纯音', bg:'linear-gradient(135deg,#c8c8d4,#8888a0)', src:null }
+    { name:'溪流', sub:'石上流水', bg:'linear-gradient(135deg,#8ad4d0,#5898a0)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/river.m4a' },
+    { name:'虫鸣', sub:'夏夜低鸣', bg:'linear-gradient(135deg,#8a7848,#4a3a28)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/insect-chirping.m4a' },
+    { name:'雷雨', sub:'远雷阵阵', bg:'linear-gradient(135deg,#5a5a78,#2a2a48)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rainstorm.m4a' }
   ],
   selMusic: -1, selNoise: -1,
   musicVol: 0.6, noiseVol: 0.4,
@@ -2300,17 +3060,15 @@ function readTick(){
 }
 
 function readPlayPhrase(text){
-  if(!TTS_URL){ return; }
-  fetch(TTS_URL, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ text: text, voice: 'zh-CN-XiaoxiaoNeural', rate: -10 }) })
-    .then(function(r){ if(!r.ok) throw 0; return r.blob(); })
-    .then(function(blob){
-      if(!READ.audioEl) READ.audioEl = new Audio();
-      if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
-      READ.audioEl.src = URL.createObjectURL(blob);
-      READ.audioEl.volume = 0.55;
-      READ.audioEl.play().catch(function(){});
-    }).catch(function(){});
+  if(!(window.TC_TTS && TC_TTS.synth)){ return; }
+  TC_TTS.synth(text, EDGE.voice, -0.3).then(function(blobs){
+    if(!blobs || !blobs.length) throw 0;
+    if(!READ.audioEl) READ.audioEl = new Audio();
+    if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
+    READ.audioEl.src = URL.createObjectURL(blobs[0]);
+    READ.audioEl.volume = 0.55;
+    READ.audioEl.play().catch(function(){});
+  }).catch(function(){});
 }
 
 function readStart(){
@@ -2350,9 +3108,7 @@ function readFinish(){
   hideBubble();
   // 自动进入后续睡眠流程：goodnight 覆盖层
   $('#goodnight').classList.add('show');
-  if(TTS_URL){
-    readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
-  }
+  readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
 }
 
 function showBubble(){
@@ -2445,6 +3201,19 @@ function quickMixSelect(kind, i){
   renderQuickMix();
 }
 
+/* 视频播放可靠性：自动播放被拒/中途被暂停时自动恢复（muted 循环背景视频，无用户暂停场景） */
+function ensureVideoPlay(v){
+  function tryPlay(){ if(v.paused && !v.ended){ var p = v.play(); if(p && p.catch) p.catch(function(){}); } }
+  tryPlay();
+  v.addEventListener('canplay', tryPlay);
+  v.addEventListener('loadeddata', tryPlay);
+  ['pointerdown','touchstart','click','keydown'].forEach(function(ev){
+    document.addEventListener(ev, tryPlay, { passive: true });
+  });
+  v.addEventListener('pause', function(){ setTimeout(tryPlay, 250); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+}
+
 function initReadVideo(){
   var vid = $('#readVid');
   var canvas = $('#readVidCanvas');
@@ -2461,9 +3230,10 @@ function initReadVideo(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        var minRGB = r < g ? (r < b ? r : b) : (g < b ? g : b);
-        if(minRGB >= 228){ d[i+3] = 0; }                          // 白色/米白 → 透明
-        else if(minRGB >= 200){ d[i+3] = ((228 - minRGB) * 255 / 28) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 色度抠白：白色=高亮且低饱和（不误伤羊的奶白色等浅色主体） */
+        if(mx >= 235 && mx - mn < 22){ d[i+3] = 0; }
+        else if(mn >= 200 && mx - mn < 45){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       /* 擦除底部圆形（音乐按钮）和右侧长条（彩条）：540×960 坐标
          圆形用圆形遮罩、长条用紧贴元素的矩形遮罩，避免矩形外溢显出米色页底 */
@@ -2482,7 +3252,7 @@ function initReadVideo(){
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
@@ -2502,14 +3272,16 @@ function initReadVideo2(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        if(r >= 250 && g >= 250 && b >= 250){ d[i+3] = 0; }          // 纯白 → 透明
-        else if(r >= 240 && g >= 240 && b >= 240){ d[i+3] = ((250 - ((r+g+b)/3|0)) * 255 / 10) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 保守抠白：melatonin2 含羊的奶白色，只抠纯白背景 */
+        if(mx >= 245 && mx - mn < 14){ d[i+3] = 0; }
+        else if(mn >= 228 && mx - mn < 30){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       ctx.putImageData(img, 0, 0);
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
@@ -2582,11 +3354,36 @@ function initRead(){
 function bind(){
   var _mf=$('#mainFeature'); if(_mf) _mf.addEventListener('click', function(){ showScreen('scr-input'); });
 
+  // 从烦恼收藏箱接过来的内容预填（Thought Box → Thought Completion）
+  try {
+    var _handoff = localStorage.getItem('thought_box_handoff');
+    if (_handoff) {
+      localStorage.removeItem('thought_box_handoff');
+      $('#worryInput').value = _handoff;
+      updateCount();
+      toast('已把您在收纳箱里写的带过来了，直接生成即可');
+    }
+  } catch(e) {}
+
   $('#btnBackInput').addEventListener('click', function(){ location.href='index.html'; });
   $('#worryInput').addEventListener('input', updateCount);
+  $('#boxPickTrigger').addEventListener('click', openBoxPick);
+  $('#boxPickClose').addEventListener('click', closeBoxPick);
+  $('#boxPickMask').addEventListener('click', function(e){
+    if(e.target === $('#boxPickMask')) closeBoxPick();
+  });
   $('#btnGenerate').addEventListener('click', function(){
     var input = $('#worryInput').value.trim();
-    if(input.length < 4){ toast('再多写几个字，让 AI 更懂您'); return; }
+    if(input.length < 4){ toast('再多写几个字，让 AI 更懂您'); $('#worryInput').focus(); return; }
+    if(isGarbled(input)){
+      toast('我好像没太读懂你的意思，可以换种方式再跟我说说吗？');
+      var el = $('#worryInput');
+      el.focus();
+      try{ el.select(); }catch(e){}
+      return;
+    }
+    /* 烦恼同步收纳箱：每一次生成的烦恼都进箱 */
+    try { localStorage.setItem('box_incoming', input); } catch(e) {}
     runGeneration(input);
   });
 
@@ -2661,6 +3458,7 @@ function init(){
 }
 init();
 </script>
+<script src="process.js"></script>
 </body>
 </html>
 </template>
@@ -2707,7 +3505,7 @@ init();
   /* ---------- phone frame ---------- */
   .phone{
     position:relative;width:min(100vw, calc(100vh * 9 / 16));aspect-ratio:9/16;
-    overflow:hidden;background:url('assets/sound/bg-yarn.png') center/cover no-repeat;
+    overflow:hidden;background:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/bg-yarn.png') center/cover no-repeat;
   }
   .frost{
     position:absolute;inset:0;z-index:1;pointer-events:none;
@@ -2938,7 +3736,7 @@ init();
 
   /* ---------- mix (Function 2: 音乐 + 白噪音) —— 对照 Wooly Mix 参考图 */
   /* 混音页全屏羊毛背景：挂在 phone 层以覆盖状态栏区域 */
-  #mixPageBg{position:absolute;inset:0;background:url('assets/read/bg-yarn.png') center/cover no-repeat;z-index:1;display:none;}
+  #mixPageBg{position:absolute;inset:0;background:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/bg-yarn.png') center/cover no-repeat;z-index:1;display:none;}
   #mixPageBg.show{display:block;}
   /* 混音模式下隐藏星光条带，状态栏文字翻白 */
   #phone.mix-mode #starfield{display:none;}
@@ -3090,7 +3888,7 @@ init();
   .read-vid-canvas{bottom:0;transform:translateX(-50%);z-index:2;}
   .read-vid-canvas2{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
     width:100%;aspect-ratio:9/16;z-index:4;pointer-events:none;}
-  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('assets/read/read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
+  .read-bg-mid{top:50%;transform:translate(-50%,-50%);background:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/read-mid.png?v=5') center/100% 100% no-repeat;z-index:3;background-color:transparent;}
   /* 混音/阅读模式：隐藏星光、状态栏文字颜色适配背景 */
   #phone.read-mode #starfield{display:none;}
   #phone.read-mode .statusbar{display:none;}
@@ -3394,9 +4192,9 @@ init();
     <section class="screen" id="scr-read">
       <!-- 三段背景：图15 顶 / 图16 中(z-top) / 图17 底；等比 9:16，原比例不裁不拉 -->
       <div class="read-bg-top"></div>
-      <video id="readVid" src="assets/sound/melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas" class="read-vid-canvas"></canvas>
-      <video id="readVid2" src="assets/sound/melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
+      <video crossorigin="anonymous" id="readVid2" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/melatonin2.mp4" muted loop playsinline preload="auto" style="display:none;"></video>
       <canvas id="readVidCanvas2" class="read-vid-canvas2"></canvas>
       <div class="read-bg-mid"></div>
 
@@ -3553,9 +4351,8 @@ init();
 var PROXY = { url: '', anonKey: '' };
 var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
-/* 自然语音（中继 /tts，微软 Edge 神经网络音色）；仅本地中继模式可用，
-   其他模式自动降级为系统 Web Speech */
-var TTS_URL = /\/chat\/completions$/.test(PROXY.url) ? PROXY.url.replace(/\/chat\/completions$/, '/tts') : '';
+/* 自然语音统一走 tc-tts.js（TC_TTS.synth → GPU 服务器 Qwen3-TTS-VoiceDesign）；
+   服务不可用时自动降级为系统 Web Speech，无需本地中继 */
 
 var SYSTEM_PROMPT = [
 '你是"落定"App 的睡前思绪整理引擎，基于"蔡格尼克效应"工作：未完成的思绪会被大脑反复提起，影响入睡。你的任务是：把用户的睡前担忧整理到一个"暂时可以放下"的位置，再引导身体放松、进入睡眠。',
@@ -4034,19 +4831,23 @@ function pickVoice(){
   return zh[0];
 }
 
-/* ================= Edge 神经网络语音（经本地中继，更自然） ================= */
-var EDGE_VOICES = [
-  { id: 'zh-CN-XiaoxiaoNeural', label: '晓晓', desc: '温柔女声' },
-  { id: 'zh-CN-YunxiNeural',    label: '云希', desc: '沉静男声' },
-  { id: 'zh-CN-YunjianNeural',  label: '云健', desc: '浑厚男声' },
-  { id: 'zh-CN-YunyangNeural',  label: '云扬', desc: '清晰男声' },
-  { id: 'zh-CN-XiaoyiNeural',   label: '晓伊', desc: '轻柔女声' }
-];
+/* ================= Qwen3-TTS 语音合成（GPU 服务器，自然中文音色） ================= */
+var EDGE_VOICES = (window.TC_TTS && TC_TTS.VOICES) || [];
+/* 语音合成统一入口（TC_TTS → GPU 服务器 Qwen3-TTS-VoiceDesign；voice 为音色 ID） */
+function edgeTTS(text, voice, ratePct){
+  if(!(window.TC_TTS && TC_TTS.synth)) return Promise.reject(new Error('TTS 模块未加载'));
+  var speed = Math.max(-2, Math.min(6, Math.round(ratePct / 50)));
+  return TC_TTS.synth(text, voice, speed).then(function(blobs){
+    /* 句子已拆分，通常单段 */
+    return blobs[0];
+  });
+}
+
 var EDGE = {
-  ok: !!TTS_URL,        /* 中继 /tts 可用性；连续失败才降级系统语音 */
+  ok: true,             /* Qwen3-TTS；连续失败才降级系统语音 */
   warned: false,
   fails: 0,             /* 连续失败计数（成功即清零） */
-  voice: EDGE_VOICES[0].id,
+  voice: EDGE_VOICES.length ? EDGE_VOICES[0].id : 101001,
   cache: new Map(),     /* 'voice|rate|text' → Promise<Blob> */
   audio: null, url: null
 };
@@ -4058,27 +4859,21 @@ function edgeFail(){
   }
 }
 try{
-  var savedVoice = localStorage.getItem('ld_voice');
+  var savedVoice = parseInt(localStorage.getItem('ld_voice'), 10);
   for(var ev=0; ev<EDGE_VOICES.length; ev++){
     if(EDGE_VOICES[ev].id === savedVoice){ EDGE.voice = savedVoice; break; }
   }
 }catch(e){}
 function voiceLabel(){
   for(var i=0;i<EDGE_VOICES.length;i++){ if(EDGE_VOICES[i].id === EDGE.voice) return EDGE_VOICES[i].label; }
-  return '晓晓';
+  return '温柔女声';
 }
 
 function edgeAudio(text){
   var key = EDGE.voice + '|' + player.rate + '|' + text;
   if(EDGE.cache.has(key)) return EDGE.cache.get(key);
-  var p = fetch(TTS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: text, voice: EDGE.voice, rate: Math.round((player.rate - 1) * 100) })
-  }).then(function(r){
-    if(!r.ok) throw new Error('tts ' + r.status);
-    return r.blob();
-  });
+  /* Qwen3-TTS 服务端合成，前端直接播放音频 Blob */
+  var p = edgeTTS(text, EDGE.voice, Math.round((player.rate - 1) * 100));
   p.catch(function(){ EDGE.cache.delete(key); });
   if(EDGE.cache.size > 160) EDGE.cache.delete(EDGE.cache.keys().next().value);
   EDGE.cache.set(key, p);
@@ -4283,7 +5078,7 @@ function speakCurrent(){
     }, delay);
   }
 
-  /* 优先走中继的 Edge 神经网络语音（自然音色），失败自动降级系统语音 */
+  /* 优先 Qwen3-TTS 自然音色，失败自动降级系统语音 */
   if(EDGE.ok){
     var p1 = player.seq[player.idx + 1], p2 = player.seq[player.idx + 2];
     if(p1) edgeAudio(player.flat[p1.fi].text);
@@ -4498,18 +5293,20 @@ var MIX = {
     { name:'钢琴', sub:'轻柔琴键', bg:'linear-gradient(135deg,#b48ef2,#6b4fb8)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/sleep.m4a' },
     { name:'氛围', sub:'梦境低鸣', bg:'linear-gradient(135deg,#f4a8c4,#b48ef2)', src:'assets/sound/concentrate.m4a' },
     { name:'自然', sub:'林间清风', bg:'linear-gradient(135deg,#8fd4a0,#5ba8d0)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-lullaby.m4a' },
-    { name:'朝霞', sub:'晨光微曦', bg:'linear-gradient(135deg,#f7c88a,#e8967a)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-morning-light.m4a' }
+    { name:'朝霞', sub:'晨光微曦', bg:'linear-gradient(135deg,#f7c88a,#e8967a)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-morning-light.m4a' },
+    { name:'柔弦', sub:'舒缓漂移', bg:'linear-gradient(135deg,#9aa8e0,#5a6aa0)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift.mp3' },
+    { name:'弦梦', sub:'梦境漂浮', bg:'linear-gradient(135deg,#c8a8e8,#8868b8)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift%20(1).mp3' }
   ],
   noise: [
-    { name:'雨声', sub:'细雨轻敲', bg:'linear-gradient(135deg,#5a6a88,#2a3450)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rain.m4a'  },
-    { name:'海浪', sub:'潮起潮落', bg:'linear-gradient(135deg,#5ba8d0,#2a6890)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/ocean.m4a' },
-    { name:'森林', sub:'鸟鸣叶响', bg:'linear-gradient(135deg,#7ab878,#3a7848)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/night-forest.m4a' },
-    { name:'风声', sub:'远处低吟', bg:'linear-gradient(135deg,#a8c4e0,#6888a8)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/wind.m4a' },
-    { name:'炉火', sub:'木柴噼啪', bg:'linear-gradient(135deg,#ff9a5a,#c84a2a)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/campfire.m4a' },
-    { name:'鸟鸣', sub:'清晨百啭', bg:'linear-gradient(135deg,#f4d870,#c8a848)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/birds.m4a' },
-    { name:'溪流', sub:'石上流水', bg:'linear-gradient(135deg,#8ad4d0,#5898a0)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/river.m4a' },
-    { name:'虫鸣', sub:'夏夜低鸣', bg:'linear-gradient(135deg,#8a7848,#4a3a28)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/insect-chirping.m4a' },
-    { name:'雷雨', sub:'远雷阵阵', bg:'linear-gradient(135deg,#5a5a78,#2a2a48)', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rainstorm.m4a' }
+    { name:'雨声', sub:'细雨轻敲', bg:'linear-gradient(135deg,#5a6a88,#2a3450)', base:1.6, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rain.m4a'  },
+    { name:'海浪', sub:'潮起潮落', bg:'linear-gradient(135deg,#5ba8d0,#2a6890)', base:3.0, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/ocean.m4a' },
+    { name:'森林', sub:'鸟鸣叶响', bg:'linear-gradient(135deg,#7ab878,#3a7848)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/night-forest.m4a' },
+    { name:'风声', sub:'远处低吟', bg:'linear-gradient(135deg,#a8c4e0,#6888a8)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/wind.m4a' },
+    { name:'炉火', sub:'木柴噼啪', bg:'linear-gradient(135deg,#ff9a5a,#c84a2a)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/campfire.m4a' },
+    { name:'鸟鸣', sub:'清晨百啭', bg:'linear-gradient(135deg,#f4d870,#c8a848)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/birds.m4a' },
+    { name:'溪流', sub:'石上流水', bg:'linear-gradient(135deg,#8ad4d0,#5898a0)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/river.m4a' },
+    { name:'虫鸣', sub:'夏夜低鸣', bg:'linear-gradient(135deg,#8a7848,#4a3a28)', base:1.5, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/insect-chirping.m4a' },
+    { name:'雷雨', sub:'远雷阵阵', bg:'linear-gradient(135deg,#5a5a78,#2a2a48)', base:1.0, src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/rainstorm.m4a' }
   ],
   selMusic: -1, selNoise: -1,
   musicVol: 0.6, noiseVol: 0.4,
@@ -4598,6 +5395,11 @@ function onMixTrackChange(kind){
   if(MIX.playing) startMixPlayback();
 }
 
+function getNoiseBase(){
+  var nt = MIX.selNoise >= 0 ? MIX.noise[MIX.selNoise] : null;
+  return (nt && nt.base) ? nt.base : 1;
+}
+
 function startMixPlayback(){
   var any = false;
   if(MIX.aMusic && MIX.aMusic.src){
@@ -4608,7 +5410,7 @@ function startMixPlayback(){
     any = true;
   }
   if(MIX.aNoise && MIX.aNoise.src){
-    MIX.aNoise.volume = MIX.noiseVol;
+    MIX.aNoise.volume = Math.min(1, MIX.noiseVol * getNoiseBase());
     MIX.aNoise.loop = true;
     MIX.aNoise.currentTime = 0;
     MIX.aNoise.play().catch(function(){});
@@ -4646,8 +5448,8 @@ function bindMixSlider(id, labelId, setVol){
 function initMix(){
   if(MIX._inited) return;
   MIX._inited = true;
-  MIX.aMusic = new Audio(); MIX.aMusic.loop = true; MIX.aMusic.volume = MIX.musicVol; MIX.aMusic.preload = 'none';
-  MIX.aNoise = new Audio(); MIX.aNoise.loop = true; MIX.aNoise.volume = MIX.noiseVol; MIX.aNoise.preload = 'none';
+  MIX.aMusic = new Audio(); MIX.aMusic.loop = true; MIX.aMusic.volume = MIX.musicVol; MIX.aMusic.preload = 'auto';
+  MIX.aNoise = new Audio(); MIX.aNoise.loop = true; MIX.aNoise.volume = MIX.noiseVol; MIX.aNoise.preload = 'auto';
   renderMixFold();
   $('#foldHeadMusic').addEventListener('click', function(){ $('#catMusic').classList.toggle('open'); });
   $('#foldHeadNoise').addEventListener('click', function(){ $('#catNoise').classList.toggle('open'); });
@@ -4656,14 +5458,14 @@ function initMix(){
     stopMixPlayback();
     location.href='index.html';
   });
-  bindMixSlider('#musicVol',    '#musicVolLabel',    function(){ return MIX.musicVol; });
-  bindMixSlider('#noiseVol',    '#noiseVolLabel',    function(){ return MIX.noiseVol; });
+  bindMixSlider('#musicVol',    '#musicVolLabel',    function(v){ if(v !== undefined) MIX.musicVol = v; return MIX.musicVol; });
+  bindMixSlider('#noiseVol',    '#noiseVolLabel',    function(v){ if(v !== undefined) MIX.noiseVol = v; return MIX.noiseVol; });
   var mv = $('#musicVol');
   mv.addEventListener('input', function(){ if(MIX.aMusic) MIX.aMusic.volume = MIX.musicVol; });
   var nv = $('#noiseVol');
-  nv.addEventListener('input', function(){ if(MIX.aNoise) MIX.aNoise.volume = MIX.noiseVol; });
-  bindMixSlider('#mixMusicVol', '#mixMusicVolLabel', function(){ return MIX.musicVol; });
-  bindMixSlider('#mixNoiseVol', '#mixNoiseVolLabel', function(){ return MIX.noiseVol; });
+  nv.addEventListener('input', function(){ if(MIX.aNoise) MIX.aNoise.volume = Math.min(1, MIX.noiseVol * getNoiseBase()); });
+  bindMixSlider('#mixMusicVol', '#mixMusicVolLabel', function(v){ if(v !== undefined) MIX.musicVol = v; return MIX.musicVol; });
+  bindMixSlider('#mixNoiseVol', '#mixNoiseVolLabel', function(v){ if(v !== undefined) MIX.noiseVol = v; return MIX.noiseVol; });
 }
 
 /* ================= Function 7：睡前阅读倒计时 ================= */
@@ -4717,17 +5519,15 @@ function readTick(){
 }
 
 function readPlayPhrase(text){
-  if(!TTS_URL){ return; }
-  fetch(TTS_URL, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ text: text, voice: 'zh-CN-XiaoxiaoNeural', rate: -10 }) })
-    .then(function(r){ if(!r.ok) throw 0; return r.blob(); })
-    .then(function(blob){
-      if(!READ.audioEl) READ.audioEl = new Audio();
-      if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
-      READ.audioEl.src = URL.createObjectURL(blob);
-      READ.audioEl.volume = 0.55;
-      READ.audioEl.play().catch(function(){});
-    }).catch(function(){});
+  if(!(window.TC_TTS && TC_TTS.synth)){ return; }
+  TC_TTS.synth(text, EDGE.voice, -0.3).then(function(blobs){
+    if(!blobs || !blobs.length) throw 0;
+    if(!READ.audioEl) READ.audioEl = new Audio();
+    if(READ.audioEl.src){ try{ URL.revokeObjectURL(READ.audioEl.src); }catch(e){} }
+    READ.audioEl.src = URL.createObjectURL(blobs[0]);
+    READ.audioEl.volume = 0.55;
+    READ.audioEl.play().catch(function(){});
+  }).catch(function(){});
 }
 
 function readStart(){
@@ -4767,9 +5567,7 @@ function readFinish(){
   hideBubble();
   // 自动进入后续睡眠流程：goodnight 覆盖层
   $('#goodnight').classList.add('show');
-  if(TTS_URL){
-    readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
-  }
+  readPlayPhrase('阅读结束了，放下手机，准备入睡吧。');
 }
 
 function showBubble(){
@@ -4862,6 +5660,19 @@ function quickMixSelect(kind, i){
   renderQuickMix();
 }
 
+/* 视频播放可靠性：自动播放被拒/中途被暂停时自动恢复（muted 循环背景视频，无用户暂停场景） */
+function ensureVideoPlay(v){
+  function tryPlay(){ if(v.paused && !v.ended){ var p = v.play(); if(p && p.catch) p.catch(function(){}); } }
+  tryPlay();
+  v.addEventListener('canplay', tryPlay);
+  v.addEventListener('loadeddata', tryPlay);
+  ['pointerdown','touchstart','click','keydown'].forEach(function(ev){
+    document.addEventListener(ev, tryPlay, { passive: true });
+  });
+  v.addEventListener('pause', function(){ setTimeout(tryPlay, 250); });
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) tryPlay(); });
+}
+
 function initReadVideo(){
   var vid = $('#readVid');
   var canvas = $('#readVidCanvas');
@@ -4878,9 +5689,10 @@ function initReadVideo(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        var minRGB = r < g ? (r < b ? r : b) : (g < b ? g : b);
-        if(minRGB >= 228){ d[i+3] = 0; }                          // 白色/米白 → 透明
-        else if(minRGB >= 200){ d[i+3] = ((228 - minRGB) * 255 / 28) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 色度抠白：白色=高亮且低饱和（不误伤羊的奶白色等浅色主体） */
+        if(mx >= 235 && mx - mn < 22){ d[i+3] = 0; }
+        else if(mn >= 200 && mx - mn < 45){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       /* 擦除底部圆形（音乐按钮）和右侧长条（彩条）：540×960 坐标
          圆形用圆形遮罩、长条用紧贴元素的矩形遮罩，避免矩形外溢显出米色页底 */
@@ -4899,7 +5711,7 @@ function initReadVideo(){
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
@@ -4919,14 +5731,16 @@ function initReadVideo2(){
       var d = img.data;
       for(var i = 0; i < d.length; i += 4){
         var r = d[i], g = d[i+1], b = d[i+2];
-        if(r >= 250 && g >= 250 && b >= 250){ d[i+3] = 0; }          // 纯白 → 透明
-        else if(r >= 240 && g >= 240 && b >= 240){ d[i+3] = ((250 - ((r+g+b)/3|0)) * 255 / 10) | 0; }  // 边缘羽化
+        var mx = Math.max(r,g,b), mn = Math.min(r,g,b);
+        /* 保守抠白：melatonin2 含羊的奶白色，只抠纯白背景 */
+        if(mx >= 245 && mx - mn < 14){ d[i+3] = 0; }
+        else if(mn >= 228 && mx - mn < 30){ d[i+3] = ((255 - mx) * 255 / 40) | 0; }  // 边缘羽化
       }
       ctx.putImageData(img, 0, 0);
     }
     requestAnimationFrame(chromaFrame);
   }
-  vid.play().catch(function(){});
+  ensureVideoPlay(vid);
   requestAnimationFrame(chromaFrame);
 }
 
@@ -4968,7 +5782,7 @@ function initRead(){
   });
   $('#qmNoiseVol').addEventListener('input', function(){
     MIX.noiseVol = this.value / 100;
-    if(MIX.aNoise) MIX.aNoise.volume = MIX.noiseVol;
+    if(MIX.aNoise) MIX.aNoise.volume = Math.min(1, MIX.noiseVol * getNoiseBase());
     $('#qmNoiseVolLabel').textContent = this.value + '%';
     this.style.setProperty('--p', this.value + '%');
   });
@@ -5079,6 +5893,8 @@ function init(){
 }
 init();
 </script>
+<script src="tc-tts.js?v=2"></script>
+<script src="process.js"></script>
 </body>
 </html>
 </template>
@@ -5089,22 +5905,20 @@ init();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>阅读倒计时 - 好好睡觉</title>
+<title>月亮书房 - 好好睡觉</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   width: 100%; height: 100%;
   font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #4a3a2a;
   overflow: hidden;
 }
 
 .stage {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: #f6e8d4;
-  padding: 0;
+  background: #efe7ff;
 }
 
 .phone {
@@ -5112,207 +5926,234 @@ html, body {
   aspect-ratio: 9 / 16;
   position: relative;
   overflow: hidden;
-  display: flex; flex-direction: column;
-  background: #f6e8d4;
+  background-color: #efe7ff; /* 加载兜底色 */
+  background-image: url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/WechatIMG8342.jpg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
 
-/* 顶部黄色菜单栏 */
-.menu-bar {
+/* ===== 顶栏（仅返回键） ===== */
+.topbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  z-index: 5;
+  display: flex; align-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px 4px;
+}
+.back-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 2.5px solid #fff; background: #fffdf8;
+  color: #b48ad6; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 10px rgba(150,110,180,.18);
+  transition: transform .15s;
+}
+.back-btn:active { transform: scale(.88); }
+.back-btn svg { width: 20px; height: 20px; }
+
+/* ===== 椅子上读小羊（叠在懒人沙发位置） ===== */
+.chair-gif {
+  position: absolute;
+  /* 把小羊"坐"在紫色懒人沙发坐垫上 */
+  left: 50%;
+  top: 12%;
+  width: 34%;
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(60, 30, 80, 0.25));
+}
+
+/* ===== 底部覆盖层：盖住背景图自带的按钮 ===== */
+.bottom-cover {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 10%;
+  background: #fffdf8;
+  z-index: 5;
+}
+
+/* ===== 倒计时圆形进度条（下半空白处） ===== */
+.timer-zone {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 9%;
+  z-index: 6;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px;
+  /* 覆盖背景图白色框区域，把背景图自带的"开始阅读"按钮遮掉 */
+  padding: 26px 0 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, #fffdf8 22%, #fffdf8 100%);
+}
+.timer-ring {
   position: relative;
-  z-index: 10;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(180deg, #f5d97e 0%, #f3c662 100%);
-  box-shadow: 0 2px 8px rgba(160, 110, 40, 0.15);
+  width: 58%;
+  aspect-ratio: 1 / 1;
 }
-.menu-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  justify-content: center;
-  flex-wrap: nowrap;
+.timer-ring svg {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
 }
-.ctl {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 2px solid #2a3858;
-  background: #fff;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800;
-  font-size: 16px;
-  color: #2a3858;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-  transition: transform 0.12s ease;
-  font-family: inherit;
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 12;
 }
-.ctl:active { transform: scale(0.92); }
-.ctl-plus {
-  background: repeating-linear-gradient(45deg, #4a6fa5 0 3px, #5a8fc5 3px 6px);
-  color: #fff;
+.ring-fg {
+  fill: none;
+  stroke: url(#ringGrad);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
 }
-.ctl-minus {
-  background: repeating-linear-gradient(135deg, #d96a3a 0 3px, #e88a5a 3px 6px);
-  color: #fff;
+.timer-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
 }
-.ctl-clear {
-  background: #c84a3a;
-  color: #fff;
+.timer-time {
+  font-size: 30px; font-weight: 900; letter-spacing: 1px;
+  color: #7a5aa8; font-variant-numeric: tabular-nums; line-height: 1;
 }
-.ctl-start {
-  background: #2a4a78;
-  color: #fff;
-}
-.ctl-stop {
-  background: #d84a4a;
-  color: #fff;
+.timer-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #b9a2d8;
 }
 
-/* 三层叠加（全部 chroma key 抠白色，原比例 contain） */
-.layer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  overflow: hidden;
-  pointer-events: none;
+/* 控制按钮 */
+.timer-controls {
+  display: flex; align-items: center; gap: 14px;
 }
-.layer canvas {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  inset: 0;
-  display: block;
+.tc-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2.5px solid rgba(180, 138, 214, 0.5); background: rgba(255, 255, 255, 0.85);
+  color: #b48ad6; font-size: 20px; font-weight: 900; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, background .15s; font-family: inherit;
+  box-shadow: 0 3px 8px rgba(150, 110, 180, .15);
 }
-.layer video,
-.layer img {
-  display: none;
+.tc-btn:active { transform: scale(.86); }
+.tc-main {
+  width: auto; height: 44px; padding: 0 30px; border-radius: 999px;
+  background: linear-gradient(135deg, #c9a6f2 0%, #a982d4 100%);
+  color: #fff; font-size: 15px; font-weight: 900; letter-spacing: 2px;
+  border: none; cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 16px rgba(170, 130, 210, .4);
+  transition: transform .15s, box-shadow .15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
 }
-/* 图层层级：melatonin(底) < melatonin2(中) < read-mid(顶) */
-.layer-bg  { z-index: 1; }
-.layer-mid { z-index: 2; }
-.layer-top { z-index: 3; }
+.tc-main:active { transform: scale(.95); }
+.tc-main.running {
+  background: linear-gradient(135deg, #ffb7ce 0%, #ffa8c0 100%);
+  box-shadow: 0 6px 16px rgba(255, 150, 180, .4);
+}
+.tc-main svg { width: 17px; height: 17px; }
 
-/* 左下角音符按钮 */
-.note-btn {
-  position: absolute;
-  left: 1%;
-  top: 82%;
-  width: 88px;
-  height: 88px;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  color: #2a3858;
-  -webkit-tap-highlight-color: transparent;
+/* ===== 音乐功能 ===== */
+.music-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 2.5px solid #fff; background: #fffdf8;
+  color: #b48ad6; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 10px rgba(150,110,180,.18);
+  transition: transform .15s, background .15s, color .15s;
+  margin-left: auto;
 }
-.note-btn svg { width: 38px; height: 38px; opacity: 0; }
+.music-btn:active { transform: scale(.88); }
+.music-btn svg { width: 20px; height: 20px; }
+.music-btn.playing { background: linear-gradient(135deg, #c9a6f2 0%, #a982d4 100%); color: #fff; }
 
-/* 右下角隐形返回按钮：正方形，边长 = 圆半径长度 */
-.back-invisible {
-  position: absolute;
-  right: 1%;
-  bottom: 4%;
-  width: 24px;
-  height: 56px;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  cursor: pointer;
-  z-index: 20;
-  -webkit-tap-highlight-color: transparent;
+/* 音乐选择面板 */
+.music-mask {
+  position: absolute; inset: 0; z-index: 20;
+  background: rgba(40, 25, 60, 0.42);
+  opacity: 0; pointer-events: none; transition: opacity .25s;
 }
-
-/* 提示气泡 */
-.toast {
-  position: absolute;
-  top: 30%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(60, 50, 40, 0.85);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 20px;
-  font-size: 14px;
-  letter-spacing: 1px;
-  z-index: 30;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+.music-mask.show { opacity: 1; pointer-events: auto; }
+.music-panel {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+  background: #fffdf8;
+  border-radius: 24px 24px 0 0;
+  padding: 18px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(105%); transition: transform .35s cubic-bezier(.32,.72,.28,1);
 }
-.toast.show {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1.05);
+.music-mask.show .music-panel { transform: none; }
+.music-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
 }
-
-/* 数字倒计时 */
-.countdown {
-  position: absolute;
-  top: 33%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 84px;
-  font-weight: 900;
-  color: #4a4a4a;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 2px;
-  z-index: 20;
-  text-shadow: 0 2px 8px rgba(255, 255, 255, 0.7);
-  pointer-events: none;
+.music-title { font-size: 16px; font-weight: 700; color: #5a4278; letter-spacing: 1px; }
+.music-close { background: none; border: none; color: #b9a2d8; font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.music-list { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; scrollbar-width: none; }
+.music-list::-webkit-scrollbar { display: none; }
+.music-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; border-radius: 14px;
+  background: #f5eefc; border: 1.5px solid transparent;
+  cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+  transition: border-color .15s, background .15s;
 }
-.countdown #cdM,
-.countdown #cdS {
-  color: #bdbdbd;
-}
+.music-item.active { border-color: #c9a6f2; background: #efe4fc; }
+.music-item .m-ico { width: 18px; height: 18px; color: #b48ad6; flex-shrink: 0; }
+.music-item .m-name { font-size: 14px; font-weight: 700; color: #5a4278; }
+.music-item .m-sub { font-size: 11px; color: #b9a2d8; margin-top: 2px; }
 </style>
 </head>
 <body>
 
 <div class="stage">
-  <div class="phone" id="phone">
-
-    <div class="layer layer-bg">
-      <canvas id="cv1"></canvas>
-      <video id="vid1" src="assets/sound/Melatonin.mp4" loop muted playsinline></video>
+  <div class="phone">
+    <div class="topbar">
+      <button class="back-btn" id="backBtn" aria-label="返回主页">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+      </button>
+      <button class="music-btn" id="musicBtn" aria-label="音乐">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </button>
     </div>
+    <!-- 椅子上的读小羊 -->
+    <img class="chair-gif" alt="读小羊" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/Step%20by%20step%20guide%20to%20using%20Petal%20canvas%20plug-in.gif">
 
-    <div class="layer layer-mid">
-      <canvas id="cv2"></canvas>
-      <video id="vid2" src="assets/sound/melatonin2.mp4" loop muted playsinline></video>
-    </div>
+    <!-- 底部覆盖层：遮住背景图自带按钮 -->
+    <div class="bottom-cover"></div>
 
-    <div class="layer layer-top">
-      <canvas id="cv3"></canvas>
-      <img id="img3" src="assets/read/read-mid.png" alt="">
-    </div>
+    <!-- 倒计时圆形进度条 -->
+    <div class="timer-zone">
+      <div class="timer-ring">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#c9a6f2"/>
+              <stop offset="100%" stop-color="#a982d4"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="100" cy="100" r="88"/>
+          <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="88"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-time" id="timeText">30:00</div>
+          <div class="timer-label" id="statusText">挑个时长，开读吧</div>
+        </div>
+      </div>
 
-    <button class="note-btn" id="noteBtn" aria-label="音符">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    </button>
-
-    <div class="toast" id="toast"></div>
-
-    <button class="back-invisible" id="backInvisible" aria-label="返回主页"></button>
-
-    <div class="countdown"><span id="cdM">00</span><span>:</span><span id="cdS">00</span></div>
-
-    <div class="menu-bar">
-      <div class="menu-right">
-        <button class="ctl ctl-minus" id="btnMinus" aria-label="减少 1 分钟">−</button>
-        <button class="ctl ctl-plus"  id="btnPlus"  aria-label="增加 1 分钟">+</button>
-        <button class="ctl ctl-clear" id="btnClear" aria-label="清除">×</button>
-        <button class="ctl ctl-start" id="btnStart" aria-label="开始/暂停">▶</button>
-        <button class="ctl ctl-stop"  id="btnStop"  aria-label="停止">■</button>
+      <div class="timer-controls">
+        <button class="tc-btn" id="btnMinus" aria-label="减少 5 分钟">−</button>
+        <button class="tc-main" id="btnStart">
+          <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+          <span id="btnStartText">开始阅读</span>
+        </button>
+        <button class="tc-btn" id="btnPlus" aria-label="增加 5 分钟">＋</button>
       </div>
     </div>
 
+    <!-- 音乐选择面板 -->
+    <div class="music-mask" id="musicMask">
+      <div class="music-panel">
+        <div class="music-head">
+          <div class="music-title">阅读音乐</div>
+          <button class="music-close" id="musicClose" aria-label="关闭">×</button>
+        </div>
+        <div class="music-list" id="musicList"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -5320,185 +6161,179 @@ html, body {
 (function() {
   'use strict';
 
-  /* ===== 数字倒计时 ===== */
-  var MAX_SEC = 30 * 60;   // 上限 30:00
-  var total = 0;           // 初始 00:00
-  var timer = null;
-  var running = false;
+  document.getElementById('backBtn').addEventListener('click', function() {
+    window.history.length > 1 ? history.back() : (location.href = 'index.html');
+  });
 
-  var cdM = document.getElementById('cdM');
-  var cdS = document.getElementById('cdS');
-  var btnMinus = document.getElementById('btnMinus');
-  var btnPlus = document.getElementById('btnPlus');
-  var btnClear = document.getElementById('btnClear');
+  /* ===== 阅读音乐 ===== */
+  var MUSIC = [
+    { name:'钢琴', sub:'轻柔琴键', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/sleep.m4a' },
+    { name:'自然', sub:'林间清风', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-lullaby.m4a' },
+    { name:'朝霞', sub:'晨光微曦', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-morning-light.m4a' },
+    { name:'柔弦', sub:'舒缓漂移', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift.mp3' },
+    { name:'弦梦', sub:'梦境漂浮', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift%20(1).mp3' }
+  ];
+
+  var musicBtn = document.getElementById('musicBtn');
+  var musicMask = document.getElementById('musicMask');
+  var musicList = document.getElementById('musicList');
+  var musicClose = document.getElementById('musicClose');
+  var musicAudio = new Audio();
+  musicAudio.loop = true;
+  musicAudio.volume = 0.6;
+  var curMusic = -1;
+  var musicPlaying = false;
+
+  function renderMusicList() {
+    musicList.innerHTML = '';
+    MUSIC.forEach(function(m, i) {
+      var btn = document.createElement('button');
+      btn.className = 'music-item' + (i === curMusic ? ' active' : '');
+      btn.innerHTML = '<svg class="m-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><div><div class="m-name"></div><div class="m-sub"></div></div>';
+      btn.querySelector('.m-name').textContent = m.name;
+      btn.querySelector('.m-sub').textContent = m.sub;
+      btn.addEventListener('click', function() { playMusic(i); });
+      musicList.appendChild(btn);
+    });
+  }
+
+  function playMusic(i) {
+    if (i === curMusic && musicPlaying) { pauseMusic(); return; }
+    curMusic = i;
+    var m = MUSIC[i];
+    musicAudio.src = m.src;
+    musicAudio.play().then(function() {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+      renderMusicList();
+    }).catch(function() {
+      musicPlaying = false;
+    });
+    closeMusic();
+  }
+
+  function pauseMusic() {
+    musicAudio.pause();
+    musicPlaying = false;
+    musicBtn.classList.remove('playing');
+    renderMusicList();
+  }
+
+  function resumeMusic() {
+    musicAudio.play().then(function() {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+    }).catch(function(){});
+  }
+
+  function toggleMusic() {
+    if (musicPlaying) { pauseMusic(); }
+    else if (curMusic >= 0) { resumeMusic(); }
+    else { openMusic(); }
+  }
+
+  function openMusic() {
+    renderMusicList();
+    musicMask.classList.add('show');
+  }
+  function closeMusic() {
+    musicMask.classList.remove('show');
+  }
+
+  musicBtn.addEventListener('click', toggleMusic);
+  musicClose.addEventListener('click', closeMusic);
+  musicMask.addEventListener('click', function(e) {
+    if (e.target === musicMask) closeMusic();
+  });
+
+  /* ===== 倒计时圆形进度条 ===== */
+  var CIRC = 2 * Math.PI * 88; // 圆环周长 ≈ 552.92
+
+  var total = 30 * 60, remain = total;
+  var running = false, finished = false, timer = null;
+
+  var timeText = document.getElementById('timeText');
+  var statusText = document.getElementById('statusText');
+  var ringFg = document.getElementById('ringFg');
   var btnStart = document.getElementById('btnStart');
-  var btnStop = document.getElementById('btnStop');
+  var btnStartText = document.getElementById('btnStartText');
+  var iconPlay = document.getElementById('iconPlay');
+  var iconPause = document.getElementById('iconPause');
+
+  // 初始化圆环
+  ringFg.style.strokeDasharray = CIRC;
+  ringFg.style.strokeDashoffset = 0;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
 
   function render() {
-    var m = Math.floor(total / 60);
-    var s = total % 60;
-    cdM.textContent = String(m).padStart(2, '0');
-    cdS.textContent = String(s).padStart(2, '0');
+    timeText.textContent = pad(Math.floor(remain / 60)) + ':' + pad(remain % 60);
+    // 环从满到空：remain/total
+    var ratio = total > 0 ? (remain / total) : 0;
+    ringFg.style.strokeDashoffset = CIRC * (1 - ratio);
   }
 
-  function updateIcon() {
-    btnStart.textContent = running ? '❚❚' : '▶';
+  function renderState() {
+    btnStartText.textContent = running ? '暂停一下' : (finished ? '再读一次' : '开始阅读');
+    iconPlay.style.display = running ? 'none' : '';
+    iconPause.style.display = running ? '' : 'none';
+    btnStart.classList.toggle('running', running);
   }
 
-  function pause() {
-    running = false;
-    if (timer) { clearInterval(timer); timer = null; }
-    updateIcon();
-  }
-
-  function start() {
-    if (running || total <= 0) return;
-    running = true;
-    timer = setInterval(function() {
-      if (total > 0) { total--; render(); }
-      if (total <= 0) pause();   // 到 00:00 自动停
-    }, 1000);
-    updateIcon();
-  }
-
-  // + 增加 1 分钟（上限 30:00）
-  btnPlus.addEventListener('click', function() {
-    total = Math.min(MAX_SEC, total + 60);
+  function tick() {
+    remain--;
+    if (remain <= 0) {
+      remain = 0;
+      running = false; finished = true;
+      clearInterval(timer); timer = null;
+      if (musicPlaying) pauseMusic();
+      statusText.textContent = '读完啦，合上书，晚安 ✦';
+      render(); renderState();
+      return;
+    }
     render();
-  });
-  // − 减少 1 分钟（下限 00:00；已在 00:00 时无事发生）
-  btnMinus.addEventListener('click', function() {
-    total = Math.max(0, total - 60);
-    render();
-  });
-  // × 清零
-  btnClear.addEventListener('click', function() {
-    pause();
-    total = 0;
-    render();
-  });
-  // ▶ 开始 / 暂停
-  btnStart.addEventListener('click', function() {
-    if (running) pause(); else start();
-  });
-  // ■ 暂停
-  btnStop.addEventListener('click', function() {
-    pause();
-  });
-
-  // 提示气泡
-  var toastEl = document.getElementById('toast');
-  var toastTimer = null;
-  function showToast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add('show');
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function() {
-      toastEl.classList.remove('show');
-    }, 1600);
   }
 
-  // 左下角音符按钮：完全透明，点击区域有效
-  document.getElementById('noteBtn').addEventListener('click', function() {
-    showToast('♪ 音乐');
-  });
+  function startPause() {
+    if (finished) { resetTo(total / 60); startPause(); return; }
+    running = !running;
+    if (running) {
+      statusText.textContent = '慢慢读，不着急';
+      timer = setInterval(tick, 1000);
+    } else {
+      clearInterval(timer); timer = null;
+      statusText.textContent = '歇一会儿也没关系';
+    }
+    renderState();
+  }
 
-  // 右下角隐形返回按钮 → 返回主页 index.html
-  document.getElementById('backInvisible').addEventListener('click', function() {
-    location.href = 'index.html';
-  });
+  function resetTo(min) {
+    clearInterval(timer); timer = null;
+    running = false; finished = false;
+    total = remain = Math.max(5, Math.round(min)) * 60;
+    statusText.textContent = '挑个时长，开读吧';
+    render(); renderState();
+  }
+
+  btnStart.addEventListener('click', startPause);
+
+  function adjust(delta) {
+    var min = Math.max(5, Math.round(total / 60) + delta);
+    min = Math.min(min, 120);
+    var wasRunning = running;
+    resetTo(min);
+    if (wasRunning) { startPause(); }
+    statusText.textContent = min + ' 分钟';
+  }
+  document.getElementById('btnPlus').addEventListener('click', function() { adjust(5); });
+  document.getElementById('btnMinus').addEventListener('click', function() { adjust(-5); });
 
   render();
-  updateIcon();
-
-  /* ===== 三层 chroma key ===== */
-  function chroma(ctx, cw, ch, bgTh, bgDiff, edgeTh, edgeDiff) {
-    try {
-      var imgData = ctx.getImageData(0, 0, cw, ch);
-      var d = imgData.data;
-      for (var i = 0; i < d.length; i += 4) {
-        var r = d[i], g = d[i+1], b = d[i+2];
-        var mn = Math.min(r, g, b), mx = Math.max(r, g, b);
-        if (mx > bgTh && mx - mn < bgDiff) {
-          d[i+3] = 0;
-        } else if (mn > edgeTh && mx - mn < edgeDiff) {
-          d[i+3] = Math.min(d[i+3], Math.floor(((255 - mx) / 40) * 255));
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-    } catch(e) {}
-  }
-
-  // 视频帧 contain 居中 + chroma key
-  function drawVideo(vid, ctx, cw, ch, opts) {
-    if (vid.readyState >= 2 && vid.videoWidth) {
-      var vw = vid.videoWidth, vh = vid.videoHeight;
-      var scale = Math.min(cw / vw, ch / vh);
-      var dw = vw * scale, dh = vh * scale;
-      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(vid, dx, dy, dw, dh);
-      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
-    }
-  }
-
-  // 图片帧 contain 居中 + chroma key
-  function drawImg(img, ctx, cw, ch, opts) {
-    if (img.complete && img.naturalWidth) {
-      var iw = img.naturalWidth, ih = img.naturalHeight;
-      var scale = Math.min(cw / iw, ch / ih);
-      var dw = iw * scale, dh = ih * scale;
-      var dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(img, dx, dy, dw, dh);
-      chroma(ctx, cw, ch, opts.bgTh, opts.bgDiff, opts.edgeTh, opts.edgeDiff);
-    }
-  }
-
-  function setupLayer(canvasId, source, isVideo, layerEl, opts) {
-    var cv = document.getElementById(canvasId);
-    var ctx = cv.getContext('2d');
-
-    function size() {
-      var r = layerEl.getBoundingClientRect();
-      cv.width = Math.max(2, Math.round(r.width));
-      cv.height = Math.max(2, Math.round(r.height));
-    }
-    size();
-    window.addEventListener('resize', size);
-
-    function loop() {
-      var cw = cv.width, ch = cv.height;
-      if (isVideo) drawVideo(source, ctx, cw, ch, opts);
-      else drawImg(source, ctx, cw, ch, opts);
-      requestAnimationFrame(loop);
-    }
-    loop();
-
-    if (isVideo) {
-      // 绿色滚动的视频（中层 melatonin2）放慢播放
-      if (source.id === 'vid2') source.playbackRate = 0.4;
-      source.addEventListener('loadeddata', function() {
-        source.play().catch(function(){});
-      });
-      source.play().catch(function(){});
-    }
-  }
-
-  // melatonin（底层）与 read-mid（顶层）：常规抠白
-  var OPT_DEFAULT = { bgTh: 228, bgDiff: 22, edgeTh: 190, edgeDiff: 40 };
-  // melatonin2（中层）：保守抠白，只抠纯白背景，保留羊的奶白色/浅色部分
-  var OPT_CONSERVATIVE = { bgTh: 248, bgDiff: 10, edgeTh: 235, edgeDiff: 22 };
-
-  setupLayer('cv1', document.getElementById('vid1'), true,
-             document.querySelector('.layer-bg'), OPT_DEFAULT);
-  setupLayer('cv2', document.getElementById('vid2'), true,
-             document.querySelector('.layer-mid'), OPT_CONSERVATIVE);
-  setupLayer('cv3', document.getElementById('img3'), false,
-             document.querySelector('.layer-top'), OPT_DEFAULT);
 })();
 </script>
 
+<script src="tc-tts.js?v=2"></script>
+<script src="process.js"></script>
 </body>
 </html>
 </template>
@@ -5541,7 +6376,7 @@ html, body {
 .bg-layer {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: url('assets/relax/bg-page1.png') center/cover no-repeat;
+  background: url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/bg-page1.png') center/cover no-repeat;
   z-index: 0;
   transition: background-image 0.3s ease;
 }
@@ -5637,21 +6472,16 @@ html, body {
 /* 温度计 */
 .thermo-wrapper {
   position: absolute;
-  top: 50%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 70%;
   max-width: 300px;
-  filter: drop-shadow(0 8px 16px rgba(60, 90, 110, 0.3));
-}
-.thermo {
-  display: block;
-  width: 100%;
-  height: auto;
+  aspect-ratio: 1 / 1.5;
 }
 .slider-rail {
   position: absolute;
-  top: 76%;
+  top: 58%;
   left: 7%;
   right: 7%;
   height: 12%;
@@ -5708,27 +6538,14 @@ html, body {
   filter: drop-shadow(0 2px 3px rgba(80, 100, 110, 0.4));
 }
 
-/* 数字覆盖层（覆盖原剪贴板上的"4 滑动标记"） */
-.num-cover {
-  position: absolute;
-  top: 47%;
-  left: 30%;
-  right: 30%;
-  height: 15%;
-  background: linear-gradient(180deg, #fdfaf0 0%, #f9f3e2 100%);
-  border-radius: 4px;
-  z-index: 3;
-  box-shadow: inset 0 1px 2px rgba(200, 180, 140, 0.12);
-}
-
-/* 剪贴板大数字（显示在覆盖层上方） */
+/* 大数字（情绪强度 1-10） */
 .big-num {
   position: absolute;
-  top: 54.5%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: "Yuanti SC", "YouYuan", "幼圆", "PingFang SC", cursive;
-  font-size: 48px;
+  font-size: 64px;
   font-weight: 700;
   color: #2a5878;
   line-height: 1;
@@ -5876,6 +6693,46 @@ html, body {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
+
+/* ============ 标题右侧控制（音色 + 暂停/开始） ============ */
+.topbar-controls {
+  position: absolute;
+  top: 6px; right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+}
+.voice-btn {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 248, 230, 0.92);
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: #4a7a98;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(80, 60, 40, 0.18);
+  transition: transform 0.15s ease;
+}
+.voice-btn:active { transform: scale(0.92); }
+.play-pause-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 248, 230, 0.92);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(80, 60, 40, 0.18);
+  transition: transform 0.15s ease;
+}
+.play-pause-btn:active { transform: scale(0.9); }
+.play-pause-btn svg { width: 20px; height: 20px; color: #4a7a98; }
+.play-pause-btn.playing { background: linear-gradient(180deg, #6a9ab8 0%, #4a7a98 100%); }
+.play-pause-btn.playing svg { color: #fff; }
+
 </style>
 </head>
 <body>
@@ -5895,22 +6752,26 @@ html, body {
 
     <!-- 固定标题 -->
     <div class="topbar">
-      <img src="assets/relax/title.png" class="title-banner" alt="情绪练习">
+      <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/title.png" class="title-banner" alt="情绪练习">
+      <div class="topbar-controls">
+        <button class="voice-btn" id="voiceBtn" aria-label="切换音色">晓晓</button>
+        <button class="play-pause-btn" id="playPauseBtn" hidden aria-label="暂停/开始">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- 左右滑动的两页 -->
     <div class="pages" id="pages">
       <div class="page">
-        <img class="shell shell-blue" src="assets/relax/shell-blue.png" alt="渐进式肌肉放松" data-name="渐进式肌肉放松">
-        <img class="shell shell-purple" src="assets/relax/shell-purple.png" alt="5-4-3-2-1 着陆练习" data-name="5-4-3-2-1 着陆练习">
-        <img class="shell shell-green" src="assets/relax/shell-green.png" alt="安全空间想象" data-name="安全空间想象">
-        <img class="note" src="assets/relax/note.png" alt="便利贴">
+        <img class="shell shell-blue" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/shell-blue.png" alt="渐进式肌肉放松" data-name="渐进式肌肉放松">
+        <img class="shell shell-purple" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/shell-purple.png" alt="5-4-3-2-1 着陆练习" data-name="5-4-3-2-1 着陆练习">
+        <img class="shell shell-green" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/shell-green.png" alt="安全空间想象" data-name="安全空间想象">
+        <img class="note" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/note.png" alt="便利贴">
       </div>
 
       <div class="page">
         <div class="thermo-wrapper">
-          <img class="thermo" src="assets/relax/thermo-slider.png" alt="情绪温度计">
-          <div class="num-cover"></div>
           <div class="big-num" id="bigNum">4</div>
           <div class="slider-rail" id="sliderRail">
             <div class="rail-track"></div>
@@ -5958,6 +6819,7 @@ html, body {
   </div>
 </div>
 
+<script src="tc-tts.js?v=2"></script>
 <script>
 (function() {
   'use strict';
@@ -5968,8 +6830,8 @@ html, body {
   const bgLayer = document.getElementById('bgLayer');
   let toastTimer = null;
 
-  const BG1 = "url('assets/relax/bg-page1.png') center/cover no-repeat";
-  const BG2 = "url('assets/relax/bg-page2.png') center/cover no-repeat";
+  const BG1 = "url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/bg-page1.png') center/cover no-repeat";
+  const BG2 = "url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/84911787993999_.pic_hd.jpg') center/cover no-repeat";
 
   function showToast(text) {
     toast.textContent = text;
@@ -5999,9 +6861,231 @@ html, body {
   document.querySelectorAll('.shell').forEach(shell => {
     shell.addEventListener('click', e => {
       e.stopPropagation();
-      showToast('选择了：' + (shell.dataset.name || ''));
+      const name = shell.dataset.name || '';
+      const script = RELAX_SCRIPTS[name];
+      if (script) {
+        startSpeak(script.text);
+      } else {
+        showToast('选择了：' + name);
+      }
     });
   });
+
+  // ===== 三个放松练习语音脚本（不展示文字，只朗读） =====
+  const RELAX_SCRIPTS = {
+    '渐进式肌肉放松': { text: [
+      '用力皱紧你的眉头，把眼睛闭紧，同时咬紧牙关，下巴收紧。保持这个紧张的状态。在心里数 5 秒：1、2、3、4、5。现在，一下子全部松开——眉头舒展，眼睛放松，嘴巴微微张开，下巴自然下垂。停留 3 秒，感受脸上紧绷的线条慢慢化开的感觉。',
+      '用力把双肩向上耸起，尽量去碰你的耳朵，同时把脖子微微缩紧。保持这个状态。数 5 秒：1、2、3、4、5。现在，让双肩瞬间坠落下来，完全放松，脖子也回到自然位置。停留 3 秒，感受肩膀下沉时那种重量和松弛感。',
+      '双手握紧拳头，用力到指节发白，同时绷紧你的前臂和上臂。保持这个状态。数 5 秒：1、2、3、4、5。现在，一下子张开双手，手指完全伸直，手臂彻底泄力，垂放在身体两侧或腿上。停留 3 秒，感受手指尖传来微微的酸胀感。',
+      '深吸一口气，然后屏住，同时把胸部向前挺，后背微微向后弓，让整个上半身的核心都收紧。保持这个状态。数 5 秒：1、2、3、4、5。现在，用力呼出那口气，同时让胸口和后背一下子塌下来，完全松掉。停留 3 秒，感受呼吸变得平缓，胸腔不再发紧。',
+      '用力收紧你的腹部肌肉，把肚脐往脊柱的方向压进去，感觉整个腰腹都变得硬邦邦的。保持这个状态。数 5 秒：1、2、3、4、5。现在，完全松开腹部，让它自然鼓起和回落，不再刻意用力。停留 3 秒，感受小腹区域那种柔软和放松的差异。',
+      '用力收紧臀部肌肉，夹紧，同时把骨盆微微向前顶。保持这个状态。数 5 秒：1、2、3、4、5。现在，全部松开，让臀部和骨盆完全沉向椅子或床面。停留 3 秒，感受身体被下方支撑住的那种踏实感。',
+      '绷紧大腿和小腿的肌肉，脚尖向前绷直。保持这个状态。数 5 秒：1、2、3、4、5。现在，双腿完全放松，脚踝和脚掌也彻底松弛。停留 3 秒，感受腿部的沉重和酸软感慢慢散开。',
+      '用力勾起你的脚尖，脚趾向内蜷曲，同时脚掌收紧，感觉整个足底都绷住。保持这个状态。数 5 秒：1、2、3、4、5。现在，一下子松开，脚趾伸直，脚掌平放或自然垂落。停留 3 秒，感受脚底的温热感和落地感。',
+      '现在，从头到脚都不再用力了。不做任何调整，就保持这样，用几秒钟感受一下全身的重量都交给支撑物。留意脸上、脖子、肩膀、手臂、胸背、腹部、臀部、双腿和双脚，每一处都比刚才更沉、更松。',
+      '当你准备好了，轻轻动一动手指和脚趾，然后慢慢睁开眼睛。'
+    ].join('\n') },
+    '5-4-3-2-1 着陆练习': { text: [
+      '好的，我们来一起做个小小的练习。先找一个舒服的姿势，坐着、靠着都可以。现在，看向周围，找到 5 件你能看到的东西。不需要是什么特别的物品，可以是光落在墙上的影子，可以是桌角的一缕灰尘，也可以是窗外摇晃的树叶。',
+      '接下来，把注意力带到你的身体附近，找到 4 件你能触摸到的东西。用手掌或指尖去感受它，哪怕只是轻轻碰一下。说出它们的名字，感受它们的质地。',
+      '然后，找到 3 个你现在能听到的声音。在心里数到第 3 个。',
+      '再接着，轻轻吸一口气，找到 2 种你现在能闻到的气味。如果闻不到明显的味道，也没关系，就感受空气本身那种无味的气息。在心里记下它们。',
+      '最后，把注意力带到嘴唇或舌尖，找到 1 样你能尝到的味道。可以是嘴里残留的一点点回甘，可以是喝过水后的清冽，也可以只是自己口腔里温暖的气息。不用刻意去找食物，只是感受现在这一刻的味道。',
+      '好了，慢慢呼出一口气。你刚刚已经把自己带回了这个房间，这个时刻，这个身体里。你做得很好。',
+      '如果愿意，可以再待一会儿，也可以慢慢动动手指、脚趾，然后再缓缓回到接下来的事情中。我在这里陪着你。'
+    ].join('\n') },
+    '安全空间想象': { text: [
+      '第一步：闭上眼睛。轻轻合上眼皮，让外界的光线离开你的视线。',
+      '第二步：在脑海中选一个地方。这个地方需要让你觉得安全、平静。可以是安静的海边，也可以是幽静的森林。如果你一时想不出，就选一个没有其他人的、温度适中的地方。',
+      '第三步：想象那个地方的声音。如果是海边，想象波浪一次次拍上沙滩又退去的声音，持续而规律。如果是森林，想象风吹过树叶发出的沙沙声，或者远处偶尔的鸟鸣。在心里持续听到那个声音。',
+      '第四步：想象那个地方的气味。慢慢地呼吸，让那种气味在你的想象中充满鼻腔。',
+      '第五步：感受那个地方的温度和触感。感受空气接触皮肤的温度，再感受脚下的触感，是粗糙的，还是柔软的？',
+      '第六步：停留一会儿。不需要做别的，就让自己停留在那个地方的声音、气味和温度里。待多久都可以。',
+      '当你准备好了，慢慢做一次深呼吸，然后轻轻动一动手指和脚趾。再缓缓睁开眼睛，回到现在这个房间。',
+      '你随时可以再回到那个地方。现在，按你自己的节奏回来就好。'
+    ].join('\n') }
+  };
+
+  // ===== Qwen3-TTS 语音合成（GPU 服务器，自然中文音色），音色列表来自 tc-tts.js =====
+  const VOICES = (window.TC_TTS && TC_TTS.VOICES) || [];
+
+  // ===== 系统语音兜底（Qwen3-TTS 失败/离线时可朗读） =====
+  function pickZhVoice() {
+    try {
+      if (!('speechSynthesis' in window)) return null;
+      const voices = speechSynthesis.getVoices() || [];
+      const zh = voices.filter(v => /^zh|^cmn|chinese/i.test(v.lang || ''));
+      if (!zh.length) return null;
+      const prefer = ['ting-ting','tingting','huihui','xiaoxiao','xiaoyi','yunxi','yunjian','meijia','sinji'];
+      for (let i = 0; i < prefer.length; i++)
+        for (let j = 0; j < zh.length; j++)
+          if ((zh[j].name || '').toLowerCase().indexOf(prefer[i]) >= 0) return zh[j];
+      const local = zh.filter(v => v.localService);
+      return (local.length ? local[0] : zh[0]);
+    } catch(e) { return null; }
+  }
+
+  // ===== 播放器 =====
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const voiceBtn = document.getElementById('voiceBtn');
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>';
+
+  let queue = [], qIdx = 0, isPlaying = false, isPaused = false;
+  let curAudio = null, curSystem = false, genToken = 0;
+  let curBlobs = [], curBlobIdx = 0;
+
+  // 当前音色（默认智瑜 101001，记住上次选择）
+  let currentVoice = VOICES.length ? VOICES[0].id : 101001;
+  try {
+    const saved = parseInt(localStorage.getItem('relax_voice'), 10);
+    if (saved && VOICES.some(v => v.id === saved)) currentVoice = saved;
+  } catch(e) {}
+  function voiceLabel() {
+    for (const v of VOICES) if (v.id === currentVoice) return v.label;
+    return '智瑜';
+  }
+  voiceBtn.textContent = voiceLabel();
+
+  function setPlayBtn(state) {
+    if (state === null) { playPauseBtn.hidden = true; return; }
+    playPauseBtn.hidden = false;
+    playPauseBtn.classList.toggle('playing', state);
+    playPauseBtn.innerHTML = state ? ICON_PAUSE : ICON_PLAY;
+  }
+
+  function startSpeak(text) {
+    stopSpeak();
+    queue = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+    if (!queue.length) return;
+    qIdx = 0; isPlaying = true; isPaused = false;
+    setPlayBtn(true);
+    playSegment(queue[qIdx]);
+  }
+
+  // 播放一段：优先 Qwen3-TTS 自然音色，失败降级系统语音
+  function playSegment(seg) {
+    const token = ++genToken;
+    curAudio = null; curSystem = false; curBlobs = []; curBlobIdx = 0;
+    TC_TTS.synth(seg, currentVoice, -0.3).then(blobs => {
+      if (token !== genToken || !isPlaying || isPaused) return;
+      curBlobs = blobs; curBlobIdx = 0;
+      playBlob(token);
+    }).catch(() => {
+      if (token !== genToken || !isPlaying || isPaused) return;
+      playSystem(seg, token);
+    });
+  }
+
+  function playBlob(token) {
+    if (curBlobIdx >= curBlobs.length) { advance(); return; }
+    const blob = curBlobs[curBlobIdx];
+    const url = URL.createObjectURL(blob);
+    const a = new Audio(url);
+    curAudio = a; curSystem = false;
+    const next = () => {
+      URL.revokeObjectURL(url);
+      if (token !== genToken || !isPlaying || isPaused) return;
+      if (curAudio === a) curAudio = null;
+      curBlobIdx++;
+      playBlob(token);
+    };
+    a.onended = next;
+    a.onerror = next;
+    a.play().catch(next);
+  }
+
+  function playSystem(seg, token) {
+    curSystem = true;
+    try {
+      if ('speechSynthesis' in window) {
+        const u = new SpeechSynthesisUtterance(seg);
+        const v = pickZhVoice(); if (v) u.voice = v;
+        u.lang = 'zh-CN'; u.rate = 0.95;
+        let finished = false;
+        const finish = () => {
+          if (finished) return; finished = true;
+          if (token === genToken && isPlaying && !isPaused) advance();
+        };
+        u.onend = finish; u.onerror = finish;
+        try { speechSynthesis.cancel(); } catch(e) {}
+        speechSynthesis.speak(u);
+        // 超时强制推进（防止部分浏览器不触发 onend）
+        setTimeout(() => {
+          if (!finished) { finished = true; try { speechSynthesis.cancel(); } catch(e){} finish(); }
+        }, 45000);
+        return;
+      }
+    } catch(e) {}
+    // 无系统语音 → 静默推进
+    setTimeout(() => { if (token === genToken && isPlaying && !isPaused) advance(); }, 800);
+  }
+
+  function advance() {
+    qIdx++;
+    if (qIdx >= queue.length) { finishSpeak(); return; }
+    playSegment(queue[qIdx]);
+  }
+
+  function stopSpeak() {
+    genToken++;
+    isPlaying = false; isPaused = false;
+    if (curAudio) { try { curAudio.pause(); } catch(e){} curAudio = null; }
+    curSystem = false;
+    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e) {}
+  }
+
+  function finishSpeak() {
+    isPlaying = false; isPaused = false;
+    curAudio = null; curSystem = false;
+    setPlayBtn(null);
+  }
+
+  function togglePlay() {
+    if (!isPlaying) return;
+    if (isPaused) {
+      // 恢复
+      isPaused = false; setPlayBtn(true);
+      if (curSystem) {
+        try { speechSynthesis.resume(); } catch(e) {}
+      } else if (curAudio) {
+        curAudio.play().catch(() => { advance(); });
+      } else {
+        playSegment(queue[qIdx]); // 合成中恢复：重播当前段
+      }
+    } else {
+      // 暂停
+      isPaused = true; setPlayBtn(false);
+      if (curSystem) {
+        try { speechSynthesis.pause(); } catch(e) {}
+      } else if (curAudio) {
+        try { curAudio.pause(); } catch(e) {}
+      } else {
+        genToken++; // 合成中暂停：使 pending 结果失效
+      }
+    }
+  }
+  playPauseBtn.addEventListener('click', togglePlay);
+
+  // 音色切换（Qwen3-TTS 自然音色循环）
+  function cycleVoice() {
+    if (!VOICES.length) return;
+    const i = VOICES.findIndex(v => v.id === currentVoice);
+    currentVoice = VOICES[(i + 1) % VOICES.length].id;
+    try { localStorage.setItem('relax_voice', String(currentVoice)); } catch(e) {}
+    voiceBtn.textContent = voiceLabel();
+    showToast('音色 · ' + voiceLabel());
+    // 播放中切换：立即用新音色重读当前段
+    if (isPlaying) {
+      genToken++;
+      if (curAudio) { try { curAudio.pause(); } catch(e){} curAudio = null; }
+      curSystem = false;
+      try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch(e) {}
+      isPaused = false; setPlayBtn(true);
+      playSegment(queue[qIdx]);
+    }
+  }
+  voiceBtn.addEventListener('click', cycleVoice);
 
   // 温度计滑轨
   const ticksEl = document.getElementById('ticks');
@@ -6086,6 +7170,7 @@ html, body {
 })();
 </script>
 
+<script src="process.js"></script>
 </body>
 </html>
 </template>
@@ -6203,7 +7288,7 @@ html, body {
 .note-item .paper {
   position: absolute;
   inset: 0;
-  background: url('assets/relax/note-blank.png') center/contain no-repeat;
+  background: url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/note-blank.png') center/contain no-repeat;
   filter: drop-shadow(0 4px 10px rgba(80, 60, 40, 0.18));
 }
 .note-item .clip {
@@ -6423,53 +7508,56 @@ html, body {
   border-color: #c8a878;
 }
 
-.expand-mask {
-  position: fixed;
-  inset: 0;
-  background: transparent;
-  z-index: 9998;
-  opacity: 0;
-  pointer-events: none;
+/* ============ 便签展开：模态弹窗（最高层级，不被遮挡） ============ */
+.note-modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(40, 30, 20, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 2147483647;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.25s ease;
 }
-.expand-mask.show { opacity: 1; pointer-events: auto; }
-
-.note-item.expanded {
-  position: fixed !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: min(92vw, calc(84vh * 0.952)) !important;
-  height: auto !important;
-  aspect-ratio: 1 / 1.05;
-  z-index: 2147483647;
-  cursor: default;
-  transition: none !important;
-  touch-action: auto;
-  animation: noteExpand 0.26s cubic-bezier(.34,1.3,.64,1);
+.note-modal-mask.show { opacity: 1; pointer-events: auto; }
+.note-modal {
+  width: min(80vw, 300px);
+  max-height: 72vh;
+  background: #fff8e7;
+  border-radius: 18px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34, 1.3, .64, 1);
+  display: flex; flex-direction: column;
 }
-@keyframes noteExpand {
-  from { transform: translate(-50%, -50%) scale(0.72); opacity: 0.5; }
-  to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+.note-modal-mask.show .note-modal { transform: translateY(0) scale(1); }
+.note-modal-title {
+  font-size: 15px; font-weight: 700; color: #4a3a2a;
+  margin-bottom: 12px; text-align: center;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
 }
-.note-item.collapsing {
-  animation: noteCollapse 0.2s ease forwards;
-}
-@keyframes noteCollapse {
-  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  to   { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
-}
-.note-item.expanded .content {
+.note-modal-content {
   overflow-y: auto;
-  overflow-x: hidden;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px; line-height: 1.8; color: #5a4632;
+  white-space: pre-wrap; word-break: break-word;
+  padding: 4px 2px;
   scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
 }
-.note-item.expanded .content::-webkit-scrollbar { width: 4px; }
-.note-item.expanded .content::-webkit-scrollbar-thumb { background: #d8c4a0; border-radius: 2px; }
+.note-modal-content::-webkit-scrollbar { width: 4px; }
+.note-modal-content::-webkit-scrollbar-thumb { background: #d8c4a0; border-radius: 2px; }
+.note-modal-date {
+  margin-top: 12px; text-align: right;
+  font-size: 11px; color: #a08a70;
+}
+.note-modal-close {
+  margin-top: 14px; padding: 10px 0;
+  border: none; border-radius: 18px;
+  background: #ece0c8; color: #7a6a50;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+}
+.note-modal-close:active { transform: scale(0.97); }
 
 </style>
 </head>
@@ -6492,7 +7580,7 @@ html, body {
     </div>
 
     <div class="topbar">
-      <img src="assets/relax/title-box.png" class="title-banner" alt="烦恼收纳箱">
+      <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/title-box.png" class="title-banner" alt="烦恼收纳箱">
     </div>
 
     <div class="notes-area" id="notesArea">
@@ -6500,7 +7588,7 @@ html, body {
     </div>
 
     <div class="box-bottom" id="boxBottom">
-      <img src="assets/relax/box-bottom.png" alt="收纳箱">
+      <img src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheepimage/box-bottom.png" alt="收纳箱">
     </div>
 
     <!-- 输入弹窗 -->
@@ -6515,8 +7603,15 @@ html, body {
       </div>
     </div>
 
-    <!-- 展开遮罩 -->
-    <div class="expand-mask" id="expandMask"></div>
+    <!-- 便签展开模态弹窗 -->
+    <div class="note-modal-mask" id="expandMask">
+      <div class="note-modal">
+        <div class="note-modal-title">烦恼内容</div>
+        <div class="note-modal-content" id="noteModalContent"></div>
+        <div class="note-modal-date" id="noteModalDate"></div>
+        <button class="note-modal-close" id="noteModalClose">关闭</button>
+      </div>
+    </div>
 
     <!-- 释怀确认弹窗 -->
     <div class="confirm-mask" id="confirmMask">
@@ -6525,6 +7620,17 @@ html, body {
         <div class="input-btns">
           <button class="input-cancel" id="confirmNo">还没有</button>
           <button class="input-ok" id="confirmYes">确定</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 未完成确认弹窗 -->
+    <div class="confirm-mask" id="unfinishedMask">
+      <div class="confirm-modal">
+        <div class="confirm-title">这些想法，还觉得没处理完吗？</div>
+        <div class="input-btns">
+          <button class="input-cancel" id="unfinishedNo">不，我感觉轻松了</button>
+          <button class="input-ok" id="unfinishedYes">是，帮我再理一理</button>
         </div>
       </div>
     </div>
@@ -6545,6 +7651,9 @@ html, body {
   const boxBottom = document.getElementById('boxBottom');
   const backBtn = document.getElementById('backBtn');
   const expandMask = document.getElementById('expandMask');
+  const noteModalContent = document.getElementById('noteModalContent');
+  const noteModalDate = document.getElementById('noteModalDate');
+  const noteModalClose = document.getElementById('noteModalClose');
 
   // 回形针 SVG
   const CLIP_SVG = `<svg viewBox="0 0 26 38">
@@ -6563,6 +7672,44 @@ html, body {
     const day = same(d, now) ? '今天' : (same(d, yest) ? '昨天' : `${d.getMonth()+1}-${String(d.getDate()).padStart(2,'0')}`);
     const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     return { day, time };
+  }
+
+  // ===== 便签持久化（供引导页 caignick 从收纳箱读取烦恼） =====
+  const STORE_KEY = 'box_notes';
+
+  function saveNotes() {
+    try {
+      const items = notesInner.querySelectorAll('.note-item');
+      const list = [];
+      items.forEach(function(el) {
+        const contentEl = el.querySelector('.content');
+        const text = contentEl ? contentEl.textContent.trim() : '';
+        if (!text) return;
+        const dateEl = el.querySelector('.date');
+        const dayEl = dateEl ? dateEl.querySelector('.day') : null;
+        const timeEl = dateEl ? dateEl.querySelector('.time') : null;
+        list.push({
+          text: text,
+          day: dayEl ? dayEl.textContent : '',
+          time: timeEl ? timeEl.textContent : ''
+        });
+      });
+      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    } catch(e) {}
+  }
+
+  function loadNotes() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const list = JSON.parse(raw);
+      if (!Array.isArray(list)) return;
+      list.forEach(function(item) {
+        if (item && item.text && item.text.trim()) {
+          createNote(item.text, item.day, item.time);
+        }
+      });
+    } catch(e) {}
   }
 
   function getGridPos(i) {
@@ -6603,11 +7750,14 @@ html, body {
     notesInner.style.height = (maxBottom + 140) + 'px';
   }
 
-  function createNote(text = '') {
+  function createNote(text = '', day, time) {
     const items = notesInner.querySelectorAll('.note-item');
     const i = items.length;
     const pos = getGridPos(i);
-    const { day, time } = nowStr();
+    if (!day || !time) {
+      const t = nowStr();
+      day = t.day; time = t.time;
+    }
     const note = document.createElement('div');
     note.className = 'note-item';
     note.style.left = pos.x + 'px';
@@ -6636,41 +7786,19 @@ html, body {
     }
     requestAnimationFrame(checkOverflow);
     setTimeout(checkOverflow, 250);
-    contentEl.addEventListener('input', checkOverflow);
+    contentEl.addEventListener('input', function(){
+      checkOverflow();
+      saveNotes();
+    });
 
-    let isExpanded = false;
-    let collapseTimer = null;
-    function expandNote() {
-      if (isExpanded) return;
-      // 先收起其他已展开的便签
-      document.querySelectorAll('.note-item.expanded').forEach(function(o) {
-        if (o._collapse) o._collapse();
-      });
-      isExpanded = true;
-      note.classList.add('expanded');
-      document.body.appendChild(note);
+    // 展开：弹出模态弹窗显示便签内容
+    function openNoteModal() {
+      noteModalContent.textContent = contentEl.textContent;
+      const dateEl = note.querySelector('.date');
+      noteModalDate.textContent = dateEl ? dateEl.textContent : '';
       expandMask.classList.add('show');
-      contentEl.style.overflowY = 'auto';
     }
-    function collapseNote() {
-      if (!isExpanded) return;
-      isExpanded = false;
-      // 折叠动画（缩小 + 淡出），结束后移回网格
-      note.classList.remove('expanded');
-      note.classList.add('collapsing');
-      if (collapseTimer) clearTimeout(collapseTimer);
-      collapseTimer = setTimeout(function() {
-        note.classList.remove('collapsing');
-        contentEl.style.overflowY = '';
-        notesInner.appendChild(note);
-        note.style.position = 'absolute';
-        note.style.zIndex = '5';
-        repositionAll();
-        expandMask.classList.remove('show');
-      }, 200);
-    }
-    note._collapse = collapseNote;
-    expandBtn.addEventListener('click', e => { e.stopPropagation(); expandNote(); });
+    expandBtn.addEventListener('click', e => { e.stopPropagation(); openNoteModal(); });
 
     // 拖动逻辑（拖动时移到 body 置顶，松手恢复）
     let dragging = false;
@@ -6678,7 +7806,6 @@ html, body {
     note.addEventListener('pointerdown', e => {
       if (e.target.classList.contains('content')) return; // 编辑时不可拖
       if (e.target.closest('.expand-btn')) return; // 展开按钮不拖
-      if (isExpanded) return; // 展开状态不拖
       dragging = true;
       note.setPointerCapture(e.pointerId);
       const r = note.getBoundingClientRect();
@@ -6743,6 +7870,7 @@ html, body {
 
     // 创建后重排（刷新 inner 高度）
     repositionAll();
+    saveNotes();
     return note;
   }
 
@@ -6775,11 +7903,12 @@ html, body {
     window.history.length > 1 ? history.back() : (location.href = 'index.html');
   });
 
-  // 点击遮罩关闭展开的便签
-  expandMask.addEventListener('click', () => {
-    const expanded = document.querySelector('.note-item.expanded');
-    if (expanded && expanded._collapse) expanded._collapse();
+  // 点击弹窗外部空白（遮罩）关闭
+  expandMask.addEventListener('click', (e) => {
+    if (e.target === expandMask) expandMask.classList.remove('show');
   });
+  // 关闭按钮
+  noteModalClose.addEventListener('click', () => expandMask.classList.remove('show'));
 
   // ===== 释怀确认弹窗 =====
   const confirmMask = document.getElementById('confirmMask');
@@ -6799,13 +7928,17 @@ html, body {
     const target = pendingNote;
     pendingNote = null;
     if (target) {
+      const contentEl = target.querySelector('.content');
+      lastThought = contentEl ? contentEl.textContent.trim() : '';
       target.classList.add('dropping');
       setTimeout(() => {
         target.remove();
         repositionAll();
+        saveNotes();
+        // 删除后再问：这些想法还觉得没处理完吗？
+        unfinishedMask.classList.add('show');
       }, 300);
     }
-    showToast('释怀了，真好。今晚让它安心留在箱子里吧。');
   });
 
   confirmNo.addEventListener('click', () => {
@@ -6814,9 +7947,49 @@ html, body {
     showToast('没事，让情绪和您再待一会，不着急');
   });
 
+  // ===== 未完成衔接：传给思绪整理（caignick） =====
+  const unfinishedMask = document.getElementById('unfinishedMask');
+  const unfinishedYes = document.getElementById('unfinishedYes');
+  const unfinishedNo = document.getElementById('unfinishedNo');
+  let lastThought = '';
+
+  unfinishedYes.addEventListener('click', () => {
+    unfinishedMask.classList.remove('show');
+    try { localStorage.setItem('thought_box_handoff', lastThought); } catch(e) {}
+    location.href = 'caignick.html?v=3';
+  });
+  unfinishedNo.addEventListener('click', () => {
+    unfinishedMask.classList.remove('show');
+    showToast('今晚就让它们安心待着吧，晚安。');
+  });
+
+  // ===== 引导页传来的烦恼：自动创建便签 =====
+  function checkIncoming() {
+    try {
+      const incoming = localStorage.getItem('box_incoming');
+      if (incoming && incoming.trim()) {
+        localStorage.removeItem('box_incoming');
+        createNote(incoming.trim());
+        repositionAll();
+        showToast('从思绪整理收来一条烦恼，已经放进箱子啦');
+      }
+    } catch(e) {}
+  }
+  checkIncoming();
+  // 恢复已保存的便签（供本页与引导页读取）
+  loadNotes();
+  // 从浏览器缓存/返回键恢复页面时也检测（bfcache 恢复会触发 pageshow）
+  window.addEventListener('pageshow', checkIncoming);
+  // 别的标签页（引导页）写入时，本页实时收到并创建
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'box_incoming') checkIncoming();
+  });
+
 })();
 </script>
 
+<script src="tc-tts.js?v=2"></script>
+<script src="process.js"></script>
 </body>
 </html>
 </template>
@@ -6829,7 +8002,7 @@ html, body {
 
   var PAGES = ["index", "caignick", "sound", "read", "relax", "box"];
   var DEFAULT_PAGE = 'index';
-  var TITLES = {"index": "好好睡觉", "caignick": "落定 · 睡前思绪整理", "sound": "落定 · 睡前思绪整理", "read": "阅读倒计时 - 好好睡觉", "relax": "情绪练习 - 好好睡觉", "box": "烦恼收纳箱 - 好好睡觉"};
+  var TITLES = {"index": "好好睡觉", "caignick": "落定 · 睡前思绪整理", "sound": "落定 · 睡前思绪整理", "read": "月亮书房 - 好好睡觉", "relax": "情绪练习 - 好好睡觉", "box": "烦恼收纳箱 - 好好睡觉"};
 
   var frame = document.getElementById('app-frame');
   var stack = [];
