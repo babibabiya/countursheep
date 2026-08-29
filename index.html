@@ -465,15 +465,31 @@ html, body {
     toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
   }
 
-  // 判断输入是否为乱码/无意义内容（前端预检，减少无效调用）
+  // ====== 内容审核（纯前端本地规则，不依赖 DeepSeek，拦截乱码/无意义输入） ======
   function isGarbled(text) {
     const s = String(text || '').trim();
-    if (s.length < 2) return true;
+    if (s.length < 2) return true;   // 过短
+    if (s.length > 400) return true; // 超长
+
     const hasChinese = /[\u4e00-\u9fa5]/.test(s);
-    const hasWord = /[a-zA-Z]{2,}/.test(s); // 至少两个连续字母视为有单词
-    if (!hasChinese && !hasWord) return true; // 既无中文也无英文单词 → 符号/数字/乱码
-    const compact = s.replace(/[\s\p{P}]/gu, '');
-    if (compact && new Set(compact).size === 1) return true; // 全是重复单字符
+    const hasWord = /[a-zA-Z]{2,}/.test(s);
+
+    // 1. 既无中文也无英文单词 → 纯符号/数字/emoji/乱码
+    if (!hasChinese && !hasWord) return true;
+
+    // 2. 键盘乱敲（同一行/相邻键连击，如 asdf、qwer、zxcv、hjkl 等）
+    if (/(asdf|qwer|zxcv|hjkl|wert|sdfg|dfgh|fghj|ghjk|tyui|rtyu|yuiop|asd|qwe|zxc|hjk|jkl|fdsa|rewq|lkjh)/i.test(s)) return true;
+
+    // 3. 无中文的随机字母数字混合（如 a8f3k9d2）
+    if (!hasChinese && /^(?=.*[a-z])(?=.*\d)[a-z0-9]{6,}$/i.test(s)) return true;
+
+    // 4. 纯数字 / 纯标点 / 纯符号
+    if (/^[\d\s\p{P}\p{S}]+$/u.test(s)) return true;
+
+    // 5. 去空格标点数字后有效字符种类过少（重复单字符，如 啊啊啊啊 / hahahaha / 哈哈哈哈）
+    const compact = s.replace(/[\s\p{P}\d]/gu, '');
+    if (compact.length >= 4 && new Set(compact).size <= 2) return true;
+
     return false;
   }
 
@@ -502,13 +518,13 @@ html, body {
     '- music：音乐——想听点安神的东西',
     '- sleep_audio：助眠音频——想要舒缓声音引导入睡',
     '',
-    '映射提示：想表达/倾诉 → thought_box；回想过去/后悔/反刍 → thought_completion；未来担忧 → thought_completion；需要记住明天的事 → thought_box；身体紧绷/心跳/坐立不安 → relaxation；脑子活跃无具体担忧 → reading 或 thought_box；不困 → reading；环境噪音 → white_noise；想听安神 → music 或 white_noise；说不清具体原因、单纯就是睡不着（如"不知道，就是睡不着""没什么原因就是睡不着"）→ reading（睡前阅读）。',
+    '映射提示：想表达/倾诉/心里堵得慌 → thought_box；回想过去/后悔/反刍/翻来覆去想一件事 → thought_completion；对未来担忧/焦虑明天 → thought_completion；需要记住明天的事/任务清单 → thought_box；身体紧绷/心跳快/坐立不安/浑身酸痛 → relaxation；脑子活跃但无具体担忧 → reading；单纯不困/想刷手机又停不下来 → reading；环境噪音/室友吵/窗外吵 → white_noise；想听点安神的声音/有点孤单空落落 → music 或 white_noise；做噩梦/害怕/惊醒了 → thought_completion 或 sleep_audio；跟人吵架/生气/委屈/被误解 → thought_box；说不清具体原因、单纯睡不着（"不知道""没什么原因就是睡不着"）→ reading。',
     '',
     '要求：',
     '1. 不要诊断用户。不要写"你有焦虑症""你有情绪压抑"这类话；如需提及心理概念，用"这有点像……的模式"。',
     '2. message 用温暖、口语化的中文，一句话点出用户此刻的需求（例如"听起来你脑子里装了很多话，需要一个地方把它们安放下来。"），统一用"你"，不要长篇大论。',
     '3. 安全：如果用户提到自残、自杀、立即危险、被虐待等严重情况，primary_function 固定返回 "safety"，message 给予安抚与陪伴，并温和建议联系信任的人或专业帮助；此时 secondary_function 也返回 "safety"。',
-    '4. 如果用户输入的是乱码、无意义的字符、随机键盘敲击，或你完全无法理解其含义，primary_function 固定返回 "unclear"，secondary_function 也返回 "unclear"，message 用温和、高情商、口语化的方式请用户重新表达（例如"我好像没太读懂你的意思，可以换个方式再跟我说说吗？"），不要指责。',
+    '4. 重要——不要轻易返回 "unclear"：用户输入常常是口语化、碎片化、带错别字甚至只有半句话。只要你能大致猜到方向（哪怕线索很少），就选最接近的功能推荐，并在 message 里温柔地回应用户可能想表达的意思。宁可合理地猜一个方向，也不要轻易说"没读懂"。只有输入是明显乱码（无意义字符、随机字母数字、键盘乱敲、纯符号）时才返回 "unclear"，并用温和、高情商、口语化的方式请用户重新表达（例如"我好像没太读懂你的意思，可以换个方式再跟我说说吗？"），不要指责。',
     '',
     '只输出 JSON，不要输出任何其他文字：',
     '{"need_type":"需求类型英文","primary_function":"主推荐功能id","secondary_function":"次推荐功能id","message":"一句话安抚+点出需求"}'
