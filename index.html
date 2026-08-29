@@ -270,6 +270,64 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ============ 用户协议弹窗 ============ */
+.terms-mask {
+  position: fixed; inset: 0;
+  background: rgba(30, 22, 40, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.terms-mask.show { opacity: 1; pointer-events: auto; }
+.terms-modal {
+  width: 84%; max-width: 330px; max-height: 82%;
+  background: #fffdf8;
+  border-radius: 22px;
+  padding: 24px 20px 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34, 1.3, .64, 1);
+  overflow-y: auto;
+  text-align: center;
+}
+.terms-mask.show .terms-modal { transform: translateY(0) scale(1); }
+.terms-title {
+  font-size: 18px; font-weight: 800; color: #4a3a6a;
+  letter-spacing: 2px; margin-bottom: 4px;
+}
+.terms-app {
+  font-size: 11px; color: #a08aa8; letter-spacing: 3px; margin-bottom: 14px;
+}
+.terms-body {
+  text-align: left; font-size: 13px; line-height: 1.8; color: #5a4a60;
+  margin-bottom: 14px;
+}
+.terms-body strong { color: #4a3a6a; }
+.terms-view {
+  display: inline-block; font-size: 13px; font-weight: 600;
+  color: #6a5aa8; text-decoration: underline; cursor: pointer;
+  margin-bottom: 16px; background: none; border: none; font-family: inherit;
+}
+.terms-actions { display: flex; flex-direction: column; gap: 10px; }
+.terms-agree {
+  width: 100%; padding: 13px 0;
+  border: none; border-radius: 22px;
+  background: linear-gradient(180deg, #8a7ab8 0%, #6a5aa8 100%);
+  color: #fff; font-size: 15px; font-weight: 700; letter-spacing: 2px;
+  cursor: pointer; font-family: inherit;
+  box-shadow: 0 5px 14px rgba(106, 90, 168, 0.35);
+}
+.terms-agree:active { transform: scale(0.97); }
+.terms-disagree {
+  width: 100%; padding: 11px 0;
+  border: none; border-radius: 20px;
+  background: #f0e8f4; color: #8a7aa0;
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  cursor: pointer; font-family: inherit;
+}
+.terms-disagree:active { transform: scale(0.97); }
+
 </style>
 </head>
 <body>
@@ -363,6 +421,22 @@ html, body {
 
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
+
+    <!-- 用户协议弹窗 -->
+    <div class="terms-mask" id="termsMask">
+      <div class="terms-modal">
+        <div class="terms-title">欢迎使用「落定」</div>
+        <div class="terms-app">L U Ò D Ì N G</div>
+        <div class="terms-body">
+          使用本应用前，请仔细阅读并同意<strong>《用户服务协议》</strong>。本应用提供睡眠引导与辅助服务，内容仅为生活辅助与信息参考，<strong>不构成医疗诊断或治疗建议</strong>。点击"同意并继续"即表示您已阅读并同意协议全部条款。
+        </div>
+        <button class="terms-view" id="termsView">查看《用户服务协议》全文</button>
+        <div class="terms-actions">
+          <button class="terms-agree" id="termsAgree">同意并继续</button>
+          <button class="terms-disagree" id="termsDisagree">暂不同意</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -636,10 +710,39 @@ html, body {
     });
   });
 
-  // 月亮 → 睡前流程
+  // 月亮 → 查看用户协议
   const moonBtn = document.getElementById('moonBtn');
   if (moonBtn) {
-    moonBtn.addEventListener('click', () => { location.href = 'routine.html'; });
+    moonBtn.addEventListener('click', () => { location.href = 'agreement.html'; });
+  }
+
+  // ===== 用户协议：首次使用必须同意，否则不进入主页 =====
+  const termsMask = document.getElementById('termsMask');
+  const termsView = document.getElementById('termsView');
+  const termsAgree = document.getElementById('termsAgree');
+  const termsDisagree = document.getElementById('termsDisagree');
+
+  // 查看协议全文
+  if (termsView) termsView.addEventListener('click', () => { location.href = 'agreement.html'; });
+
+  // 同意并继续
+  if (termsAgree) termsAgree.addEventListener('click', () => {
+    try { localStorage.setItem('agreed_terms', '1'); } catch (e) {}
+    termsMask.classList.remove('show');
+  });
+
+  // 暂不同意：给出提示，不关闭（必须同意才能进主页）
+  if (termsDisagree) termsDisagree.addEventListener('click', () => {
+    showToast('同意协议后才能开始使用，谢谢理解');
+  });
+
+  // 首次使用检查：未同意则弹协议，且无法进入主页
+  try {
+    if (localStorage.getItem('agreed_terms') !== '1') {
+      termsMask.classList.add('show');
+    }
+  } catch (e) {
+    termsMask.classList.add('show');
   }
 
 })();
