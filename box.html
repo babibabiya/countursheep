@@ -330,53 +330,56 @@ html, body {
   border-color: #c8a878;
 }
 
-.expand-mask {
-  position: fixed;
-  inset: 0;
-  background: transparent;
-  z-index: 9998;
-  opacity: 0;
-  pointer-events: none;
+/* ============ 便签展开：模态弹窗（最高层级，不被遮挡） ============ */
+.note-modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(40, 30, 20, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 2147483647;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.25s ease;
 }
-.expand-mask.show { opacity: 1; pointer-events: auto; }
-
-.note-item.expanded {
-  position: fixed !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  width: min(73.6vw, calc(67.2vh * 0.952)) !important;
-  height: auto !important;
-  aspect-ratio: 1 / 1.05;
-  z-index: 2147483647;
-  cursor: default;
-  transition: none !important;
-  touch-action: auto;
-  animation: noteExpand 0.26s cubic-bezier(.34,1.3,.64,1);
+.note-modal-mask.show { opacity: 1; pointer-events: auto; }
+.note-modal {
+  width: min(80vw, 300px);
+  max-height: 72vh;
+  background: #fff8e7;
+  border-radius: 18px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  transform: translateY(24px) scale(0.92);
+  transition: transform 0.3s cubic-bezier(.34, 1.3, .64, 1);
+  display: flex; flex-direction: column;
 }
-@keyframes noteExpand {
-  from { transform: translate(-50%, -50%) scale(0.72); opacity: 0.5; }
-  to   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+.note-modal-mask.show .note-modal { transform: translateY(0) scale(1); }
+.note-modal-title {
+  font-size: 15px; font-weight: 700; color: #4a3a2a;
+  margin-bottom: 12px; text-align: center;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
 }
-.note-item.collapsing {
-  animation: noteCollapse 0.2s ease forwards;
-}
-@keyframes noteCollapse {
-  from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-  to   { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
-}
-.note-item.expanded .content {
+.note-modal-content {
   overflow-y: auto;
-  overflow-x: hidden;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px; line-height: 1.8; color: #5a4632;
+  white-space: pre-wrap; word-break: break-word;
+  padding: 4px 2px;
   scrollbar-width: thin;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
 }
-.note-item.expanded .content::-webkit-scrollbar { width: 4px; }
-.note-item.expanded .content::-webkit-scrollbar-thumb { background: #d8c4a0; border-radius: 2px; }
+.note-modal-content::-webkit-scrollbar { width: 4px; }
+.note-modal-content::-webkit-scrollbar-thumb { background: #d8c4a0; border-radius: 2px; }
+.note-modal-date {
+  margin-top: 12px; text-align: right;
+  font-size: 11px; color: #a08a70;
+}
+.note-modal-close {
+  margin-top: 14px; padding: 10px 0;
+  border: none; border-radius: 18px;
+  background: #ece0c8; color: #7a6a50;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: "Yuanti SC", "YouYuan", "PingFang SC", sans-serif;
+}
+.note-modal-close:active { transform: scale(0.97); }
 
 </style>
 </head>
@@ -422,8 +425,15 @@ html, body {
       </div>
     </div>
 
-    <!-- 展开遮罩 -->
-    <div class="expand-mask" id="expandMask"></div>
+    <!-- 便签展开模态弹窗 -->
+    <div class="note-modal-mask" id="expandMask">
+      <div class="note-modal">
+        <div class="note-modal-title">烦恼内容</div>
+        <div class="note-modal-content" id="noteModalContent"></div>
+        <div class="note-modal-date" id="noteModalDate"></div>
+        <button class="note-modal-close" id="noteModalClose">关闭</button>
+      </div>
+    </div>
 
     <!-- 释怀确认弹窗 -->
     <div class="confirm-mask" id="confirmMask">
@@ -463,6 +473,9 @@ html, body {
   const boxBottom = document.getElementById('boxBottom');
   const backBtn = document.getElementById('backBtn');
   const expandMask = document.getElementById('expandMask');
+  const noteModalContent = document.getElementById('noteModalContent');
+  const noteModalDate = document.getElementById('noteModalDate');
+  const noteModalClose = document.getElementById('noteModalClose');
 
   // 回形针 SVG
   const CLIP_SVG = `<svg viewBox="0 0 26 38">
@@ -556,39 +569,14 @@ html, body {
     setTimeout(checkOverflow, 250);
     contentEl.addEventListener('input', checkOverflow);
 
-    let isExpanded = false;
-    let collapseTimer = null;
-    function expandNote() {
-      if (isExpanded) return;
-      // 先收起其他已展开的便签
-      document.querySelectorAll('.note-item.expanded').forEach(function(o) {
-        if (o._collapse) o._collapse();
-      });
-      isExpanded = true;
-      note.classList.add('expanded');
-      document.body.appendChild(note);
+    // 展开：弹出模态弹窗显示便签内容
+    function openNoteModal() {
+      noteModalContent.textContent = contentEl.textContent;
+      const dateEl = note.querySelector('.date');
+      noteModalDate.textContent = dateEl ? dateEl.textContent : '';
       expandMask.classList.add('show');
-      contentEl.style.overflowY = 'auto';
     }
-    function collapseNote() {
-      if (!isExpanded) return;
-      isExpanded = false;
-      // 折叠动画（缩小 + 淡出），结束后移回网格
-      note.classList.remove('expanded');
-      note.classList.add('collapsing');
-      if (collapseTimer) clearTimeout(collapseTimer);
-      collapseTimer = setTimeout(function() {
-        note.classList.remove('collapsing');
-        contentEl.style.overflowY = '';
-        notesInner.appendChild(note);
-        note.style.position = 'absolute';
-        note.style.zIndex = '5';
-        repositionAll();
-        expandMask.classList.remove('show');
-      }, 200);
-    }
-    note._collapse = collapseNote;
-    expandBtn.addEventListener('click', e => { e.stopPropagation(); expandNote(); });
+    expandBtn.addEventListener('click', e => { e.stopPropagation(); openNoteModal(); });
 
     // 拖动逻辑（拖动时移到 body 置顶，松手恢复）
     let dragging = false;
@@ -596,7 +584,6 @@ html, body {
     note.addEventListener('pointerdown', e => {
       if (e.target.classList.contains('content')) return; // 编辑时不可拖
       if (e.target.closest('.expand-btn')) return; // 展开按钮不拖
-      if (isExpanded) return; // 展开状态不拖
       dragging = true;
       note.setPointerCapture(e.pointerId);
       const r = note.getBoundingClientRect();
@@ -693,11 +680,12 @@ html, body {
     window.history.length > 1 ? history.back() : (location.href = 'index.html');
   });
 
-  // 点击遮罩关闭展开的便签
-  expandMask.addEventListener('click', () => {
-    const expanded = document.querySelector('.note-item.expanded');
-    if (expanded && expanded._collapse) expanded._collapse();
+  // 点击弹窗外部空白（遮罩）关闭
+  expandMask.addEventListener('click', (e) => {
+    if (e.target === expandMask) expandMask.classList.remove('show');
   });
+  // 关闭按钮
+  noteModalClose.addEventListener('click', () => expandMask.classList.remove('show'));
 
   // ===== 释怀确认弹窗 =====
   const confirmMask = document.getElementById('confirmMask');
