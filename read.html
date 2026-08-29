@@ -60,6 +60,78 @@ html, body {
   pointer-events: none;
   filter: drop-shadow(0 6px 12px rgba(60, 30, 80, 0.25));
 }
+
+/* ===== 倒计时圆形进度条（下半空白处） ===== */
+.timer-zone {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: 6%;
+  z-index: 6;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 12px;
+}
+.timer-ring {
+  position: relative;
+  width: 46%;
+  aspect-ratio: 1 / 1;
+}
+.timer-ring svg {
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.72);
+  stroke-width: 12;
+}
+.ring-fg {
+  fill: none;
+  stroke: url(#ringGrad);
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+}
+.timer-time {
+  font-size: 30px; font-weight: 900; letter-spacing: 1px;
+  color: #7a5aa8; font-variant-numeric: tabular-nums; line-height: 1;
+}
+.timer-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #b9a2d8;
+}
+
+/* 控制按钮 */
+.timer-controls {
+  display: flex; align-items: center; gap: 14px;
+}
+.tc-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 2.5px solid rgba(180, 138, 214, 0.5); background: rgba(255, 255, 255, 0.85);
+  color: #b48ad6; font-size: 20px; font-weight: 900; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: transform .15s, background .15s; font-family: inherit;
+  box-shadow: 0 3px 8px rgba(150, 110, 180, .15);
+}
+.tc-btn:active { transform: scale(.86); }
+.tc-main {
+  width: auto; height: 44px; padding: 0 30px; border-radius: 999px;
+  background: linear-gradient(135deg, #c9a6f2 0%, #a982d4 100%);
+  color: #fff; font-size: 15px; font-weight: 900; letter-spacing: 2px;
+  border: none; cursor: pointer; font-family: inherit;
+  box-shadow: 0 6px 16px rgba(170, 130, 210, .4);
+  transition: transform .15s, box-shadow .15s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.tc-main:active { transform: scale(.95); }
+.tc-main.running {
+  background: linear-gradient(135deg, #ffb7ce 0%, #ffa8c0 100%);
+  box-shadow: 0 6px 16px rgba(255, 150, 180, .4);
+}
+.tc-main svg { width: 17px; height: 17px; }
 </style>
 </head>
 <body>
@@ -73,15 +145,129 @@ html, body {
     </div>
     <!-- 椅子上的读小羊 -->
     <img class="chair-gif" alt="读小羊" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/Step%20by%20step%20guide%20to%20using%20Petal%20canvas%20plug-in.gif">
+
+    <!-- 倒计时圆形进度条 -->
+    <div class="timer-zone">
+      <div class="timer-ring">
+        <svg viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#c9a6f2"/>
+              <stop offset="100%" stop-color="#a982d4"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="100" cy="100" r="88"/>
+          <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="88"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-time" id="timeText">30:00</div>
+          <div class="timer-label" id="statusText">挑个时长，开读吧</div>
+        </div>
+      </div>
+
+      <div class="timer-controls">
+        <button class="tc-btn" id="btnMinus" aria-label="减少 5 分钟">−</button>
+        <button class="tc-main" id="btnStart">
+          <svg id="iconPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg id="iconPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+          <span id="btnStartText">开始阅读</span>
+        </button>
+        <button class="tc-btn" id="btnPlus" aria-label="增加 5 分钟">＋</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
 (function() {
   'use strict';
+
   document.getElementById('backBtn').addEventListener('click', function() {
     window.history.length > 1 ? history.back() : (location.href = 'index.html');
   });
+
+  /* ===== 倒计时圆形进度条 ===== */
+  var CIRC = 2 * Math.PI * 88; // 圆环周长 ≈ 552.92
+
+  var total = 30 * 60, remain = total;
+  var running = false, finished = false, timer = null;
+
+  var timeText = document.getElementById('timeText');
+  var statusText = document.getElementById('statusText');
+  var ringFg = document.getElementById('ringFg');
+  var btnStart = document.getElementById('btnStart');
+  var btnStartText = document.getElementById('btnStartText');
+  var iconPlay = document.getElementById('iconPlay');
+  var iconPause = document.getElementById('iconPause');
+
+  // 初始化圆环
+  ringFg.style.strokeDasharray = CIRC;
+  ringFg.style.strokeDashoffset = 0;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function render() {
+    timeText.textContent = pad(Math.floor(remain / 60)) + ':' + pad(remain % 60);
+    // 环从满到空：remain/total
+    var ratio = total > 0 ? (remain / total) : 0;
+    ringFg.style.strokeDashoffset = CIRC * (1 - ratio);
+  }
+
+  function renderState() {
+    btnStartText.textContent = running ? '暂停一下' : (finished ? '再读一次' : '开始阅读');
+    iconPlay.style.display = running ? 'none' : '';
+    iconPause.style.display = running ? '' : 'none';
+    btnStart.classList.toggle('running', running);
+  }
+
+  function tick() {
+    remain--;
+    if (remain <= 0) {
+      remain = 0;
+      running = false; finished = true;
+      clearInterval(timer); timer = null;
+      statusText.textContent = '读完啦，合上书，晚安 ✦';
+      render(); renderState();
+      return;
+    }
+    render();
+  }
+
+  function startPause() {
+    if (finished) { resetTo(total / 60); startPause(); return; }
+    running = !running;
+    if (running) {
+      statusText.textContent = '慢慢读，不着急';
+      timer = setInterval(tick, 1000);
+    } else {
+      clearInterval(timer); timer = null;
+      statusText.textContent = '歇一会儿也没关系';
+    }
+    renderState();
+  }
+
+  function resetTo(min) {
+    clearInterval(timer); timer = null;
+    running = false; finished = false;
+    total = remain = Math.max(5, Math.round(min)) * 60;
+    statusText.textContent = '挑个时长，开读吧';
+    render(); renderState();
+  }
+
+  btnStart.addEventListener('click', startPause);
+
+  function adjust(delta) {
+    var min = Math.max(5, Math.round(total / 60) + delta);
+    min = Math.min(min, 120);
+    var wasRunning = running;
+    resetTo(min);
+    if (wasRunning) { startPause(); }
+    statusText.textContent = min + ' 分钟';
+  }
+  document.getElementById('btnPlus').addEventListener('click', function() { adjust(5); });
+  document.getElementById('btnMinus').addEventListener('click', function() { adjust(-5); });
+
+  render();
 })();
 </script>
 
