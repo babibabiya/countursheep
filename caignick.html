@@ -610,6 +610,51 @@
     opacity:0;pointer-events:none;transition:all .3s;white-space:nowrap;
   }
   .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  /* ---------- 从收纳箱选择烦恼 ---------- */
+  #scr-input .box-pick-trigger{
+    position:absolute; left:24px; bottom:236px; z-index:8;
+    display:inline-flex; align-items:center; gap:6px;
+    color:rgba(233,237,248,0.9); font-size:12px; letter-spacing:.5px;
+    background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.22);
+    border-radius:99px; padding:7px 13px;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    cursor:pointer; transition:background .15s, transform .15s;
+  }
+  #scr-input .box-pick-trigger:active{background:rgba(255,255,255,0.18);transform:scale(.96);}
+  #scr-input .box-pick-trigger svg{width:14px;height:14px;flex-shrink:0;}
+
+  .box-pick-mask{
+    position:absolute; inset:0; z-index:60;
+    background:rgba(3,5,11,.6); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  .box-pick-mask.show{opacity:1; pointer-events:auto;}
+  .box-pick-panel{
+    position:absolute; left:0; right:0; bottom:0;
+    background:linear-gradient(180deg,#161d3a,#10152c);
+    border-radius:26px 26px 0 0; border:1px solid var(--line); border-bottom:none;
+    padding:16px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height:72%; display:flex; flex-direction:column;
+    transform:translateY(105%); transition:transform .38s cubic-bezier(.32,.72,.28,1);
+  }
+  .box-pick-mask.show .box-pick-panel{transform:none;}
+  .box-pick-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  .box-pick-title{font-size:16px; font-weight:600; letter-spacing:1px; color:var(--text);}
+  .box-pick-close{background:none; border:none; color:var(--muted); font-size:26px; line-height:1; cursor:pointer; padding:0 4px;}
+  .box-pick-list{flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:10px; padding:8px 0 4px; scrollbar-width:none;}
+  .box-pick-list::-webkit-scrollbar{display:none;}
+  .box-pick-item{
+    text-align:left; width:100%;
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12);
+    border-radius:14px; padding:12px 14px; cursor:pointer;
+    transition:background .15s;
+  }
+  .box-pick-item:active{background:rgba(255,255,255,0.12);}
+  .box-pick-item .t{font-size:13px; color:var(--text); line-height:1.6;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .box-pick-item .d{font-size:11px; color:var(--muted); margin-top:6px; letter-spacing:.5px;}
+  .box-pick-empty{padding:34px 0; text-align:center; font-size:13px; color:var(--muted);}
 </style>
 </head>
 <body>
@@ -635,6 +680,10 @@
         <h2>今晚，是什么<br>在您脑子里转？</h2>
         <p>简单几句话就好。AI 会读懂您的情绪，用心理学的视角帮您看清它、安放它，再带您放松下来。</p>
       </div>
+      <button class="box-pick-trigger" id="boxPickTrigger" aria-label="从收纳箱选择烦恼">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M4 7.5l8 4.5 8-4.5"/><path d="M12 12v9"/></svg>
+        从收纳箱选择烦恼
+      </button>
       <textarea id="worryInput" maxlength="400" placeholder="例如：明天有一场很重要的考试，总觉得还没准备好……"></textarea>
       <div class="count"><span id="charCount">0</span> / 400</div>
       <button class="cta" id="btnGenerate">生成专属引导音频</button>
@@ -900,6 +949,18 @@
     </div>
   </div>
 
+  <!-- ===== 从收纳箱选择烦恼 ===== -->
+  <div class="box-pick-mask" id="boxPickMask">
+    <div class="box-pick-panel">
+      <div class="box-pick-head">
+        <div class="box-pick-title">从收纳箱选择烦恼</div>
+        <button class="box-pick-close" id="boxPickClose" aria-label="关闭">×</button>
+      </div>
+      <div class="box-pick-list" id="boxPickList"></div>
+      <div class="box-pick-empty" id="boxPickEmpty">收纳箱还是空的，先去写一条烦恼吧</div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -1058,6 +1119,40 @@ function openSheet(opts){
 function closeSheet(){
   $('#backdrop').classList.remove('show');
   $('#sheet').classList.remove('show');
+}
+
+/* ================= 从收纳箱选择烦恼 ================= */
+function openBoxPick(){
+  var list = [];
+  try { list = JSON.parse(localStorage.getItem('box_notes') || '[]'); } catch(e) {}
+  if(!Array.isArray(list)) list = [];
+  list = list.filter(function(x){ return x && x.text && String(x.text).trim(); });
+  var wrap = $('#boxPickList');
+  var empty = $('#boxPickEmpty');
+  wrap.innerHTML = '';
+  if(list.length === 0){
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.forEach(function(item){
+      var btn = document.createElement('button');
+      btn.className = 'box-pick-item';
+      btn.innerHTML = '<div class="t"></div><div class="d"></div>';
+      btn.querySelector('.t').textContent = String(item.text).trim();
+      btn.querySelector('.d').textContent = ((item.day || '') + ' ' + (item.time || '')).trim();
+      btn.addEventListener('click', function(){
+        $('#worryInput').value = String(item.text).trim();
+        updateCount();
+        closeBoxPick();
+        toast('已填入这条烦恼');
+      });
+      wrap.appendChild(btn);
+    });
+  }
+  $('#boxPickMask').classList.add('show');
+}
+function closeBoxPick(){
+  $('#boxPickMask').classList.remove('show');
 }
 
 /* ================= 星空 / 时钟 ================= */
@@ -2364,6 +2459,11 @@ function bind(){
 
   $('#btnBackInput').addEventListener('click', function(){ location.href='index.html'; });
   $('#worryInput').addEventListener('input', updateCount);
+  $('#boxPickTrigger').addEventListener('click', openBoxPick);
+  $('#boxPickClose').addEventListener('click', closeBoxPick);
+  $('#boxPickMask').addEventListener('click', function(e){
+    if(e.target === $('#boxPickMask')) closeBoxPick();
+  });
   $('#btnGenerate').addEventListener('click', function(){
     var input = $('#worryInput').value.trim();
     if(input.length < 4){ toast('再多写几个字，让 AI 更懂您'); $('#worryInput').focus(); return; }

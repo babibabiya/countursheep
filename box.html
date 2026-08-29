@@ -496,6 +496,44 @@ html, body {
     return { day, time };
   }
 
+  // ===== 便签持久化（供引导页 caignick 从收纳箱读取烦恼） =====
+  const STORE_KEY = 'box_notes';
+
+  function saveNotes() {
+    try {
+      const items = notesInner.querySelectorAll('.note-item');
+      const list = [];
+      items.forEach(function(el) {
+        const contentEl = el.querySelector('.content');
+        const text = contentEl ? contentEl.textContent.trim() : '';
+        if (!text) return;
+        const dateEl = el.querySelector('.date');
+        const dayEl = dateEl ? dateEl.querySelector('.day') : null;
+        const timeEl = dateEl ? dateEl.querySelector('.time') : null;
+        list.push({
+          text: text,
+          day: dayEl ? dayEl.textContent : '',
+          time: timeEl ? timeEl.textContent : ''
+        });
+      });
+      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    } catch(e) {}
+  }
+
+  function loadNotes() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return;
+      const list = JSON.parse(raw);
+      if (!Array.isArray(list)) return;
+      list.forEach(function(item) {
+        if (item && item.text && item.text.trim()) {
+          createNote(item.text, item.day, item.time);
+        }
+      });
+    } catch(e) {}
+  }
+
   function getGridPos(i) {
     const areaW = notesInner.clientWidth;
     const noteW = Math.min(areaW * 0.42, 160);
@@ -534,11 +572,14 @@ html, body {
     notesInner.style.height = (maxBottom + 140) + 'px';
   }
 
-  function createNote(text = '') {
+  function createNote(text = '', day, time) {
     const items = notesInner.querySelectorAll('.note-item');
     const i = items.length;
     const pos = getGridPos(i);
-    const { day, time } = nowStr();
+    if (!day || !time) {
+      const t = nowStr();
+      day = t.day; time = t.time;
+    }
     const note = document.createElement('div');
     note.className = 'note-item';
     note.style.left = pos.x + 'px';
@@ -567,7 +608,10 @@ html, body {
     }
     requestAnimationFrame(checkOverflow);
     setTimeout(checkOverflow, 250);
-    contentEl.addEventListener('input', checkOverflow);
+    contentEl.addEventListener('input', function(){
+      checkOverflow();
+      saveNotes();
+    });
 
     // 展开：弹出模态弹窗显示便签内容
     function openNoteModal() {
@@ -648,6 +692,7 @@ html, body {
 
     // 创建后重排（刷新 inner 高度）
     repositionAll();
+    saveNotes();
     return note;
   }
 
@@ -711,6 +756,7 @@ html, body {
       setTimeout(() => {
         target.remove();
         repositionAll();
+        saveNotes();
         // 删除后再问：这些想法还觉得没处理完吗？
         unfinishedMask.classList.add('show');
       }, 300);
@@ -752,6 +798,8 @@ html, body {
     } catch(e) {}
   }
   checkIncoming();
+  // 恢复已保存的便签（供本页与引导页读取）
+  loadNotes();
   // 从浏览器缓存/返回键恢复页面时也检测（bfcache 恢复会触发 pageshow）
   window.addEventListener('pageshow', checkIncoming);
   // 别的标签页（引导页）写入时，本页实时收到并创建
