@@ -1285,13 +1285,16 @@ function callAPI(input, signal){
       stream: false,
       response_format: { type: 'json_object' }
     };
-    var headers = { 'Content-Type': 'application/json' };
+    var headers = {};
     if (PROXY.url) {
-      headers['apikey'] = PROXY.anonKey;   // 代理模式：anon key 门禁，密钥在服务端
+      // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
+      body.key = PROXY.anonKey;
+      headers['Content-Type'] = 'text/plain';
     } else {
-      headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY; // 直连模式
+      // 直连模式
+      headers['Content-Type'] = 'application/json';
+      headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
     }
-    headers['X-Tracking-Id'] = TRACKING_ID;
     var opts = {
       method: 'POST',
       headers: headers,

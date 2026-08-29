@@ -549,19 +549,21 @@ html, body {
         stream: false,
         response_format: { type: 'json_object' }
       };
+      const headers = {};
+      if (PROXY.url) {
+        // 代理模式：key 放 body、Content-Type 用 text/plain（简单请求，避免手机浏览器 CORS 预检失败）
+        body.key = PROXY.anonKey;
+        headers['Content-Type'] = 'text/plain';
+      } else {
+        // 直连模式
+        headers['Content-Type'] = 'application/json';
+        headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
+      }
       const opts = {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': PROXY.anonKey
-        },
+        headers: headers,
         body: JSON.stringify(body)
       };
-      if (PROXY.url) {
-        // 代理模式：apikey 门禁（不传 Authorization，避免泄露真实 key）
-      } else {
-        opts.headers['Authorization'] = 'Bearer ' + DEEPSEEK_KEY;
-      }
       if (ctrl) opts.signal = ctrl.signal;
 
       fetch(API_URL, opts).then(function(res) {
