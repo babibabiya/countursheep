@@ -743,13 +743,28 @@ html, body {
 
   unfinishedYes.addEventListener('click', () => {
     unfinishedMask.classList.remove('show');
-    try { localStorage.setItem('thought_box_handoff', lastThought); } catch(e) {}
+    try {
+      localStorage.setItem('thought_box_handoff', lastThought);
+      // 这条烦恼用户已选择释放并带走整理，引导页生成后不再回流收纳箱
+      localStorage.setItem('skip_box_incoming', '1');
+    } catch(e) {}
     location.href = 'caignick.html';
   });
   unfinishedNo.addEventListener('click', () => {
     unfinishedMask.classList.remove('show');
     showToast('今晚就让它们安心待着吧，晚安。');
   });
+
+  // ===== 引导页传来的烦恼：自动创建便签 =====
+  try {
+    const incoming = localStorage.getItem('box_incoming');
+    if (incoming && incoming.trim()) {
+      localStorage.removeItem('box_incoming');
+      createNote(incoming.trim());
+      repositionAll();
+      showToast('从月亮书房收来一条烦恼，已经放进箱子啦');
+    }
+  } catch(e) {}
 
 })();
 </script>
