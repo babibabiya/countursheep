@@ -12,7 +12,8 @@
 # =============================================================
 
 PORT="${PORT:-6006}"   # AutoDL「自定义服务」映射到外网 8443 的端口
-DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-sk-069baa049ed24bb2972699d84184ac13}"
+# 密钥不进代码库：优先环境变量，其次 /root/.dskey 文件（密钥写进该文件即可）
+DEEPSEEK_API_KEY="${DEEPSEEK_API_KEY:-$(cat /root/.dskey 2>/dev/null || true)}"
 
 say() { echo -e "\n\033[1;36m【$1】\033[0m"; }
 ok()  { echo -e "  \033[1;32m✅ $1\033[0m"; }

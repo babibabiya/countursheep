@@ -577,7 +577,7 @@ html, body {
   ].join('\n');
 
   const PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
-  const DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用
+  const DEEPSEEK_KEY = ''; // 密钥已移除（安全）：统一走中继，服务端持有真实密钥
   const API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 
   function analyzeReason(input) {

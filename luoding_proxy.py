@@ -27,7 +27,7 @@ import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT = int(os.environ.get("PORT", "8418"))
-DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "sk-069baa049ed24bb2972699d84184ac13")
+DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "")  # 从环境变量读取，不要硬编码
 GATE_KEY = os.environ.get("GATE_KEY", "local")
 DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
 

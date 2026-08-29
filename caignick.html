@@ -991,7 +991,7 @@
       key 只存服务端 secret（supabase secrets set DEEPSEEK_API_KEY=...），
       泄漏可随时轮换，客户端无感。 */
 var PROXY = { url: 'https://u1147881-c7kl-35a69bfe.bjb1.seetacloud.com:8443/v1/chat/completions', anonKey: 'sleep-2026' };
-var DEEPSEEK_KEY = 'sk-069baa049ed24bb2972699d84184ac13'; // 仅在 PROXY.url 留空时使用（直连模式）
+var DEEPSEEK_KEY = ''; // 密钥已移除（安全）：统一走中继，服务端持有真实密钥
 var TRACKING_ID = 'e3b7568d-299a-4b40-baab-7321b38abd46';
 var API_URL = PROXY.url || 'https://api.deepseek.com/chat/completions';
 /* 自然语音统一走 tc-tts.js（TC_TTS.synth → GPU 服务器 Qwen3-TTS-VoiceDesign）；
