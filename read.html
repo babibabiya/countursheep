@@ -144,6 +144,54 @@ html, body {
   box-shadow: 0 6px 16px rgba(255, 150, 180, .4);
 }
 .tc-main svg { width: 17px; height: 17px; }
+
+/* ===== 音乐功能 ===== */
+.music-btn {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 2.5px solid #fff; background: #fffdf8;
+  color: #b48ad6; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 10px rgba(150,110,180,.18);
+  transition: transform .15s, background .15s, color .15s;
+  margin-left: auto;
+}
+.music-btn:active { transform: scale(.88); }
+.music-btn svg { width: 20px; height: 20px; }
+.music-btn.playing { background: linear-gradient(135deg, #c9a6f2 0%, #a982d4 100%); color: #fff; }
+
+/* 音乐选择面板 */
+.music-mask {
+  position: absolute; inset: 0; z-index: 20;
+  background: rgba(40, 25, 60, 0.42);
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.music-mask.show { opacity: 1; pointer-events: auto; }
+.music-panel {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 21;
+  background: #fffdf8;
+  border-radius: 24px 24px 0 0;
+  padding: 18px 20px calc(24px + env(safe-area-inset-bottom));
+  transform: translateY(105%); transition: transform .35s cubic-bezier(.32,.72,.28,1);
+}
+.music-mask.show .music-panel { transform: none; }
+.music-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.music-title { font-size: 16px; font-weight: 700; color: #5a4278; letter-spacing: 1px; }
+.music-close { background: none; border: none; color: #b9a2d8; font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.music-list { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; scrollbar-width: none; }
+.music-list::-webkit-scrollbar { display: none; }
+.music-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; border-radius: 14px;
+  background: #f5eefc; border: 1.5px solid transparent;
+  cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+  transition: border-color .15s, background .15s;
+}
+.music-item.active { border-color: #c9a6f2; background: #efe4fc; }
+.music-item .m-ico { width: 18px; height: 18px; color: #b48ad6; flex-shrink: 0; }
+.music-item .m-name { font-size: 14px; font-weight: 700; color: #5a4278; }
+.music-item .m-sub { font-size: 11px; color: #b9a2d8; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -153,6 +201,9 @@ html, body {
     <div class="topbar">
       <button class="back-btn" id="backBtn" aria-label="返回主页">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
+      </button>
+      <button class="music-btn" id="musicBtn" aria-label="音乐">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       </button>
     </div>
     <!-- 椅子上的读小羊 -->
@@ -190,6 +241,17 @@ html, body {
         <button class="tc-btn" id="btnPlus" aria-label="增加 5 分钟">＋</button>
       </div>
     </div>
+
+    <!-- 音乐选择面板 -->
+    <div class="music-mask" id="musicMask">
+      <div class="music-panel">
+        <div class="music-head">
+          <div class="music-title">阅读音乐</div>
+          <button class="music-close" id="musicClose" aria-label="关闭">×</button>
+        </div>
+        <div class="music-list" id="musicList"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -199,6 +261,87 @@ html, body {
 
   document.getElementById('backBtn').addEventListener('click', function() {
     window.history.length > 1 ? history.back() : (location.href = 'index.html');
+  });
+
+  /* ===== 阅读音乐 ===== */
+  var MUSIC = [
+    { name:'钢琴', sub:'轻柔琴键', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/sleep.m4a' },
+    { name:'自然', sub:'林间清风', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-lullaby.m4a' },
+    { name:'朝霞', sub:'晨光微曦', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/soft-morning-light.m4a' },
+    { name:'柔弦', sub:'舒缓漂移', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift.mp3' },
+    { name:'弦梦', sub:'梦境漂浮', src:'https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/Soft%20Sine%20Drift%20(1).mp3' }
+  ];
+
+  var musicBtn = document.getElementById('musicBtn');
+  var musicMask = document.getElementById('musicMask');
+  var musicList = document.getElementById('musicList');
+  var musicClose = document.getElementById('musicClose');
+  var musicAudio = new Audio();
+  musicAudio.loop = true;
+  musicAudio.volume = 0.6;
+  var curMusic = -1;
+  var musicPlaying = false;
+
+  function renderMusicList() {
+    musicList.innerHTML = '';
+    MUSIC.forEach(function(m, i) {
+      var btn = document.createElement('button');
+      btn.className = 'music-item' + (i === curMusic ? ' active' : '');
+      btn.innerHTML = '<svg class="m-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><div><div class="m-name"></div><div class="m-sub"></div></div>';
+      btn.querySelector('.m-name').textContent = m.name;
+      btn.querySelector('.m-sub').textContent = m.sub;
+      btn.addEventListener('click', function() { playMusic(i); });
+      musicList.appendChild(btn);
+    });
+  }
+
+  function playMusic(i) {
+    if (i === curMusic && musicPlaying) { pauseMusic(); return; }
+    curMusic = i;
+    var m = MUSIC[i];
+    musicAudio.src = m.src;
+    musicAudio.play().then(function() {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+      renderMusicList();
+    }).catch(function() {
+      musicPlaying = false;
+    });
+    closeMusic();
+  }
+
+  function pauseMusic() {
+    musicAudio.pause();
+    musicPlaying = false;
+    musicBtn.classList.remove('playing');
+    renderMusicList();
+  }
+
+  function resumeMusic() {
+    musicAudio.play().then(function() {
+      musicPlaying = true;
+      musicBtn.classList.add('playing');
+    }).catch(function(){});
+  }
+
+  function toggleMusic() {
+    if (musicPlaying) { pauseMusic(); }
+    else if (curMusic >= 0) { resumeMusic(); }
+    else { openMusic(); }
+  }
+
+  function openMusic() {
+    renderMusicList();
+    musicMask.classList.add('show');
+  }
+  function closeMusic() {
+    musicMask.classList.remove('show');
+  }
+
+  musicBtn.addEventListener('click', toggleMusic);
+  musicClose.addEventListener('click', closeMusic);
+  musicMask.addEventListener('click', function(e) {
+    if (e.target === musicMask) closeMusic();
   });
 
   /* ===== 倒计时圆形进度条 ===== */
@@ -241,6 +384,7 @@ html, body {
       remain = 0;
       running = false; finished = true;
       clearInterval(timer); timer = null;
+      if (musicPlaying) pauseMusic();
       statusText.textContent = '读完啦，合上书，晚安 ✦';
       render(); renderState();
       return;
