@@ -340,7 +340,7 @@ html, body {
       <div class="title-wrap">
         <div class="title-main">好好睡觉</div>
         <div class="title-main">从今天开始</div>
-        <div class="subtitle">温柔陪伴每一个夜晚</div>
+        <div class="subtitle" id="subtitle">温柔陪伴你的第 1 天</div>
       </div>
 
       <!-- 撕纸月亮星星 -->
@@ -743,6 +743,29 @@ html, body {
     }
   } catch (e) {
     termsMask.classList.add('show');
+  }
+
+  // ===== 陪伴天数：温柔陪伴你的第 X 天（首次使用自动记录） =====
+  const subtitleEl = document.getElementById('subtitle');
+  if (subtitleEl) {
+    (function() {
+      let days = 1;
+      try {
+        const key = 'first_use_date';
+        const today = new Date();
+        const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        let first = localStorage.getItem(key);
+        if (!first) {
+          first = todayStr;
+          localStorage.setItem(key, first);
+        }
+        const f = new Date(first + 'T00:00:00');
+        const t = new Date(todayStr + 'T00:00:00');
+        const diff = Math.round((t - f) / 86400000);
+        days = Math.max(1, diff + 1);
+      } catch (e) {}
+      subtitleEl.textContent = '温柔陪伴你的第 ' + days + ' 天';
+    })();
   }
 
 })();
