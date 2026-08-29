@@ -23,15 +23,29 @@
   html{font-size:16px;}
   body{
     margin:0;padding:0;
-    background:var(--bg);
+    background:#e8e0cd;
     color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
     line-height:1.8;
     -webkit-font-smoothing:antialiased;
+    overflow:hidden;
+  }
+  /* 9:16 手机容器（与主页一致） */
+  .stage{
+    width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;overflow:hidden;
+  }
+  .phone{
+    width:min(100vw, calc(100vh * 9 / 16));
+    aspect-ratio:9/16;
+    position:relative;overflow:hidden;
+    display:flex;flex-direction:column;
+    background:var(--bg);
   }
   /* 顶部返回条 */
   .topbar{
-    position:fixed;top:0;left:0;right:0;z-index:50;
+    position:relative;z-index:50;flex-shrink:0;
     background:rgba(251,251,249,.92);backdrop-filter:blur(8px);
     border-bottom:1px solid var(--line);
     padding:10px 16px;
@@ -45,10 +59,12 @@
   .topbar .back svg{width:20px;height:20px}
   .topbar .t{font-size:15px;font-weight:600;color:var(--ink);letter-spacing:1px}
   .wrap{
-    max-width:680px;
+    flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
     margin:0 auto;
-    padding:60px 20px 80px;
+    padding:12px 20px 60px;
+    scrollbar-width:none;
   }
+  .wrap::-webkit-scrollbar{display:none}
   /* 顶部 */
   .header{
     text-align:center;
@@ -188,7 +204,7 @@
   }
   /* 返回顶部 */
   .back-top{
-    position:fixed;right:18px;bottom:24px;
+    position:absolute;right:18px;bottom:24px;
     width:44px;height:44px;border-radius:50%;
     background:var(--accent);color:#fff;
     display:flex;align-items:center;justify-content:center;
@@ -199,6 +215,9 @@
 </style>
 </head>
 <body>
+
+<div class="stage">
+<div class="phone">
 
 <div class="topbar">
   <button class="back" onclick="goBack()">
@@ -442,7 +461,10 @@
 
 </div>
 
-<a href="#" class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑</a>
+<a href="#" class="back-top" id="backTop" onclick="document.querySelector('.wrap').scrollTo({top:0,behavior:'smooth'});return false;">↑</a>
+
+</div>
+</div>
 
 <script>
   function goBack(){
@@ -450,8 +472,9 @@
     else{ location.href = 'index.html'; }
   }
   var bt=document.getElementById('backTop');
-  window.addEventListener('scroll',function(){
-    if(window.scrollY>400){bt.classList.add('show');}
+  var wrapEl=document.querySelector('.wrap');
+  wrapEl.addEventListener('scroll',function(){
+    if(wrapEl.scrollTop>400){bt.classList.add('show');}
     else{bt.classList.remove('show');}
   },{passive:true});
 </script>
