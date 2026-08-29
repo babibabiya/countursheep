@@ -42,10 +42,18 @@ say "第 3/5 步：叫醒模型（首次需下载约 4GB，3~15 分钟；之后�
 export HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"   # 国内镜像加速
 [ -d /root/autodl-tmp ] && export HF_HOME=/root/autodl-tmp/hf # 大文件放数据盘
 
-# 停旧服务：先清掉占端口/同名旧进程
+# 停旧服务：清掉旧脚本进程 + 占端口的所有进程（fuser/lsof/ss 三重兜底）
 pkill -f qwen_tts_server.py 2>/dev/null
-(fuser -k "${PORT}/tcp" 2>/dev/null || lsof -t -i:"${PORT}" 2>/dev/null | xargs kill -9 2>/dev/null); true
+(fuser -k "${PORT}/tcp" 2>/dev/null || lsof -t -i:"${PORT}" 2>/dev/null | xargs -r kill -9 2>/dev/null); true
+ss -tlnp 2>/dev/null | grep ":${PORT} " | grep -oP 'pid=\K[0-9]+' | sort -u | xargs -r kill -9 2>/dev/null; true
 sleep 2
+# 端口还占着就明确报错（别让新服务带着 bind 错误悄悄死掉）
+if ss -tln 2>/dev/null | grep -q ":${PORT} "; then
+  bad "端口 ${PORT} 还被占用。粘贴这两条手动处理后再跑本脚本："
+  echo "     ss -tlnp | grep ':${PORT} '   # 看输出里的 pid=数字"
+  echo "     kill -9 数字"
+  exit 1
+fi
 
 # 后台启动
 nohup env PORT="$PORT" DEEPSEEK_API_KEY="$DEEPSEEK_API_KEY" \

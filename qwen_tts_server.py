@@ -169,12 +169,11 @@ def startup():
         get_model()
         with _model_lock:
             model = get_model()
-            wavs, sr = model.generate_voice_design(
-                text="准备就绪", language="Chinese", instruct=DEFAULT_INSTRUCT)
-            sf.write(io.BytesIO(), wavs[0], sr)  # 预热一次推理
+            model.generate_voice_design(
+                text="准备就绪", language="Chinese", instruct=DEFAULT_INSTRUCT)  # 预热一次推理
         print(f"[startup] {MODEL_ID} 已加载并预热")
     except Exception as e:  # noqa: BLE001
-        print(f"[startup] 模型加载失败，将在首个请求重试: {e}")
+        print(f"[startup] 预热未完成（模型已尝试加载，服务照常启动，首个请求会重试）: {e}")
 
 
 if __name__ == "__main__":
