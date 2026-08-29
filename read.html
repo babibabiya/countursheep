@@ -16,7 +16,7 @@ html, body {
 .stage {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  background: #e9defa;
+  background: #efe7ff;
 }
 
 .phone {
@@ -24,7 +24,8 @@ html, body {
   aspect-ratio: 9 / 16;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(180deg, #efe7ff 0%, #ffe6f0 46%, #fff3e0 100%);
+  /* 背景图（紫色梦幻阅读场景） */
+  background: #efe7ff url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/WechatIMG8342.jpg') center/cover no-repeat;
 }
 
 /* ===== 顶栏（仅返回键） ===== */
@@ -43,6 +44,22 @@ html, body {
 }
 .back-btn:active { transform: scale(.88); }
 .back-btn svg { width: 20px; height: 20px; }
+
+/* ===== 椅子上读小羊（叠在懒人沙发位置） ===== */
+.chair-gif {
+  position: absolute;
+  /* 定位在背景图右上的紫色懒人沙发坐垫上 */
+  left: 35%;
+  top: 32%;
+  width: 44%;
+  height: auto;
+  /* gif 1190x1683，实际小羊在中间偏上；让小羊露在沙发中央 */
+  object-fit: contain;
+  object-position: center 38%;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(60, 30, 80, 0.25));
+}
 </style>
 </head>
 <body>
@@ -54,6 +71,8 @@ html, body {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
       </button>
     </div>
+    <!-- 椅子上的读小羊 -->
+    <img class="chair-gif" alt="读小羊" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/Step%20by%20step%20guide%20to%20using%20Petal%20canvas%20plug-in.gif">
   </div>
 </div>
 
