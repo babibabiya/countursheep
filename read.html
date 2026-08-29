@@ -61,6 +61,15 @@ html, body {
   filter: drop-shadow(0 6px 12px rgba(60, 30, 80, 0.25));
 }
 
+/* ===== 底部覆盖层：盖住背景图自带的按钮 ===== */
+.bottom-cover {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 10%;
+  background: #fffdf8;
+  z-index: 5;
+}
+
 /* ===== 倒计时圆形进度条（下半空白处） ===== */
 .timer-zone {
   position: absolute;
@@ -148,6 +157,9 @@ html, body {
     </div>
     <!-- 椅子上的读小羊 -->
     <img class="chair-gif" alt="读小羊" src="https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/Step%20by%20step%20guide%20to%20using%20Petal%20canvas%20plug-in.gif">
+
+    <!-- 底部覆盖层：遮住背景图自带按钮 -->
+    <div class="bottom-cover"></div>
 
     <!-- 倒计时圆形进度条 -->
     <div class="timer-zone">
