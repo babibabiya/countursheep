@@ -3,207 +3,202 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>睡前流程 - 好好睡觉</title>
+<title>睡前一小时档案 - 好好睡觉</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body {
-  width: 100%; height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  color: #2a2418;
-  overflow: hidden;
+:root{
+  --paper:#F5F0E4;
+  --card:#FBF8F0;
+  --ink:#1C1814;
+  --ink2:#6B6153;
+  --ink3:#9A9080;
+  --hair:#D9D0BC;
+  --red:#A3271E;
+  --red-bg:#F2E2DC;
+  --green:#4A6B4E;
+  --serif:"Songti SC","STSong","Noto Serif SC",serif;
+  --mono:"Menlo","Consolas","IBM Plex Mono",monospace;
 }
-.stage {
-  width: 100%; height: 100%;
-  display: flex; align-items: center; justify-content: center;
-  background: #f6e8d4;
-  position: relative; overflow: hidden;
-  padding: 0;
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  width:100%;height:100%;
+  font-family:var(--serif);
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  touch-action:pan-y;
+  overscroll-behavior-x:contain;
 }
-.phone {
-  width: min(100vw, calc(100vh * 9 / 16));
-  aspect-ratio: 9 / 16;
-  position: relative;
-  overflow: hidden;
-  display: flex; flex-direction: column;
-  background:
-    radial-gradient(120% 50% at 50% -8%, #fdeef0 0%, transparent 60%),
-    radial-gradient(100% 50% at 50% 108%, #e7eefb 0%, transparent 60%),
-    linear-gradient(180deg, #fdf5ec 0%, #f8eef6 55%, #eef2f9 100%);
+.stage{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#e8e0cd;
+  position:relative;overflow:hidden;
 }
-
-/* 顶部 */
-.header {
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 16px 10px;
-  position: relative; z-index: 10;
-}
-.back-btn {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: rgba(255,255,255,0.8); border: none;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 2px 8px rgba(180,150,160,0.18);
-}
-.back-btn svg { width: 18px; height: 18px; color: #9a7b8f; }
-.header-title { text-align: center; }
-.header-title .t { font-size: 17px; font-weight: 700; color: #6b4f6e; letter-spacing: 2px; }
-.header-title .s { font-size: 11px; color: #a08a92; margin-top: 2px; }
-.header .spacer { width: 38px; }
-
-/* 就寝时间 */
-.bedtime-row {
-  flex-shrink: 0;
-  margin: 4px 16px 10px;
-  padding: 12px 16px;
-  background: rgba(255,255,255,0.75);
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(180,150,160,0.12);
-  position: relative; z-index: 10;
-}
-.bedtime-row .bl-label { font-size: 14px; font-weight: 600; color: #5d4a55; }
-.bedtime-row input[type="time"] {
-  font-size: 18px; font-weight: 700; color: #b579a0;
-  border: none; background: transparent; outline: none;
-  font-family: inherit;
+.phone{
+  width:min(100vw, calc(100vh * 9 / 16));
+  aspect-ratio:9/16;
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+  background:var(--paper);
+  background-image:radial-gradient(rgba(28,24,20,.028) 1px, transparent 1px);
+  background-size:5px 5px;
 }
 
-/* 流程列表 */
-.routine-wrap {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 0 16px 16px; scrollbar-width: none;
+/* ===== 顶栏 ===== */
+.header{
+  flex-shrink:0;
+  display:flex;align-items:center;
+  padding:max(14px, env(safe-area-inset-top)) 14px 10px;
+  position:relative;z-index:10;
 }
-.routine-wrap::-webkit-scrollbar { display: none; }
+.back-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--card);border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  color:var(--ink2);
+}
+.back-btn:active{transform:scale(.9)}
+.back-btn svg{width:18px;height:18px}
 
-.phone-down {
-  display: flex; align-items: center; gap: 8px;
-  margin: 6px 0 10px;
-  color: #c98fb5; font-size: 12px; font-weight: 600; letter-spacing: 1px;
+/* ===== 滚动内容 ===== */
+.scroll{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:6px 20px 28px;
+  scrollbar-width:none;
 }
-.phone-down::before, .phone-down::after {
-  content: ''; flex: 1; height: 1px;
-  background: repeating-linear-gradient(90deg, #d8b8cc 0 4px, transparent 4px 8px);
-}
+.scroll::-webkit-scrollbar{display:none}
 
-.act {
-  display: flex; align-items: center;
-  padding: 12px 12px;
-  margin-bottom: 8px;
-  background: #fff;
-  border-radius: 14px;
-  border: 2px solid rgba(216,183,200,0.35);
-  box-shadow: 0 2px 8px rgba(180,150,160,0.1);
-  position: relative;
-}
-.act.low { border-color: rgba(180,190,220,0.4); }
-.act-time {
-  font-size: 15px; font-weight: 800; color: #6b4f6e;
-  font-variant-numeric: tabular-nums;
-  width: 56px; flex-shrink: 0;
-}
-.act-body { flex: 1; min-width: 0; padding: 0 8px; }
-.act-name { font-size: 14px; font-weight: 600; color: #4a3a2a; }
-.act-meta { font-size: 11px; color: #a08a92; margin-top: 2px; }
-.act-dur { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-.act-dur button {
-  width: 24px; height: 24px; border-radius: 50%;
-  border: 1px solid #d8c4bc; background: #fdf6f0;
-  color: #b579a0; font-size: 14px; cursor: pointer; line-height: 1;
-}
-.act-dur span { font-size: 12px; color: #7a6660; min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
-.act-del {
-  flex-shrink: 0; margin-left: 6px;
-  width: 26px; height: 26px; border-radius: 50%;
-  border: none; background: transparent; color: #c0a0a0;
-  font-size: 18px; cursor: pointer; line-height: 1;
-}
-.act.updown { display: flex; flex-direction: column; gap: 1px; margin-right: 6px; flex-shrink: 0; }
-.act.updown button {
-  width: 20px; height: 16px; border: none; background: transparent;
-  color: #c0a0b0; font-size: 10px; cursor: pointer; line-height: 1;
-}
+.kicker{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--red);font-weight:600}
+.meta{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--ink2)}
+.archive-head h1{font-size:clamp(22px,5.5vw,30px);font-weight:900;letter-spacing:.05em;margin:10px 0 8px;line-height:1.3}
+.meta-row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;margin-top:10px}
+.rule2{border:none;border-top:2px solid var(--ink);margin-top:12px}
 
-/* 添加活动 */
-.add-btn {
-  width: 100%; padding: 13px;
-  border: 2px dashed #d8b8cc; border-radius: 14px;
-  background: rgba(255,255,255,0.5); color: #b579a0;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  margin-top: 4px;
+.section-label{
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink2);
+  display:flex;align-items:center;gap:10px;margin:28px 0 4px;
 }
+.section-label::after{content:"";flex:1;border-top:1px solid var(--hair)}
 
-/* 底部开始按钮 */
-.start-bar {
-  flex-shrink: 0;
-  padding: 10px 16px 16px;
-  position: relative; z-index: 10;
+/* 入睡时间 */
+.sleep-row{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:18px 0 16px;border-bottom:1px solid var(--hair);gap:12px;flex-wrap:wrap;
 }
-.start-bar button {
-  width: 100%; padding: 14px 0;
-  border: none; border-radius: 26px;
-  background: linear-gradient(180deg, #d8a8c8 0%, #b888b8 100%);
-  color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 3px;
-  cursor: pointer;
-  box-shadow: 0 6px 16px rgba(180, 130, 170, 0.35);
-  font-family: inherit;
+.sleep-row .big{font-size:20px;font-weight:600;letter-spacing:.04em}
+#sleepTime{
+  font-family:var(--mono);font-size:26px;font-weight:600;color:var(--ink);
+  background:var(--card);border:1px solid var(--hair);border-radius:2px;
+  padding:6px 12px;letter-spacing:.1em;
 }
-.start-bar button:active { transform: scale(0.97); }
+#sleepTime:focus{outline:none;border-color:var(--ink)}
+.sleep-hint{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:.1em;margin-top:8px}
 
-/* 弹层 */
-.mask {
-  position: absolute; inset: 0;
-  background: rgba(40,30,20,0.45);
-  z-index: 300;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+/* 模块行 */
+.item{
+  border-bottom:1px solid var(--hair);
+  padding:16px 0;display:grid;
+  grid-template-columns:30px 1fr auto auto;align-items:center;column-gap:10px;
 }
-.mask.show { opacity: 1; pointer-events: auto; }
-.modal {
-  width: 84%; max-width: 310px;
-  background: #fff8e9; border-radius: 20px;
-  padding: 22px 18px 18px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.3);
-  transform: translateY(24px) scale(0.92);
-  transition: transform 0.3s cubic-bezier(.34,1.3,.64,1);
-  max-height: 80%;
-  overflow-y: auto;
+.item .no{font-family:var(--mono);font-size:11px;color:var(--ink3);letter-spacing:.1em}
+.item .name{font-size:16px;font-weight:600;letter-spacing:.05em}
+.item .name .en{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink3);display:block;margin-top:3px;text-transform:uppercase}
+.item .desc{font-size:11px;color:var(--ink2);margin-top:4px;line-height:1.6;font-weight:400}
+.item.deadline .no{color:var(--red)}
+.item.deadline .name{color:var(--red)}
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:8px;letter-spacing:.14em;
+  padding:2px 6px;border-radius:2px;margin-top:6px;text-transform:uppercase;
 }
-.mask.show .modal { transform: translateY(0) scale(1); }
-.modal-title { text-align: center; font-size: 16px; font-weight: 700; color: #6b4f6e; letter-spacing: 2px; margin-bottom: 14px; }
-.opt {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; margin-bottom: 8px;
-  background: #fff; border-radius: 12px;
-  border: 2px solid rgba(216,183,200,0.3);
-  cursor: pointer;
-}
-.opt:active { transform: scale(0.98); }
-.opt-name { font-size: 14px; font-weight: 600; color: #4a3a2a; }
-.opt-desc { font-size: 11px; color: #a08a92; margin-top: 2px; }
-.opt-add { color: #c98fb5; font-size: 13px; font-weight: 700; }
-.custom-input {
-  width: 100%; padding: 10px 12px; margin-bottom: 10px;
-  border: 1px solid #e2d2b8; border-radius: 10px;
-  font-size: 14px; outline: none; background: #fffdf8; color: #4a3a2a;
-  font-family: inherit;
-}
-.modal-close {
-  width: 100%; margin-top: 6px; padding: 11px;
-  border: none; border-radius: 20px;
-  background: #ece0c8; color: #7a6a50;
-  font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
-}
+.tag.red{color:var(--red);background:var(--red-bg)}
+.tag.green{color:var(--green);border:1px solid #5A7355}
 
-.toast {
-  position: absolute; bottom: 90px; left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: rgba(40,30,20,0.9); color: #fff;
-  padding: 10px 18px; border-radius: 22px; font-size: 13px;
-  opacity: 0; pointer-events: none; transition: all 0.3s;
-  z-index: 400; white-space: nowrap; max-width: 88%;
+/* 步进器 + 排序 */
+.stepper{display:flex;align-items:center;border:1px solid var(--hair);border-radius:2px;background:var(--card)}
+.stepper button{
+  font-family:var(--mono);font-size:14px;color:var(--ink);background:none;border:none;
+  width:30px;height:32px;cursor:pointer;line-height:1;
 }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.stepper button:disabled{color:var(--hair);cursor:default}
+.stepper .val{font-family:var(--mono);font-size:12px;font-weight:600;min-width:52px;text-align:center;letter-spacing:.05em}
+.stepper .val small{font-weight:400;color:var(--ink3);font-size:9px}
+.stepper .val.skip{color:var(--ink3);font-weight:400}
+.order{display:flex;flex-direction:column;gap:2px}
+.order button{
+  font-family:var(--mono);font-size:10px;color:var(--ink3);background:none;border:1px solid var(--hair);
+  width:20px;height:16px;border-radius:2px;cursor:pointer;line-height:1;padding:0;
+}
+.order .del{margin-left:0}
+
+/* 自定义 */
+.add-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.add-row input[type=text]{
+  flex:1;min-width:140px;font-family:var(--serif);font-size:13px;color:var(--ink);
+  background:var(--card);border:1px solid var(--hair);border-radius:2px;padding:9px 11px;letter-spacing:.05em;
+}
+.add-row input[type=number]{
+  font-family:var(--mono);font-size:13px;color:var(--ink);width:70px;
+  background:var(--card);border:1px solid var(--hair);border-radius:2px;padding:9px 11px;letter-spacing:.05em;
+}
+.add-row input:focus{outline:none;border-color:var(--ink)}
+.add-row button{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--paper);
+  background:var(--ink);border:none;border-radius:2px;padding:10px 18px;cursor:pointer;text-transform:uppercase;
+}
+.del{font-family:var(--mono);font-size:10px;color:var(--ink3);background:none;border:none;cursor:pointer}
+
+/* 汇总 */
+.summary{margin-top:34px}
+.timeline{margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--ink2);letter-spacing:.06em}
+.tl-row{display:grid;grid-template-columns:96px 12px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--hair)}
+.tl-row .t{color:var(--ink);font-weight:500}
+.tl-row .dot{width:5px;height:5px;border-radius:50%;background:var(--ink3)}
+.tl-row.deadzone .dot{background:var(--red)}
+.tl-row.deadzone .t,.tl-row.deadzone .n{color:var(--red)}
+.tl-row .n{font-family:var(--serif);font-size:12px;letter-spacing:.05em}
+.tl-row .d{color:var(--ink3)}
+.tl-blank{color:var(--ink3);font-family:var(--serif);font-size:12px;letter-spacing:.05em}
+.bar{height:6px;border:1px solid var(--ink);border-radius:2px;margin:12px 0 8px;position:relative;background:var(--card);overflow:hidden}
+.bar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);transition:width .3s}
+.bar .fill.over{background:var(--red)}
+.total-line{display:flex;justify-content:space-between;align-items:baseline}
+.total-line .tt{font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:.05em}
+.total-line .tt small{font-size:10px;color:var(--ink3);font-weight:400}
+.error{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:.08em;margin-top:10px;line-height:1.9;display:none}
+.error.show{display:block}
+
+/* CTA */
+.cta{
+  display:block;width:100%;margin-top:28px;
+  font-family:var(--serif);font-size:16px;font-weight:700;letter-spacing:.3em;text-indent:.3em;
+  color:var(--paper);background:var(--ink);border:none;border-radius:2px;
+  padding:16px 0;cursor:pointer;
+}
+.cta:active{background:#000}
+.cta:disabled{background:var(--hair);color:var(--ink3);cursor:not-allowed}
+.notes{font-family:var(--mono);font-size:9px;color:var(--ink3);letter-spacing:.12em;margin-top:14px;line-height:2}
+
+.toast{
+  position:absolute;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(28,24,20,.92);color:var(--paper);
+  padding:10px 18px;border-radius:20px;font-size:12px;
+  opacity:0;pointer-events:none;transition:all .3s;
+  z-index:400;white-space:nowrap;max-width:88%;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:560px){
+  .scroll{padding:6px 16px 24px}
+  .item{grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;row-gap:12px;position:relative}
+  .item .no{grid-row:1;grid-column:1;align-self:start;padding-top:3px}
+  .item > div:nth-child(2){grid-row:1;grid-column:2;min-width:0;padding-right:70px}
+  .item .stepper{grid-row:2;grid-column:1/-1;justify-self:start}
+  .item .order{position:absolute;top:12px;right:0;flex-direction:row;gap:4px}
+  .add-row{flex-direction:column;align-items:stretch}
+  .add-row input[type=text],.add-row input[type=number]{width:100%;min-width:0}
+  .tl-row{grid-template-columns:78px 12px 1fr;gap:8px}
+  .tl-row .d{display:none}
+}
 </style>
 </head>
 <body>
@@ -215,32 +210,56 @@ html, body {
       <button class="back-btn" id="backBtn" aria-label="返回">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg>
       </button>
-      <div class="header-title">
-        <div class="t">今晚的睡前流程</div>
-        <div class="s" id="totalInfo">共 50 分钟</div>
+    </div>
+
+    <div class="scroll" id="scroll">
+      <header class="archive-head">
+        <div class="kicker">EVENING ARCHIVE · N°01</div>
+        <h1>睡前一小时 · 规划档案</h1>
+        <div class="meta-row">
+          <span class="meta">FORM 01 · PRE-SLEEP SCHEDULE</span>
+          <span class="meta" id="metaDate"></span>
+        </div>
+        <hr class="rule2">
+      </header>
+
+      <!-- 目标入睡时间 -->
+      <div class="section-label">01 / 目标入睡时间 — SLEEP TIME</div>
+      <div class="sleep-row">
+        <div>
+          <div class="big">今晚打算几点入睡</div>
+          <div class="sleep-hint">档案将从入睡时间前 60 分钟开启</div>
+        </div>
+        <input type="time" id="sleepTime" value="23:00">
       </div>
-      <div class="spacer"></div>
-    </div>
 
-    <div class="bedtime-row">
-      <span class="bl-label">目标就寝时间</span>
-      <input type="time" id="bedtimeInput" value="23:00">
-    </div>
+      <!-- 模块清单 -->
+      <div class="section-label">02 / 一小时内容 — MODULES</div>
+      <div id="itemList"></div>
 
-    <div class="routine-wrap" id="routineWrap"></div>
+      <!-- 自定义 -->
+      <div class="add-row">
+        <input type="text" id="customName" placeholder="自定义内容名称" maxlength="20">
+        <input type="number" id="customMin" placeholder="分钟" min="5" max="60" step="5">
+        <button id="addBtn">归档 +</button>
+      </div>
 
-    <div class="start-bar">
-      <button id="startBtn">开始今晚的流程</button>
-    </div>
-
-    <div class="mask" id="addMask">
-      <div class="modal">
-        <div class="modal-title">添加一个活动</div>
-        <div id="addList"></div>
-        <div class="modal-title" style="font-size:13px;letter-spacing:1px;margin-top:8px;">或自定义</div>
-        <input class="custom-input" id="customName" placeholder="如：刷牙、洗澡、拉伸、整理书包">
-        <button class="opt" id="customAdd" style="justify-content:center;border-style:dashed;"><span class="opt-name">+ 添加自定义活动</span></button>
-        <button class="modal-close" id="addClose">取消</button>
+      <!-- 汇总 -->
+      <div class="summary">
+        <div class="section-label">03 / 档案封存 — SUMMARY</div>
+        <div class="bar"><div class="fill" id="barFill"></div></div>
+        <div class="total-line">
+          <span class="tt" id="totalText">0 <small>/ 60 MIN</small></span>
+          <span class="meta" id="startEndText"></span>
+        </div>
+        <div class="timeline" id="timeline"></div>
+        <div class="error" id="errorMsg"></div>
+        <button class="cta" id="startBtn">封存 · 开始睡前一小时</button>
+        <div class="notes">
+          ※ 总时长不得超过 60 分钟<br>
+          ※ 睡前 15 分钟为无屏时段，烦恼收藏箱不得排入（红线区）<br>
+          ※ 封存后将依次进入各环节，请将设备搁置一旁
+        </div>
       </div>
     </div>
 
@@ -253,268 +272,221 @@ html, body {
 (function() {
   'use strict';
 
-  // ===== 功能类型定义 =====
-  const TYPES = {
-    thought_box:       { name: '烦恼收纳箱',   desc: '把想说的话写下来，收进箱子里', page: 'box.html',      screen: true  },
-    thought_completion:{ name: '引导入睡音频', desc: '把一件事想完、放下',           page: 'caignick.html', screen: true  },
-    reading:           { name: '睡前阅读',     desc: '放下手机读一会儿',             page: 'read.html',     screen: false },
-    relaxation:        { name: '放松练习',     desc: '呼吸、冥想，让身体松弛',       page: 'relax.html',    screen: false },
-    white_noise:       { name: '白噪音',       desc: '自然声音伴你入睡',             page: 'sound.html',    screen: false },
-    music:             { name: '音乐',         desc: '轻柔安神的音乐',               page: 'sound.html',    screen: false },
-    sleep_audio:       { name: '助眠音频',     desc: '舒缓声音引导入睡',             page: 'sound.html',    screen: false }
-  };
+  /* ============ 功能模块（映射到真实页面） ============ */
+  const BUILTIN = [
+    { key:'worry', name:'烦恼收藏箱', en:'WORRY BOX',   desc:'把烦心事写下来，封存入档', min:10, page:'box.html',      screen:true,  tag:'red', tagText:'需屏幕 · 禁入睡前15分钟' },
+    { key:'audio', name:'安睡引导音频', en:'GUIDED AUDIO', desc:'人声引导，逐步放松入眠', min:15, page:'caignick.html', screen:true,  tag:null },
+    { key:'relax', name:'放松练习',   en:'RELAXATION',  desc:'渐进式肌肉放松 / 呼吸练习', min:10, page:'relax.html',   screen:false, tag:null },
+    { key:'read',  name:'睡前阅读',   en:'READING',     desc:'纸质书为宜，弱光下慢读', min:15, page:'read.html',     screen:false, tag:null },
+    { key:'noise', name:'白噪音',     en:'WHITE NOISE', desc:'雨声、风声等均匀底噪',   min:0,  page:'sound.html',   screen:false, tag:null },
+  ];
 
-  // ===== 默认流程 =====
-  const DEFAULT_ROUTINE = {
-    bedtime: '23:00',
-    activities: [
-      { type: 'thought_box',        name: '烦恼收纳箱',   dur: 10 },
-      { type: 'reading',            name: '睡前阅读',     dur: 30 },
-      { type: 'relaxation',         name: '放松练习',     dur: 10 },
-      { type: 'white_noise',        name: '白噪音',       dur: 0 }
-    ]
-  };
+  let items = BUILTIN.map(b => ({ ...b, builtin:true }));
+  const MAX_MIN = 60, DEADZONE = 15;
 
-  const STORE_KEY = 'sleep_routine';
-  const STORE_ADD = 'routine_add';
+  const $ = id => document.getElementById(id);
+  const pad = n => String(n).padStart(2, '0');
 
-  let routine;
-  try {
-    const saved = localStorage.getItem(STORE_KEY);
-    routine = saved ? JSON.parse(saved) : null;
-    if (!routine || !Array.isArray(routine.activities)) routine = JSON.parse(JSON.stringify(DEFAULT_ROUTINE));
-  } catch(e) { routine = JSON.parse(JSON.stringify(DEFAULT_ROUTINE)); }
-
-  function save() {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(routine)); } catch(e) {}
+  function toast(text) {
+    const el = $('toast');
+    el.textContent = text;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => el.classList.remove('show'), 2200);
   }
 
-  // ===== 处理「加入睡前流程」传来的活动 =====
-  try {
-    const add = localStorage.getItem(STORE_ADD);
-    if (add) {
-      localStorage.removeItem(STORE_ADD);
-      const a = JSON.parse(add);
-      if (a && a.type && TYPES[a.type]) {
-        const act = { type: a.type, name: TYPES[a.type].name, dur: (a.dur || 10) };
-        // 插入到第一个低交互活动之前（即「放下手机」分割线位置）
-        const idx = routine.activities.findIndex(x => !isScreenType(x.type));
-        if (idx === -1) routine.activities.push(act);
-        else routine.activities.splice(idx, 0, act);
-        save();
-        toast('已把「' + act.name + '」加入流程');
-      }
-    }
-  } catch(e) {}
+  /* ============ 日期 ============ */
+  const now = new Date();
+  $('metaDate').textContent = `${now.getFullYear()}·${pad(now.getMonth()+1)}·${pad(now.getDate())} — 落定`;
 
-  function isScreenType(type) {
-    const t = TYPES[type];
-    return t ? t.screen : false;
+  /* ============ 解析入睡时间 ============ */
+  function sleepDate() {
+    const [h,m] = ($('sleepTime').value || '23:00').split(':').map(Number);
+    const d = new Date(); d.setHours(h, m, 0, 0);
+    if (d < new Date()) d.setDate(d.getDate() + 1);
+    return d;
   }
+  function fmtHM(d) { return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
 
-  // ===== 计算倒推时间 =====
-  function parseBedtime(str) {
-    const p = String(str || '23:00').split(':');
-    return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
-  }
-  function fmtMin(min) {
-    min = ((min % 1440) + 1440) % 1440;
-    const h = Math.floor(min / 60), m = min % 60;
-    return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-  }
-
-  function calcTimes() {
-    let t = parseBedtime(routine.bedtime);
-    for (let i = routine.activities.length - 1; i >= 0; i--) {
-      const a = routine.activities[i];
-      a.end = t;
-      a.start = t - (a.dur || 0);
-      t = a.start;
-    }
-  }
-
-  // ===== 渲染 =====
-  const wrap = document.getElementById('routineWrap');
-  const bedtimeInput = document.getElementById('bedtimeInput');
-  const totalInfo = document.getElementById('totalInfo');
-
-  function render() {
-    calcTimes();
-    const total = routine.activities.reduce((s, a) => s + (a.dur || 0), 0);
-    totalInfo.textContent = total > 0 ? ('共 ' + total + ' 分钟') : '直接进入睡眠';
-
-    wrap.innerHTML = '';
-    // 找到第一个低交互活动（放下手机从这里开始）
-    let phoneDownIdx = routine.activities.findIndex(a => !isScreenType(a.type));
-
-    routine.activities.forEach((a, i) => {
-      if (phoneDownIdx === i) {
-        const pd = document.createElement('div');
-        pd.className = 'phone-down';
-        pd.textContent = '放下手机，从这里开始';
-        wrap.appendChild(pd);
-      }
-
-      const el = document.createElement('div');
-      el.className = 'act' + (isScreenType(a.type) ? '' : ' low');
-
-      const time = document.createElement('div');
-      time.className = 'act-time';
-      time.textContent = a.dur > 0 ? fmtMin(a.start) : (fmtMin(a.end) + ' 就寝');
-
-      const body = document.createElement('div');
-      body.className = 'act-body';
-      body.innerHTML = '<div class="act-name"></div><div class="act-meta"></div>';
-      body.querySelector('.act-name').textContent = a.name;
-      body.querySelector('.act-meta').textContent = TYPES[a.type] ? TYPES[a.type].desc : '自定义活动';
-
-      const updown = document.createElement('div');
-      updown.className = 'act updown';
-      updown.innerHTML = '<button data-d="up">▲</button><button data-d="down">▼</button>';
-      updown.querySelector('[data-d="up"]').addEventListener('click', e => { e.stopPropagation(); move(i, -1); });
-      updown.querySelector('[data-d="down"]').addEventListener('click', e => { e.stopPropagation(); move(i, 1); });
-
-      const dur = document.createElement('div');
-      dur.className = 'act-dur';
-      dur.innerHTML = '<button data-d="-">−</button><span></span><button data-d="+">+</button>';
-      dur.querySelector('span').textContent = a.dur + ' 分';
-      dur.querySelector('[data-d="-"]').addEventListener('click', e => { e.stopPropagation(); setDur(i, -5); });
-      dur.querySelector('[data-d="+"]').addEventListener('click', e => { e.stopPropagation(); setDur(i, 5); });
-
-      const del = document.createElement('button');
-      del.className = 'act-del';
-      del.textContent = '×';
-      del.addEventListener('click', e => { e.stopPropagation(); removeAct(i); });
-
-      el.appendChild(updown);
-      el.appendChild(time);
-      el.appendChild(body);
-      el.appendChild(dur);
-      el.appendChild(del);
-
-      wrap.appendChild(el);
-    });
-    // 底部添加按钮始终在列表末尾
-    if (typeof addBtn !== 'undefined') wrap.appendChild(addBtn);
-  }
-
-  function setDur(i, delta) {
-    const a = routine.activities[i];
-    a.dur = Math.max(0, (a.dur || 0) + delta);
-    save(); render();
-  }
-  function removeAct(i) {
-    routine.activities.splice(i, 1);
-    save(); render();
-  }
-  function move(i, dir) {
-    const j = i + dir;
-    if (j < 0 || j >= routine.activities.length) return;
-    const tmp = routine.activities[i];
-    routine.activities[i] = routine.activities[j];
-    routine.activities[j] = tmp;
-    save(); render();
-  }
-  // ===== 开始流程：存进度，跳到第一个有页面的活动 =====
-  function gotoProcessPage(proc, idx) {
-    for (let i = idx; i < proc.activities.length; i++) {
-      const a = proc.activities[i];
-      if (a.page) {
-        proc.index = i;
-        proc.startedAt = Date.now();
-        try { localStorage.setItem('sleep_process', JSON.stringify(proc)); } catch(e) {}
-        location.href = a.page;
-        return;
-      }
-    }
-    // 没有更多有页面的活动，结束
-    try { localStorage.removeItem('sleep_process'); } catch(e) {}
-    toast('流程已完成，晚安');
-  }
-
-  function startProcess() {
-    if (!routine.activities.length) { toast('先添加至少一个活动'); return; }
-    const proc = {
-      activities: routine.activities.map(function(a) {
-        const t = TYPES[a.type];
-        return { type: a.type, name: a.name, dur: a.dur || 0, page: t ? t.page : '' };
-      }),
-      index: 0,
-      startedAt: Date.now()
+  /* ============ 调度（倒推各模块时间） ============ */
+  function schedule() {
+    const sleep = sleepDate();
+    let cursor = new Date(sleep.getTime() - MAX_MIN * 60000);
+    return {
+      sleep,
+      rows: items.map(it => {
+        const start = new Date(cursor.getTime());
+        const end = new Date(cursor.getTime() + it.min * 60000);
+        cursor = end;
+        return { it, start, end };
+      })
     };
-    gotoProcessPage(proc, 0);
   }
 
-  // ===== 就寝时间 =====
-  bedtimeInput.value = routine.bedtime;
-  bedtimeInput.addEventListener('change', function() {
-    routine.bedtime = this.value || '23:00';
-    save(); render();
-  });
-
-  // ===== 添加活动 =====
-  const addMask = document.getElementById('addMask');
-  const addList = document.getElementById('addList');
-  const customName = document.getElementById('customName');
-
-  function openAdd() {
-    addList.innerHTML = '';
-    Object.keys(TYPES).forEach(function(key) {
-      const t = TYPES[key];
-      const opt = document.createElement('div');
-      opt.className = 'opt';
-      opt.innerHTML = '<div><div class="opt-name"></div><div class="opt-desc"></div></div><span class="opt-add">+ 添加</span>';
-      opt.querySelector('.opt-name').textContent = t.name;
-      opt.querySelector('.opt-desc').textContent = t.desc;
-      opt.addEventListener('click', function() {
-        routine.activities.push({ type: key, name: t.name, dur: key === 'white_noise' || key === 'music' || key === 'sleep_audio' ? 0 : 10 });
-        save(); render(); addMask.classList.remove('show');
-        toast('已添加「' + t.name + '」');
+  /* ============ 渲染 ============ */
+  function render() {
+    const list = $('itemList');
+    list.innerHTML = '';
+    const { sleep, rows } = schedule();
+    items.forEach((it, i) => {
+      const inDeadzone = it.key === 'worry' && it.min > 0 && rows[i].end.getTime() > sleep.getTime() - DEADZONE * 60000;
+      const row = document.createElement('div');
+      row.className = 'item' + (inDeadzone ? ' deadline' : '');
+      const minv = 0, maxv = MAX_MIN;
+      row.innerHTML = `
+        <div class="no">N°${pad(i+1)}</div>
+        <div>
+          <div class="name">${it.name}<span class="en">${it.en || 'CUSTOM'}</span></div>
+          ${it.desc ? `<div class="desc">${it.desc}</div>` : ''}
+          ${it.tag === 'red' ? `<span class="tag red">${it.tagText}</span>` : ''}
+        </div>
+        <div class="stepper">
+          <button data-a="dec" ${it.min <= minv ? 'disabled' : ''}>−</button>
+          <div class="val ${it.min === 0 ? 'skip' : ''}">${it.min === 0 ? '跳过' : it.min + '<small> MIN</small>'}</div>
+          <button data-a="inc" ${it.min >= maxv ? 'disabled' : ''}>＋</button>
+        </div>
+        <div class="order">
+          <button data-a="up" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button data-a="down" ${i === items.length - 1 ? 'disabled' : ''}>▼</button>
+          ${!it.builtin ? '<button class="del" data-a="del">删</button>' : ''}
+        </div>`;
+      row.querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => {
+          const a = b.dataset.a;
+          if (a === 'dec') it.min = Math.max(minv, it.min - 5);
+          if (a === 'inc') it.min = Math.min(maxv, it.min + 5);
+          if (a === 'up' && i > 0) { [items[i-1], items[i]] = [items[i], items[i-1]]; }
+          if (a === 'down' && i < items.length - 1) { [items[i+1], items[i]] = [items[i], items[i+1]]; }
+          if (a === 'del') { items.splice(i, 1); }
+          render();
+        });
       });
-      addList.appendChild(opt);
+      list.appendChild(row);
     });
-    customName.value = '';
-    addMask.classList.add('show');
+    updateSummary();
+    save();
   }
 
-  document.getElementById('customAdd').addEventListener('click', function() {
-    const name = customName.value.trim();
-    if (!name) { toast('先给活动起个名字'); return; }
-    routine.activities.push({ type: 'custom', name: name, dur: 10 });
-    save(); render(); addMask.classList.remove('show');
-    toast('已添加「' + name + '」');
+  /* ============ 汇总 / 校验 ============ */
+  function updateSummary() {
+    const { sleep, rows } = schedule();
+    const total = items.reduce((s, i) => s + i.min, 0);
+    const fill = $('barFill');
+    fill.style.width = Math.min(100, total / MAX_MIN * 100) + '%';
+    fill.classList.toggle('over', total > MAX_MIN);
+    $('totalText').innerHTML = `${total} <small>/ ${MAX_MIN} MIN</small>`;
+    $('startEndText').textContent = `档案时段 ${fmtHM(new Date(sleep.getTime() - MAX_MIN * 60000))} — ${fmtHM(sleep)}`;
+
+    const tl = $('timeline');
+    tl.innerHTML = '';
+    rows.forEach((r, i) => {
+      if (r.it.min === 0) return;
+      const deadzone = r.it.key === 'worry' && r.end.getTime() > sleep.getTime() - DEADZONE * 60000;
+      const row = document.createElement('div');
+      row.className = 'tl-row' + (deadzone ? ' deadzone' : '');
+      row.innerHTML = `<span class="t">${fmtHM(r.start)}–${fmtHM(r.end)}</span><span class="dot"></span><span class="n">${r.it.name}</span><span class="d">${r.it.min} MIN</span>`;
+      tl.appendChild(row);
+    });
+    if (total < MAX_MIN && total > 0) {
+      const blank = document.createElement('div');
+      blank.className = 'tl-row';
+      blank.innerHTML = `<span class="t">${fmtHM(new Date(sleep.getTime() - (MAX_MIN - total) * 60000))}–${fmtHM(sleep)}</span><span class="dot" style="background:transparent;border:1px solid var(--ink3)"></span><span class="tl-blank">留白（无安排）</span><span class="d">${MAX_MIN - total} MIN</span>`;
+      tl.appendChild(blank);
+    }
+    validate(total, sleep, rows);
+  }
+
+  function validate(total, sleep, rows) {
+    const err = $('errorMsg');
+    const msgs = [];
+    if (total > MAX_MIN) msgs.push(`× 超时：共 ${total} 分钟，超出上限 ${total - MAX_MIN} 分钟`);
+    if (total === 0) msgs.push('× 档案为空：请至少为一个模块安排时长');
+    rows.forEach(r => {
+      if (r.it.key === 'worry' && r.it.min > 0 && r.end.getTime() > sleep.getTime() - DEADZONE * 60000)
+        msgs.push(`× 烦恼收藏箱（${fmtHM(r.start)}–${fmtHM(r.end)}）落入睡前 ${DEADZONE} 分钟无屏禁区，请缩短或移到更早`);
+    });
+    if (msgs.length) {
+      err.innerHTML = msgs.join('<br>');
+      err.classList.add('show');
+      $('startBtn').disabled = true;
+    } else {
+      err.classList.remove('show');
+      $('startBtn').disabled = false;
+    }
+  }
+
+  /* ============ 存储 ============ */
+  const STORE_KEY = 'sleep_archive';
+  function save() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ bedtime: $('sleepTime').value, items: items.map(i => ({ key: i.key, name: i.name, min: i.min, builtin: i.builtin })) })); } catch (e) {}
+  }
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(STORE_KEY));
+      if (!s) return;
+      if (s.bedtime) $('sleepTime').value = s.bedtime;
+      if (Array.isArray(s.items)) {
+        items = s.items.map(o => {
+          const b = BUILTIN.find(x => x.key === o.key);
+          return b ? { ...b, min: o.min, builtin:true } : { key: o.key || ('c'+Date.now()), name: o.name, en:'CUSTOM', desc:'自定义条目', min: o.min, page:'', screen:false, tag:null, builtin:false };
+        });
+      }
+    } catch (e) {}
+  }
+
+  /* ============ 自定义条目 ============ */
+  $('addBtn').addEventListener('click', () => {
+    const name = $('customName').value.trim();
+    const min = parseInt($('customMin').value, 10);
+    if (!name) { $('customName').focus(); return; }
+    if (!min || min < 5) { $('customMin').focus(); return; }
+    items.push({ key:'c' + Date.now(), name, en:'CUSTOM', desc:'自定义条目', min:Math.min(60, Math.max(5, min)), page:'', screen:false, tag:null, builtin:false });
+    $('customName').value = ''; $('customMin').value = '';
+    render();
   });
-  document.getElementById('addClose').addEventListener('click', () => addMask.classList.remove('show'));
-  addMask.addEventListener('click', e => { if (e.target === addMask) addMask.classList.remove('show'); });
 
-  // 底部添加按钮（放列表底部）
-  const addBtn = document.createElement('button');
-  addBtn.className = 'add-btn';
-  addBtn.id = 'addActBtn';
-  addBtn.textContent = '+ 添加活动';
-  addBtn.addEventListener('click', openAdd);
-
-  // ===== 返回 =====
-  document.getElementById('backBtn').addEventListener('click', () => {
+  /* ============ 返回 ============ */
+  $('backBtn').addEventListener('click', () => {
     window.history.length > 1 ? history.back() : (location.href = 'index.html');
   });
 
-  // ===== 开始流程 =====
-  document.getElementById('startBtn').addEventListener('click', startProcess);
+  /* ============ 封存 · 开始执行 ============ */
+  $('startBtn').addEventListener('click', () => {
+    const rows = schedule().rows.filter(r => r.it.min > 0);
+    if (!rows.length) { toast('先为至少一个模块安排时长'); return; }
+    const proc = {
+      activities: rows.map(r => ({
+        type: r.it.key,
+        name: r.it.name,
+        dur: r.it.min,
+        page: r.it.page || ''
+      })),
+      index: -1,
+      startedAt: Date.now()
+    };
+    // 跳到第一个有真实页面的活动（无页面自定义活动自动跳过）
+    for (let i = 0; i < proc.activities.length; i++) {
+      if (proc.activities[i].page) {
+        proc.index = i;
+        proc.startedAt = Date.now();
+        try { localStorage.setItem('sleep_process', JSON.stringify(proc)); } catch (e) {}
+        location.href = proc.activities[i].page;
+        return;
+      }
+    }
+    try { localStorage.removeItem('sleep_process'); } catch (e) {}
+    toast('档案已封存，晚安');
+  });
 
-  // toast
-  let toastTimer = null;
-  function toast(text) {
-    const el = document.getElementById('toast');
-    el.textContent = text;
-    el.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
-  }
+  $('sleepTime').addEventListener('change', () => { save(); updateSummary(); });
 
+  /* ============ 初始化 ============ */
+  load();
   render();
 })();
 </script>
 
+<script src="tc-tts.js"></script>
+<script src="process.js"></script>
 </body>
 </html>
