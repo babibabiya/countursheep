@@ -70,6 +70,37 @@
   .screen.active{opacity:1;transform:none;pointer-events:auto;}
   #scr-player{display:flex;flex-direction:column;overflow:hidden;padding-bottom:calc(14px + env(safe-area-inset-bottom));}
 
+  /* ===== 输入页背景图（紫色星空） ===== */
+  #scr-input{
+    background-color:#0b0d2a;
+    background-image:url('https://education-cos-1307366133.cos.ap-shanghai.myqcloud.com/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1/%E5%8C%97%E4%BA%AC%E6%8E%A2%E6%9C%88%E5%AD%A6%E6%A0%A1-%E5%AD%A6%E7%94%9F26/sheep/read/WechatIMG8373.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+  }
+  /* 背景图已包含"安睡引导"标题+大标题+副标题+山水剪影，隐藏前端的重复元素 */
+  #scr-input .input-hero{display:none;}
+  #scr-input .nav-title{display:none;}
+  #scr-input .nav{justify-content:flex-start;}
+  /* textarea 和按钮放到背景图下半部分（山水剪影区上方） */
+  #scr-input #worryInput{
+    position:absolute; left:24px; right:24px; bottom:160px;
+    background:rgba(255,255,255,0.10);
+    border:1.5px solid rgba(255,255,255,0.22);
+    border-radius:18px; color:#e9edf8;
+    padding:14px; font-size:14px; line-height:1.7; height:120px;
+    backdrop-filter:blur(6px);
+  }
+  #scr-input #worryInput::placeholder{color:rgba(233,237,248,0.5);}
+  #scr-input .count{position:absolute; right:30px; bottom:138px; color:rgba(233,237,248,0.6); font-size:11px;}
+  #scr-input .cta{
+    position:absolute; left:24px; right:24px; bottom:46px;
+    margin:0;
+    background:linear-gradient(135deg,#a982d4 0%,#b48ad6 100%);
+    color:#fff;
+    box-shadow:0 6px 18px rgba(140,100,200,0.45);
+  }
+
   /* ---------- home ---------- */
   .home-head{display:flex;align-items:baseline;justify-content:space-between;margin-top:10px;}
   .brand{font-family:var(--serif);font-size:22px;letter-spacing:10px;text-indent:10px;color:var(--gold);}
